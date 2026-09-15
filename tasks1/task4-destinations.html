@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Задача 4: Дестинации - Algorithma</title>
+    <style>
+        body { 
+            margin: 0; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            display: flex; 
+            height: 100vh; 
+            background-color: #f4f4f9; 
+            overflow: hidden; 
+        }
+        
+        /* Панели */
+        .panel { 
+            padding: 25px; 
+            overflow-y: auto; 
+            box-sizing: border-box; 
+            display: flex;
+            flex-direction: column;
+        }
+        .left-panel { 
+            flex: 0 0 50%; 
+            background-color: #ffffff; 
+            min-width: 20%;
+        }
+        .right-panel { 
+            display: flex; 
+            flex-direction: column; 
+            gap: 20px; 
+            background-color: #fdfdfd; 
+            flex: 1; 
+            min-width: 20%;
+        }
+        
+        /* Съдържание на левия панел */
+        .content-wrapper {
+            flex-grow: 1;
+        }
+
+        /* Сплитер / Разделител */
+        .resizer {
+            width: 6px;
+            background-color: #ddd;
+            cursor: col-resize; 
+            transition: background-color 0.2s;
+            z-index: 10;
+        }
+        .resizer:hover, .resizer:active {
+            background-color: #95a5a6;
+        }
+
+        /* Стил за бутона "Назад" */
+        .back-to-home {
+            display: inline-block;
+            text-decoration: none;
+            color: #7f8c8d;
+            font-weight: bold;
+            font-size: 0.95rem;
+            margin-bottom: 15px;
+            padding: 5px 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #f8f9fa;
+            transition: all 0.2s ease;
+            align-self: flex-start;
+        }
+        .back-to-home:hover {
+            color: #2c3e50;
+            background-color: #ecf0f1;
+            border-color: #bdc3c7;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        h1 { color: #2c3e50; font-size: 1.8rem; margin-bottom: 5px; }
+        h2 { color: #7f8c8d; font-size: 1.1rem; text-transform: uppercase; margin-top: 0; margin-bottom: 20px; }
+        h3 { color: #34495e; border-bottom: 1px solid #eee; padding-bottom: 5px; margin-top: 25px; }
+        p, ul, li { line-height: 1.6; color: #333; }
+        
+        /* Таблици */
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; margin-bottom: 20px; font-size: 0.95rem; }
+        th, td { border: 1px solid #bdc3c7; padding: 10px; text-align: left; }
+        th { background-color: #ecf0f1; color: #2c3e50; }
+        
+        /* Авторски права */
+        .copyright {
+            margin-top: 40px;
+            padding-top: 15px;
+            border-top: 1px solid #eee;
+            color: #95a5a6;
+            font-size: 0.85rem;
+            text-align: center;
+        }
+
+        /* Визуализация - Памет и Конзола */
+        .visualization-area { flex: 1; border: 2px dashed #bdc3c7; border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; background-color: #ecf0f1; position: relative; min-height: 420px; padding: 15px; gap: 15px;}
+        
+        .memory-container { display: flex; gap: 15px; width: 100%; justify-content: center; flex-wrap: wrap; }
+        
+        .memory-box { display: none; background-color: #fff; border: 2px solid #3498db; border-radius: 12px; padding: 12px; box-shadow: 0 6px 12px rgba(0,0,0,0.08); width: 170px; text-align: center; border-top: 5px solid #3498db;}
+        .memory-title { font-weight: bold; color: #7f8c8d; padding-bottom: 5px; margin-bottom: 10px; font-size: 0.9rem; text-transform: uppercase;}
+        .card-image { font-size: 2.2rem; line-height: 1; margin-bottom: 10px; filter: drop-shadow(0px 3px 3px rgba(0,0,0,0.1)); }
+        .memory-prop { display: flex; justify-content: space-between; margin: 6px 0; font-family: Consolas, monospace; font-size: 0.8rem; border-bottom: 1px dashed #eee; padding-bottom: 4px;}
+        .memory-prop span:nth-child(1) { color: #95a5a6; }
+        .memory-prop span:nth-child(2) { color: #2c3e50; font-weight: bold; }
+
+        .console-box { display: none; background-color: #0c0c0c; border: 2px solid #555; border-top: 20px solid #ccc; border-radius: 5px 5px 0 0; padding: 10px; width: 90%; max-width: 500px; font-family: Consolas, 'Courier New', monospace; font-size: 13px; position: relative; box-shadow: 0 8px 15px rgba(0,0,0,0.3); margin-top: auto;}
+        .console-box::before { content: "C:\\Users\\Milen\\Documents\\Mil..."; position: absolute; top: -18px; left: 10px; color: #333; font-size: 11px; font-family: 'Segoe UI', sans-serif; font-weight: bold; }
+        .console-output { color: #fff; font-weight: bold; white-space: pre-wrap; line-height: 1.4; }
+        
+        .viz-text { text-align: center; font-size: 1.05rem; font-weight: bold; color: #2c3e50; margin-bottom: 5px; min-height: 45px; }
+        
+        /* Контроли */
+        .controls { display: flex; gap: 15px; justify-content: center; }
+        button { padding: 10px 20px; border: none; border-radius: 5px; background-color: #3498db; color: white; font-size: 15px; cursor: pointer; transition: background-color 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        button:hover { background-color: #2980b9; }
+        button:disabled { background-color: #95a5a6; cursor: not-allowed; box-shadow: none; }
+    </style>
+</head>
+<body>
+
+    <div class="panel left-panel" id="leftPanel">
+        <div class="content-wrapper">
+            <a href="../index.html" class="back-to-home">← Начало</a>
+            
+            <h1>Задача 4: Дестинации</h1>
+            <h2>Тематични задачи</h2>
+            
+            <p>Да се създаде конзолно приложение за определяне на дестинация чрез задаване на град и разстоянието му до град София. В него да се декларира клас <code>Destination</code> със следните полета:</p>
+            
+            <table>
+                <tr>
+                    <th>Поле</th>
+                    <th>Тип</th>
+                    <th>Описание</th>
+                </tr>
+                <tr>
+                    <td>city</td>
+                    <td>низ</td>
+                    <td>град</td>
+                </tr>
+                <tr>
+                    <td>kilometers</td>
+                    <td>цяло число</td>
+                    <td>километри</td>
+                </tr>
+            </table>
+
+            <h3>Да се извършат следните действия:</h3>
+            <p>а) Да се опишат три дестинации и се инициализират със следните данни:</p>
+            
+            <table>
+                <tr>
+                    <th>city</th>
+                    <th>kilometers</th>
+                </tr>
+                <tr>
+                    <td>Plovdiv</td>
+                    <td>165</td>
+                </tr>
+                <tr>
+                    <td>Varna</td>
+                    <td>469</td>
+                </tr>
+                <tr>
+                    <td>Burgas</td>
+                    <td>393</td>
+                </tr>
+            </table>
+
+            <p>б) Да се изведат на екрана полетата на трите дестинации, дефинирани в а), както е показано на долната фигура.</p>
+        </div>
+        
+        <div class="copyright">
+            &copy; 2026 Algorithma. Всички права запазени.
+        </div>
+    </div>
+
+    <!-- Сплитер за преоразмеряване -->
+    <div class="resizer" id="resizer"></div>
+
+    <div class="panel right-panel">
+        
+        <div class="visualization-area">
+            <div class="viz-text" id="vizText">Кликнете 'Напред', за да проследите създаването на обектите.</div>
+            
+            <div class="memory-container">
+                <div class="memory-box" id="memBox1">
+                    <div class="memory-title">Обект: dest1</div>
+                    <div class="card-image">📍</div>
+                    <div class="memory-prop"><span>city</span> <span id="vCity1">null</span></div>
+                    <div class="memory-prop"><span>kilometers</span> <span id="vKm1">0</span></div>
+                </div>
+
+                <div class="memory-box" id="memBox2">
+                    <div class="memory-title">Обект: dest2</div>
+                    <div class="card-image">🌊</div>
+                    <div class="memory-prop"><span>city</span> <span id="vCity2">null</span></div>
+                    <div class="memory-prop"><span>kilometers</span> <span id="vKm2">0</span></div>
+                </div>
+
+                <div class="memory-box" id="memBox3">
+                    <div class="memory-title">Обект: dest3</div>
+                    <div class="card-image">🏖️</div>
+                    <div class="memory-prop"><span>city</span> <span id="vCity3">null</span></div>
+                    <div class="memory-prop"><span>kilometers</span> <span id="vKm3">0</span></div>
+                </div>
+            </div>
+
+            <div class="console-box" id="consoleBox">
+                <div class="console-output" id="consoleOutput"></div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button id="prevBtn" onclick="prevStep()" disabled>⏪ Назад</button>
+            <button id="nextBtn" onclick="nextStep()">Напред ⏩</button>
+        </div>
+
+    </div>
+
+    <script>
+        const steps = [
+            { text: "Стъпка 1: Декларираме класа Destination.", showD1: false, showD2: false, showD3: false, showCon: false },
+            { text: "Стъпка 2: Създаваме първата дестинация (Plovdiv).", showD1: true, vC1: "\"Plovdiv\"", vK1: "165", showD2: false, showD3: false, showCon: false },
+            { text: "Стъпка 3: Създаваме втората дестинация (Varna).", showD1: true, vC1: "\"Plovdiv\"", vK1: "165", showD2: true, vC2: "\"Varna\"", vK2: "469", showD3: false, showCon: false },
+            { text: "Стъпка 4: Създаваме третата дестинация (Burgas).", showD1: true, vC1: "\"Plovdiv\"", vK1: "165", showD2: true, vC2: "\"Varna\"", vK2: "469", showD3: true, vC3: "\"Burgas\"", vK3: "393", showCon: false },
+            { text: "Стъпка 5: Отпечатваме данните за всички дестинации в конзолата.", showD1: true, vC1: "\"Plovdiv\"", vK1: "165", showD2: true, vC2: "\"Varna\"", vK2: "469", showD3: true, vC3: "\"Burgas\"", vK3: "393", showCon: true, conText: "Destination 1\nCity: Plovdiv\nKilometers to Sofia: 165\nDestination 2\nCity: Varna\nKilometers to Sofia: 469\nDestination 3\nCity: Burgas\nKilometers to Sofia: 393" }
+        ];
+
+        let currentStep = -1;
+
+        function updateUI() {
+            const mem1 = document.getElementById('memBox1');
+            const mem2 = document.getElementById('memBox2');
+            const mem3 = document.getElementById('memBox3');
+            const conBox = document.getElementById('consoleBox');
+            const conOut = document.getElementById('consoleOutput');
+            
+            if (currentStep >= 0) {
+                const step = steps[currentStep];
+                
+                document.getElementById('vizText').innerText = step.text;
+
+                if (step.showD1) {
+                    mem1.style.display = 'block';
+                    document.getElementById('vCity1').innerText = step.vC1;
+                    document.getElementById('vKm1').innerText = step.vK1;
+                } else { mem1.style.display = 'none'; }
+
+                if (step.showD2) {
+                    mem2.style.display = 'block';
+                    document.getElementById('vCity2').innerText = step.vC2;
+                    document.getElementById('vKm2').innerText = step.vK2;
+                } else { mem2.style.display = 'none'; }
+
+                if (step.showD3) {
+                    mem3.style.display = 'block';
+                    document.getElementById('vCity3').innerText = step.vC3;
+                    document.getElementById('vKm3').innerText = step.vK3;
+                } else { mem3.style.display = 'none'; }
+
+                if (step.showCon) {
+                    conBox.style.display = 'block';
+                    conOut.innerText = step.conText;
+                } else { conBox.style.display = 'none'; }
+
+            } else {
+                document.getElementById('vizText').innerText = "Кликнете 'Напред', за да проследите създаването на обектите.";
+                mem1.style.display = 'none';
+                mem2.style.display = 'none';
+                mem3.style.display = 'none';
+                conBox.style.display = 'none';
+            }
+
+            document.getElementById('prevBtn').disabled = currentStep <= -1;
+            document.getElementById('nextBtn').disabled = currentStep >= steps.length - 1;
+        }
+
+        function nextStep() { if (currentStep < steps.length - 1) { currentStep++; updateUI(); } }
+        function prevStep() { if (currentStep > -1) { currentStep--; updateUI(); } }
+
+        updateUI();
+
+        // ----------------------------------------------------------------
+        // Логика за преоразмеряване на панелите (Drag-to-resize)
+        // ----------------------------------------------------------------
+        const resizer = document.getElementById('resizer');
+        const leftPanel = document.getElementById('leftPanel');
+        let isResizing = false;
+
+        resizer.addEventListener('mousedown', (e) => {
+            isResizing = true;
+            document.body.style.cursor = 'col-resize';
+            document.body.style.userSelect = 'none';
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (!isResizing) return;
+            
+            let newWidthPercent = (e.clientX / window.innerWidth) * 100;
+            
+            if (newWidthPercent > 20 && newWidthPercent < 80) {
+                leftPanel.style.flex = `0 0 ${newWidthPercent}%`;
+            }
+        });
+
+        document.addEventListener('mouseup', () => {
+            if (isResizing) {
+                isResizing = false;
+                document.body.style.cursor = 'default';
+                document.body.style.userSelect = 'auto'; 
+            }
+        });
+    </script>
+</body>
+</html>

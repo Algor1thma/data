@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Задача 2: Правоъгълник - Algorithma</title>
+    <style>
+        body { margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; height: 100vh; background-color: #f4f4f9; }
+        
+        /* Панели */
+        .panel { flex: 1; padding: 25px; overflow-y: auto; box-sizing: border-box; }
+        .left-panel { border-right: 2px solid #ddd; background-color: #ffffff; }
+        .right-panel { display: flex; flex-direction: column; gap: 20px; background-color: #fdfdfd; }
+        
+        /* Стил за бутона "Назад" */
+        .back-to-home {
+            display: inline-block;
+            text-decoration: none;
+            color: #7f8c8d;
+            font-weight: bold;
+            font-size: 0.95rem;
+            margin-bottom: 15px;
+            padding: 5px 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #f8f9fa;
+            transition: all 0.2s ease;
+        }
+        .back-to-home:hover {
+            color: #2c3e50;
+            background-color: #ecf0f1;
+            border-color: #bdc3c7;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        h1 { color: #2c3e50; font-size: 1.8rem; margin-bottom: 5px; }
+        h2 { color: #7f8c8d; font-size: 1.1rem; text-transform: uppercase; margin-top: 0; margin-bottom: 20px; }
+        h3 { color: #34495e; border-bottom: 1px solid #eee; padding-bottom: 5px; margin-top: 25px; }
+        p, ul, li { line-height: 1.6; color: #333; }
+        
+        /* Таблици */
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; margin-bottom: 20px; font-size: 0.95rem; }
+        th, td { border: 1px solid #bdc3c7; padding: 10px; text-align: left; }
+        th { background-color: #ecf0f1; color: #2c3e50; }
+
+        /* Подсказка / Скелет */
+        .hint-box { background-color: #e8f4fd; border-left: 4px solid #3498db; padding: 10px 15px; margin-top: 20px; border-radius: 4px; color: #2980b9; font-family: Consolas, monospace; font-size: 0.9rem; white-space: pre-wrap; }
+        
+        /* Визуализация - Памет и Конзола */
+        .visualization-area { flex: 1; border: 2px dashed #bdc3c7; border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; background-color: #ecf0f1; position: relative; min-height: 400px; padding: 15px; gap: 15px;}
+        
+        .memory-container { display: flex; gap: 15px; width: 100%; justify-content: center; align-items: flex-start; }
+        
+        .memory-box { display: none; background-color: #fff; border: 2px solid #3498db; border-radius: 12px; padding: 15px; box-shadow: 0 6px 12px rgba(0,0,0,0.08); width: 180px; text-align: center; }
+        .memory-title { font-weight: bold; color: #2980b9; border-bottom: 2px solid #3498db; padding-bottom: 5px; margin-bottom: 10px; font-size: 0.95rem;}
+        .card-image { font-size: 3rem; line-height: 1; margin-bottom: 10px; filter: drop-shadow(0px 3px 3px rgba(0,0,0,0.1)); }
+        .memory-prop { display: flex; justify-content: space-between; margin: 6px 0; font-family: Consolas, monospace; font-size: 0.85rem; border-bottom: 1px dashed #eee; padding-bottom: 4px;}
+        .memory-prop span:nth-child(1) { color: #7f8c8d; }
+        .memory-prop span:nth-child(2) { color: #e74c3c; font-weight: bold; }
+
+        .console-box { display: none; background-color: #0c0c0c; border: 2px solid #555; border-top: 20px solid #ccc; border-radius: 5px 5px 0 0; padding: 10px; width: 80%; max-width: 400px; font-family: Consolas, 'Courier New', monospace; font-size: 13px; position: relative; box-shadow: 0 8px 15px rgba(0,0,0,0.3); }
+        .console-box::before { content: "C:\\Users\\Milen\\Documents\\..."; position: absolute; top: -18px; left: 10px; color: #333; font-size: 11px; font-family: 'Segoe UI', sans-serif; font-weight: bold; }
+        .console-output { color: #fff; font-weight: bold; white-space: pre-wrap; line-height: 1.4; }
+        
+        .viz-text { text-align: center; font-size: 1.1rem; font-weight: bold; color: #2c3e50; margin-bottom: 5px; min-height: 45px; }
+        
+        /* Зона за код */
+        .code-container { background-color: #282c34; color: #abb2bf; padding: 15px; border-radius: 8px; font-family: Consolas, monospace; font-size: 13px; overflow-x: auto; box-shadow: inset 0 0 10px rgba(0,0,0,0.5); }
+        .code-line { padding: 3px 8px; margin: 1px 0; border-radius: 4px; transition: background-color 0.3s; }
+        .active-line { background-color: #3e4451; border-left: 4px solid #98c379; color: #ffffff; font-weight: bold; }
+        
+        /* Контроли */
+        .controls { display: flex; gap: 15px; justify-content: center; }
+        button { padding: 10px 20px; border: none; border-radius: 5px; background-color: #3498db; color: white; font-size: 15px; cursor: pointer; transition: background-color 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        button:hover { background-color: #2980b9; }
+        button:disabled { background-color: #95a5a6; cursor: not-allowed; box-shadow: none; }
+    </style>
+    <script>
+        MathJax = {
+            tex: { inlineMath: [['$', '$']] }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+
+    <div class="panel left-panel">
+        <a href="../index.html" class="back-to-home">← Начало</a>
+        
+        <h1>Задача 2: Правоъгълник</h1>
+        <h2>Тематични задачи</h2>
+        
+        <p>Да се създаде конзолно приложение за описание на правоъгълник. В него да се декларира клас <code>Rectangle</code> със следните полета:</p>
+        
+        <table>
+            <tr>
+                <th>Поле</th>
+                <th>Тип</th>
+                <th>Описание</th>
+            </tr>
+            <tr>
+                <td>length</td>
+                <td>реално число</td>
+                <td>дължина на правоъгълника</td>
+            </tr>
+            <tr>
+                <td>width</td>
+                <td>реално число</td>
+                <td>ширина на правоъгълника</td>
+            </tr>
+        </table>
+
+        <h3>Да се извършат следните действия:</h3>
+        <p>а) Да се създаде правоъгълник, като дължината и ширината му се инициализират чрез следните данни:</p>
+        
+        <table>
+            <tr>
+                <th>length</th>
+                <th>width</th>
+            </tr>
+            <tr>
+                <td>7.7</td>
+                <td>4.9</td>
+            </tr>
+        </table>
+
+        <p>б) Да се изчисли по формулата $S=a\cdot b$ лицето на правоъгълника.</p>
+        <p>в) Да се изведат на екрана полетата на правоъгълника, както и изчисленото лице.</p>
+
+        <div class="hint-box"><strong>Стартов код (Скелет):</strong>
+class Rectangle
+{
+    // Декларирайте полетата тук
+}
+
+class Program
+{
+    static void Main(string[] args)
+    {
+        // Напишете вашето решение тук...
+    }
+}</div>
+    </div>
+
+    <div class="panel right-panel">
+        
+        <div class="visualization-area">
+            <div class="viz-text" id="vizText">Проследете създаването на обекта и изчисляването на лицето!</div>
+            
+            <div class="memory-container">
+                <div class="memory-box" id="memBox1">
+                    <div class="memory-title">Обект: rect</div>
+                    <div class="card-image">🟦</div>
+                    <div class="memory-prop"><span>length</span> <span id="vLen">0.0</span></div>
+                    <div class="memory-prop"><span>width</span> <span id="vWid">0.0</span></div>
+                </div>
+
+                <div class="memory-box" id="memBox2" style="border-color: #2ecc71;">
+                    <div class="memory-title" style="color: #27ae60; border-color: #2ecc71;">Метод Main()</div>
+                    <div class="card-image">🧮</div>
+                    <div class="memory-prop"><span>s (лице)</span> <span id="vArea">0.0</span></div>
+                </div>
+            </div>
+
+            <div class="console-box" id="consoleBox">
+                <div class="console-output" id="consoleOutput"></div>
+            </div>
+        </div>
+
+        <div class="code-container">
+            <div class="code-line" id="line-0">Rectangle rect = new Rectangle();</div>
+            <div class="code-line" id="line-1">rect.length = 7.7;</div>
+            <div class="code-line" id="line-2">rect.width = 4.9;</div>
+            <div class="code-line" id="line-3"></div>
+            <div class="code-line" id="line-4">double s = rect.length * rect.width;</div>
+            <div class="code-line" id="line-5"></div>
+            <div class="code-line" id="line-6">Console.WriteLine("Length: " + rect.length);</div>
+            <div class="code-line" id="line-7">Console.WriteLine("Width: " + rect.width);</div>
+            <div class="code-line" id="line-8">Console.WriteLine("S: " + s);</div>
+        </div>
+
+        <div class="controls">
+            <button id="prevBtn" onclick="prevStep()" disabled>⏪ Назад</button>
+            <button id="nextBtn" onclick="nextStep()">Напред ⏩</button>
+        </div>
+
+    </div>
+
+    <script>
+        const steps = [
+            { lines: [0], text: "Стъпка 1: Създаваме обект rect от тип Rectangle. Полетата получават начални стойности.", showM1: true, vL: "0.0", vW: "0.0", showM2: false, vS: "0.0", showCon: false, conText: "" },
+            { lines: [1], text: "Стъпка 2: Задаваме стойност за дължината (length).", showM1: true, vL: "7.7", vW: "0.0", showM2: false, vS: "0.0", showCon: false, conText: "" },
+            { lines: [2], text: "Стъпка 3: Задаваме стойност за ширината (width).", showM1: true, vL: "7.7", vW: "4.9", showM2: false, vS: "0.0", showCon: false, conText: "" },
+            { lines: [4], text: "Стъпка 4: Изчисляваме лицето и го запазваме в нова локална променлива 's'.", showM1: true, vL: "7.7", vW: "4.9", showM2: true, vS: "37.73", showCon: false, conText: "" },
+            { lines: [6, 7, 8], text: "Стъпка 5: Отпечатваме всички данни в конзолата.", showM1: true, vL: "7.7", vW: "4.9", showM2: true, vS: "37.73", showCon: true, conText: "Length: 7,7\nWidth: 4,9\nS: 37,73" }
+        ];
+
+        let currentStep = -1;
+
+        function updateUI() {
+            document.querySelectorAll('.code-line').forEach(el => el.classList.remove('active-line'));
+            const mem1 = document.getElementById('memBox1');
+            const mem2 = document.getElementById('memBox2');
+            const conBox = document.getElementById('consoleBox');
+            const conOut = document.getElementById('consoleOutput');
+            
+            if (currentStep >= 0) {
+                const step = steps[currentStep];
+                
+                step.lines.forEach(lineNum => {
+                    document.getElementById('line-' + lineNum).classList.add('active-line');
+                });
+                
+                document.getElementById('vizText').innerText = step.text;
+
+                if (step.showM1) {
+                    mem1.style.display = 'block';
+                    document.getElementById('vLen').innerText = step.vL;
+                    document.getElementById('vWid').innerText = step.vW;
+                } else { mem1.style.display = 'none'; }
+
+                if (step.showM2) {
+                    mem2.style.display = 'block';
+                    document.getElementById('vArea').innerText = step.vS;
+                } else { mem2.style.display = 'none'; }
+
+                if (step.showCon) {
+                    conBox.style.display = 'block';
+                    conOut.innerText = step.conText;
+                } else { conBox.style.display = 'none'; }
+
+            } else {
+                document.getElementById('vizText').innerText = "Проследете създаването на обекта и изчисляването на лицето!";
+                mem1.style.display = 'none';
+                mem2.style.display = 'none';
+                conBox.style.display = 'none';
+            }
+
+            document.getElementById('prevBtn').disabled = currentStep <= -1;
+            document.getElementById('nextBtn').disabled = currentStep >= steps.length - 1;
+        }
+
+        function nextStep() { if (currentStep < steps.length - 1) { currentStep++; updateUI(); } }
+        function prevStep() { if (currentStep > -1) { currentStep--; updateUI(); } }
+
+        updateUI();
+    </script>
+</body>
+</html>

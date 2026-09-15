@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Задача 5: Планети - Algorithma</title>
+    <style>
+        body { 
+            margin: 0; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            display: flex; 
+            height: 100vh; 
+            background-color: #f4f4f9; 
+            overflow: hidden; 
+        }
+        
+        /* Панели */
+        .panel { 
+            padding: 25px; 
+            overflow-y: auto; 
+            box-sizing: border-box; 
+            display: flex;
+            flex-direction: column;
+        }
+        .left-panel { 
+            border-right: 2px solid #ddd; 
+            background-color: #ffffff; 
+            flex: 0 0 50%;
+            min-width: 20%;
+        }
+        .right-panel { 
+            display: flex; 
+            flex-direction: column; 
+            gap: 20px; 
+            background-color: #fdfdfd; 
+            flex: 1;
+            min-width: 20%;
+        }
+        
+        /* Съдържание на левия панел */
+        .content-wrapper {
+            flex-grow: 1;
+        }
+
+        /* Сплитер / Разделител */
+        .resizer {
+            width: 6px;
+            background-color: #ddd;
+            cursor: col-resize; 
+            transition: background-color 0.2s;
+            z-index: 10;
+        }
+        .resizer:hover, .resizer:active {
+            background-color: #95a5a6;
+        }
+
+        /* Стил за бутона "Назад" */
+        .back-to-home {
+            display: inline-block;
+            text-decoration: none;
+            color: #7f8c8d;
+            font-weight: bold;
+            font-size: 0.95rem;
+            margin-bottom: 15px;
+            padding: 5px 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #f8f9fa;
+            transition: all 0.2s ease;
+            align-self: flex-start;
+        }
+        .back-to-home:hover {
+            color: #2c3e50;
+            background-color: #ecf0f1;
+            border-color: #bdc3c7;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        h1 { color: #2c3e50; font-size: 1.8rem; margin-bottom: 5px; }
+        h2 { color: #7f8c8d; font-size: 1.1rem; text-transform: uppercase; margin-top: 0; margin-bottom: 15px; }
+        h3 { color: #34495e; border-bottom: 1px solid #eee; padding-bottom: 5px; margin-top: 20px; font-size: 1.1rem;}
+        p, ul, li { line-height: 1.5; color: #333; font-size: 0.95rem; margin-bottom: 10px;}
+        
+        /* Таблици */
+        table { width: 100%; border-collapse: collapse; margin-top: 5px; margin-bottom: 15px; font-size: 0.9rem; }
+        th, td { border: 1px solid #bdc3c7; padding: 8px; text-align: left; }
+        th { background-color: #ecf0f1; color: #2c3e50; }
+        
+        /* Подсказка */
+        .hint-box { background-color: #e8f4fd; border-left: 4px solid #3498db; padding: 10px 15px; margin-top: 15px; border-radius: 4px; color: #2980b9; font-family: Consolas, monospace; font-size: 0.9rem; white-space: pre-wrap; }
+
+        /* Авторски права */
+        .copyright {
+            margin-top: 40px;
+            padding-top: 15px;
+            border-top: 1px solid #eee;
+            color: #95a5a6;
+            font-size: 0.85rem;
+            text-align: center;
+        }
+
+        /* Визуализация - Памет и Конзола */
+        .visualization-area { flex: 1; border: 2px dashed #bdc3c7; border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; background-color: #ecf0f1; position: relative; min-height: 420px; padding: 15px; gap: 15px;}
+        
+        .memory-container { display: flex; gap: 15px; width: 100%; justify-content: center; }
+        
+        .memory-box { display: none; background-color: #fff; border: 2px solid #3498db; border-radius: 12px; padding: 15px; box-shadow: 0 6px 12px rgba(0,0,0,0.08); width: 220px; text-align: center; border-top: 5px solid #3498db;}
+        .memory-title { font-weight: bold; color: #7f8c8d; padding-bottom: 5px; margin-bottom: 10px; font-size: 0.95rem; text-transform: uppercase;}
+        .card-image { font-size: 3rem; line-height: 1; margin-bottom: 15px; filter: drop-shadow(0px 3px 3px rgba(0,0,0,0.1)); }
+        .memory-prop { display: flex; justify-content: space-between; margin: 6px 0; font-family: Consolas, monospace; font-size: 0.85rem; border-bottom: 1px dashed #eee; padding-bottom: 4px;}
+        .memory-prop span:nth-child(1) { color: #95a5a6; }
+        .memory-prop span:nth-child(2) { color: #2c3e50; font-weight: bold; }
+
+        .console-box { display: none; background-color: #0c0c0c; border: 2px solid #555; border-top: 20px solid #ccc; border-radius: 5px 5px 0 0; padding: 10px; width: 90%; max-width: 450px; font-family: Consolas, 'Courier New', monospace; font-size: 13px; position: relative; box-shadow: 0 8px 15px rgba(0,0,0,0.3); margin-top: auto;}
+        .console-box::before { content: "C:\\Users\\Milen\\Documents\\..."; position: absolute; top: -18px; left: 10px; color: #333; font-size: 11px; font-family: 'Segoe UI', sans-serif; font-weight: bold; }
+        .console-output { color: #fff; font-weight: bold; white-space: pre-wrap; line-height: 1.4; }
+        
+        .viz-text { text-align: center; font-size: 1.05rem; font-weight: bold; color: #2c3e50; margin-bottom: 5px; min-height: 45px; }
+        
+        /* Контроли */
+        .controls { display: flex; gap: 15px; justify-content: center; }
+        button { padding: 10px 20px; border: none; border-radius: 5px; background-color: #3498db; color: white; font-size: 15px; cursor: pointer; transition: background-color 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        button:hover { background-color: #2980b9; }
+        button:disabled { background-color: #95a5a6; cursor: not-allowed; box-shadow: none; }
+    </style>
+</head>
+<body>
+
+    <div class="panel left-panel" id="leftPanel">
+        <div class="content-wrapper">
+            <a href="../index.html" class="back-to-home">← Начало</a>
+            
+            <h1>Задача 5: Планетите от Слънчевата система</h1>
+            <h2>Тематични задачи</h2>
+            
+            <p>Да се създаде конзолно приложение определящо планета от Слънчевата система по нейното име, което да показва както името й, така и нейния екваториален диаметър, маса и денонощие (в земни дни).</p>
+            <p>В него да се декларира клас <code>Planet</code> със следните полета:</p>
+            
+            <table>
+                <tr><th>Поле</th><th>Тип</th><th>Описание</th></tr>
+                <tr><td>plName</td><td>низ</td><td>име на планета</td></tr>
+                <tr><td>diameter</td><td>реално число</td><td>екваториален диаметър</td></tr>
+                <tr><td>mass</td><td>реално число</td><td>маса</td></tr>
+                <tr><td>days</td><td>реално число</td><td>денонощие (дни)</td></tr>
+            </table>
+
+            <h3>Програмата да извършва следните действия:</h3>
+            <p>а) Да въвежда името на планета от клавиатурата на английски език.</p>
+            
+            <table>
+                <tr><th>Планета</th><th>Англ. наименование</th></tr>
+                <tr><td>Меркурий</td><td>Mercury</td></tr>
+                <tr><td>Венера</td><td>Venus</td></tr>
+                <tr><td>Земя</td><td>Earth</td></tr>
+                <tr><td>Марс</td><td>Mars</td></tr>
+                <tr><td>Юпитер</td><td>Jupiter</td></tr>
+                <tr><td>Сатурн</td><td>Saturn</td></tr>
+                <tr><td>Уран</td><td>Uranus</td></tr>
+                <tr><td>Нептун</td><td>Neptune</td></tr>
+            </table>
+
+            <div class="hint-box"><strong>Подсказка:</strong>
+Приемаме, че потребителят въвежда коректно името на планетата.
+Стандартният вход в езика C# се извършва чрез метода Console.ReadLine().
+Например: pl.plName = Console.ReadLine();</div>
+
+            <p>б) Да се изведат на екрана данните за въведената планета според долната таблица.</p>
+            
+            <table>
+                <tr><th>Планета</th><th>Екваториален диаметър</th><th>Maca</th><th>Денонощие (дни)</th></tr>
+                <tr><td>Меркурий</td><td>0.382</td><td>0.06</td><td>58.6</td></tr>
+                <tr><td>Венера*</td><td>0.949</td><td>0.82</td><td>-243</td></tr>
+                <tr><td>Земя</td><td>1.0</td><td>1.0</td><td>1.0</td></tr>
+                <tr><td>Марс</td><td>0.53</td><td>0.11</td><td>1.03</td></tr>
+                <tr><td>Юпитер</td><td>11.2</td><td>318</td><td>0.414</td></tr>
+                <tr><td>Сатурн</td><td>9.41</td><td>95</td><td>0.426</td></tr>
+                <tr><td>Уран</td><td>3.98</td><td>14.6</td><td>0.718</td></tr>
+                <tr><td>Нептун</td><td>3.81</td><td>17.2</td><td>0.671</td></tr>
+            </table>
+            <p style="font-size: 0.8rem; color: #7f8c8d;">* Венера се върти по посока на часовниковата стрелка, за разлика от всички други планети.</p>
+        </div>
+        
+        <div class="copyright">
+            &copy; 2026 Algorithma. Всички права запазени.
+        </div>
+    </div>
+
+    <!-- Сплитер за преоразмеряване -->
+    <div class="resizer" id="resizer"></div>
+
+    <div class="panel right-panel">
+        
+        <div class="visualization-area">
+            <div class="viz-text" id="vizText">Кликнете 'Напред', за да проследите примерно изпълнение.</div>
+            
+            <div class="memory-container">
+                <div class="memory-box" id="memBox1">
+                    <div class="memory-title">Обект: p1</div>
+                    <div class="card-image">🪐</div>
+                    <div class="memory-prop"><span>plName</span> <span id="vName">null</span></div>
+                    <div class="memory-prop"><span>diameter</span> <span id="vDia">0.0</span></div>
+                    <div class="memory-prop"><span>mass</span> <span id="vMas">0.0</span></div>
+                    <div class="memory-prop"><span>days</span> <span id="vDay">0.0</span></div>
+                </div>
+            </div>
+
+            <div class="console-box" id="consoleBox">
+                <div class="console-output" id="consoleOutput"></div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button id="prevBtn" onclick="prevStep()" disabled>⏪ Назад</button>
+            <button id="nextBtn" onclick="nextStep()">Напред ⏩</button>
+        </div>
+
+    </div>
+
+    <script>
+        const steps = [
+            { text: "Стъпка 1: Декларираме класа Planet с необходимите полета.", showP: false, showCon: false },
+            { text: "Стъпка 2: Инстанцираме обекта p1 и извеждаме подкана към потребителя.", showP: true, vN: "null", vD: "0", vM: "0", vDay: "0", showCon: true, conText: "Planet: " },
+            { text: "Стъпка 3: Потребителят въвежда 'Saturn'. Програмата прочита входа чрез Console.ReadLine().", showP: true, vN: "\"Saturn\"", vD: "0", vM: "0", vDay: "0", showCon: true, conText: "Planet: Saturn" },
+            { text: "Стъпка 4: Условната проверка открива съвпадение и задава стойностите за Сатурн в паметта.", showP: true, vN: "\"Saturn\"", vD: "9.41", vM: "95", vDay: "0.426", showCon: true, conText: "Planet: Saturn" },
+            { text: "Стъпка 5: Извеждаме попълнените данни на обекта в конзолата.", showP: true, vN: "\"Saturn\"", vD: "9.41", vM: "95", vDay: "0.426", showCon: true, conText: "Planet: Saturn\nSaturn\nDiameter: 9.41\nMass: 95\nDays: 0.426" }
+        ];
+
+        let currentStep = -1;
+
+        function updateUI() {
+            const mem1 = document.getElementById('memBox1');
+            const conBox = document.getElementById('consoleBox');
+            const conOut = document.getElementById('consoleOutput');
+            
+            if (currentStep >= 0) {
+                const step = steps[currentStep];
+                
+                document.getElementById('vizText').innerText = step.text;
+
+                if (step.showP) {
+                    mem1.style.display = 'block';
+                    document.getElementById('vName').innerText = step.vN;
+                    document.getElementById('vDia').innerText = step.vD;
+                    document.getElementById('vMas').innerText = step.vM;
+                    document.getElementById('vDay').innerText = step.vDay;
+                } else { mem1.style.display = 'none'; }
+
+                if (step.showCon) {
+                    conBox.style.display = 'block';
+                    conOut.innerText = step.conText;
+                } else { conBox.style.display = 'none'; }
+
+            } else {
+                document.getElementById('vizText').innerText = "Кликнете 'Напред', за да проследите примерно изпълнение.";
+                mem1.style.display = 'none';
+                conBox.style.display = 'none';
+            }
+
+            document.getElementById('prevBtn').disabled = currentStep <= -1;
+            document.getElementById('nextBtn').disabled = currentStep >= steps.length - 1;
+        }
+
+        function nextStep() { if (currentStep < steps.length - 1) { currentStep++; updateUI(); } }
+        function prevStep() { if (currentStep > -1) { currentStep--; updateUI(); } }
+
+        updateUI();
+
+        // ----------------------------------------------------------------
+        // Логика за преоразмеряване на панелите (Drag-to-resize)
+        // ----------------------------------------------------------------
+        const resizer = document.getElementById('resizer');
+        const leftPanel = document.getElementById('leftPanel');
+        let isResizing = false;
+
+        resizer.addEventListener('mousedown', (e) => {
+            isResizing = true;
+            document.body.style.cursor = 'col-resize';
+            document.body.style.userSelect = 'none';
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (!isResizing) return;
+            
+            let newWidthPercent = (e.clientX / window.innerWidth) * 100;
+            
+            if (newWidthPercent > 20 && newWidthPercent < 80) {
+                leftPanel.style.flex = `0 0 ${newWidthPercent}%`;
+            }
+        });
+
+        document.addEventListener('mouseup', () => {
+            if (isResizing) {
+                isResizing = false;
+                document.body.style.cursor = 'default';
+                document.body.style.userSelect = 'auto'; 
+            }
+        });
+    </script>
+</body>
+</html>

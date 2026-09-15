@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Задача 3: Банкова сметка - Algorithma</title>
+    <style>
+        body { margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; height: 100vh; background-color: #f4f4f9; }
+        
+        /* Панели */
+        .panel { flex: 1; padding: 25px; overflow-y: auto; box-sizing: border-box; }
+        .left-panel { border-right: 2px solid #ddd; background-color: #ffffff; flex: 0 0 45%;}
+        .right-panel { display: flex; flex-direction: column; gap: 20px; background-color: #fdfdfd; flex: 0 0 55%;}
+        
+        /* Стил за бутона "Назад" */
+        .back-to-home {
+            display: inline-block;
+            text-decoration: none;
+            color: #7f8c8d;
+            font-weight: bold;
+            font-size: 0.95rem;
+            margin-bottom: 15px;
+            padding: 5px 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #f8f9fa;
+            transition: all 0.2s ease;
+        }
+        .back-to-home:hover {
+            color: #2c3e50;
+            background-color: #ecf0f1;
+            border-color: #bdc3c7;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        h1 { color: #2c3e50; font-size: 1.8rem; margin-bottom: 5px; }
+        h2 { color: #7f8c8d; font-size: 1.1rem; text-transform: uppercase; margin-top: 0; margin-bottom: 20px; }
+        h3 { color: #34495e; border-bottom: 1px solid #eee; padding-bottom: 5px; margin-top: 25px; }
+        p, ul, li { line-height: 1.6; color: #333; }
+        
+        /* Таблици */
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; margin-bottom: 20px; font-size: 0.95rem; }
+        th, td { border: 1px solid #bdc3c7; padding: 10px; text-align: left; }
+        th { background-color: #ecf0f1; color: #2c3e50; }
+        
+        /* Визуализация - Памет и Конзола */
+        .visualization-area { flex: 1; border: 2px dashed #bdc3c7; border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; background-color: #ecf0f1; position: relative; min-height: 380px; padding: 15px; gap: 15px;}
+        
+        .memory-container { display: flex; gap: 15px; width: 100%; justify-content: center; }
+        
+        .memory-box { display: none; background-color: #fff; border: 2px solid #3498db; border-radius: 12px; padding: 15px; box-shadow: 0 6px 12px rgba(0,0,0,0.08); width: 200px; text-align: center; border-top: 5px solid #3498db;}
+        .memory-title { font-weight: bold; color: #7f8c8d; padding-bottom: 5px; margin-bottom: 10px; font-size: 0.95rem; text-transform: uppercase;}
+        .card-image { font-size: 2.5rem; line-height: 1; margin-bottom: 10px; filter: drop-shadow(0px 3px 3px rgba(0,0,0,0.1)); }
+        .memory-prop { display: flex; justify-content: space-between; margin: 6px 0; font-family: Consolas, monospace; font-size: 0.85rem; border-bottom: 1px dashed #eee; padding-bottom: 4px;}
+        .memory-prop span:nth-child(1) { color: #95a5a6; }
+        .memory-prop span:nth-child(2) { color: #2c3e50; font-weight: bold; }
+
+        .console-box { display: none; background-color: #0c0c0c; border: 2px solid #555; border-top: 20px solid #ccc; border-radius: 5px 5px 0 0; padding: 10px; width: 80%; max-width: 450px; font-family: Consolas, 'Courier New', monospace; font-size: 13px; position: relative; box-shadow: 0 8px 15px rgba(0,0,0,0.3); margin-top: auto;}
+        .console-box::before { content: "C:\\Users\\Milen\\Documents\\..."; position: absolute; top: -18px; left: 10px; color: #333; font-size: 11px; font-family: 'Segoe UI', sans-serif; font-weight: bold; }
+        .console-output { color: #fff; font-weight: bold; white-space: pre-wrap; line-height: 1.4; }
+        
+        .viz-text { text-align: center; font-size: 1.05rem; font-weight: bold; color: #2c3e50; margin-bottom: 5px; min-height: 45px; }
+        
+        /* Зона за код (Чист и форматиран) */
+        .code-container { background-color: #282c34; color: #abb2bf; padding: 15px; border-radius: 8px; font-family: Consolas, monospace; font-size: 13px; overflow-x: auto; box-shadow: inset 0 0 10px rgba(0,0,0,0.5); }
+        .code-line { padding: 2px 8px; margin: 1px 0; border-radius: 4px; transition: background-color 0.3s; white-space: pre;}
+        .active-line { background-color: #3e4451; border-left: 4px solid #98c379; color: #ffffff; font-weight: bold; }
+        
+        /* Контроли */
+        .controls { display: flex; gap: 15px; justify-content: center; }
+        button { padding: 10px 20px; border: none; border-radius: 5px; background-color: #3498db; color: white; font-size: 15px; cursor: pointer; transition: background-color 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        button:hover { background-color: #2980b9; }
+        button:disabled { background-color: #95a5a6; cursor: not-allowed; box-shadow: none; }
+    </style>
+</head>
+<body>
+
+    <div class="panel left-panel">
+        <a href="../index.html" class="back-to-home">← Начало</a>
+        
+        <h1>Задача 3: Банкова сметка</h1>
+        <h2>Тематични задачи</h2>
+        
+        <p>Да се създаде конзолно приложение за описание и извеждане на данните на клиент на банката и неговата банкова сметка. В него да се декларира класа <code>BankAccount</code>, описващ подробности за собственика, за валутата и за текущата сума в банковата сметка.</p>
+        
+        <p>Полета на класа <code>BankAccount</code>:</p>
+        <table>
+            <tr>
+                <th>Поле</th>
+                <th>Тип</th>
+                <th>Описание</th>
+            </tr>
+            <tr>
+                <td>holderFirstName</td>
+                <td>низ</td>
+                <td>собствено име</td>
+            </tr>
+            <tr>
+                <td>holderLastName</td>
+                <td>низ</td>
+                <td>фамилно име</td>
+            </tr>
+            <tr>
+                <td>currencyCode</td>
+                <td>цяло число</td>
+                <td>код за валутата на сметката: 1- лева; 2- евро</td>
+            </tr>
+            <tr>
+                <td>amount</td>
+                <td>реално число</td>
+                <td>сума в банкова сметка</td>
+            </tr>
+        </table>
+
+        <h3>Да се извършат следните действия:</h3>
+        <p>а) Да се създадат две банкови сметки със следните данни:</p>
+        
+        <table>
+            <tr>
+                <th>holderFirstName</th>
+                <th>holderLastName</th>
+                <th>currencyCode</th>
+                <th>amount</th>
+            </tr>
+            <tr>
+                <td>Ilko</td>
+                <td>Stoev</td>
+                <td>случайно число: 1 или 2</td>
+                <td>случайно число между 10 и 10000</td>
+            </tr>
+            <tr>
+                <td>Matt</td>
+                <td>Damon</td>
+                <td>случайно число: 1 или 2</td>
+                <td>случайно число между 10 и 10000</td>
+            </tr>
+        </table>
+
+        <p>б) Да се изведат на екрана имената на притежателите и наличностите по сметките, заедно с валутата (BGN или EUR).</p>
+        <p>в)* Да се изведе името на собственика на сметката с по-голяма наличност, като за обменен курс се използва 1 EUR = 1,96 BGN.</p>
+    </div>
+
+    <div class="panel right-panel">
+        
+        <div class="visualization-area">
+            <div class="viz-text" id="vizText">Кликнете 'Напред', за да проследите примерно решение.</div>
+            
+            <div class="memory-container">
+                <div class="memory-box" id="memBox1">
+                    <div class="memory-title">Обект: acc1</div>
+                    <div class="card-image">💳</div>
+                    <div class="memory-prop"><span>firstName</span> <span id="vFn1">null</span></div>
+                    <div class="memory-prop"><span>lastName</span> <span id="vLn1">null</span></div>
+                    <div class="memory-prop"><span>currency</span> <span id="vCur1">0</span></div>
+                    <div class="memory-prop"><span>amount</span> <span id="vAm1">0.0</span></div>
+                </div>
+
+                <div class="memory-box" id="memBox2">
+                    <div class="memory-title">Обект: acc2</div>
+                    <div class="card-image">🏦</div>
+                    <div class="memory-prop"><span>firstName</span> <span id="vFn2">null</span></div>
+                    <div class="memory-prop"><span>lastName</span> <span id="vLn2">null</span></div>
+                    <div class="memory-prop"><span>currency</span> <span id="vCur2">0</span></div>
+                    <div class="memory-prop"><span>amount</span> <span id="vAm2">0.0</span></div>
+                </div>
+            </div>
+
+            <div class="console-box" id="consoleBox">
+                <div class="console-output" id="consoleOutput"></div>
+            </div>
+        </div>
+
+        <div class="code-container">
+<div class="code-line" id="line-0">class BankAccount</div>
+<div class="code-line" id="line-1">{</div>
+<div class="code-line" id="line-2">    public string holderFirstName;</div>
+<div class="code-line" id="line-3">    public string holderLastName;</div>
+<div class="code-line" id="line-4">    public int currencyCode;</div>
+<div class="code-line" id="line-5">    public double amount;</div>
+<div class="code-line" id="line-6">}</div>
+<div class="code-line" id="line-7"></div>
+<div class="code-line" id="line-8">class Program</div>
+<div class="code-line" id="line-9">{</div>
+<div class="code-line" id="line-10">    static void Main(string[] args)</div>
+<div class="code-line" id="line-11">    {</div>
+<div class="code-line" id="line-12">        Random rnd = new Random();</div>
+<div class="code-line" id="line-13">        </div>
+<div class="code-line" id="line-14">        BankAccount acc1 = new BankAccount();</div>
+<div class="code-line" id="line-15">        acc1.holderFirstName = "Ilko";</div>
+<div class="code-line" id="line-16">        acc1.holderLastName = "Stoev";</div>
+<div class="code-line" id="line-17">        acc1.currencyCode = rnd.Next(1, 3);</div>
+<div class="code-line" id="line-18">        acc1.amount = rnd.Next(10, 10001);</div>
+<div class="code-line" id="line-19">        </div>
+<div class="code-line" id="line-20">        BankAccount acc2 = new BankAccount();</div>
+<div class="code-line" id="line-21">        acc2.holderFirstName = "Matt";</div>
+<div class="code-line" id="line-22">        acc2.holderLastName = "Damon";</div>
+<div class="code-line" id="line-23">        acc2.currencyCode = rnd.Next(1, 3);</div>
+<div class="code-line" id="line-24">        acc2.amount = rnd.Next(10, 10001);</div>
+<div class="code-line" id="line-25">        </div>
+<div class="code-line" id="line-26">        // Отпечатване на данните (кодът за печат е скрит за краткост във визуализацията)</div>
+<div class="code-line" id="line-27">        Console.WriteLine("Account holder name: " + acc1.holderFirstName + " " + acc1.holderLastName);</div>
+<div class="code-line" id="line-28">        // ...</div>
+<div class="code-line" id="line-29">        </div>
+<div class="code-line" id="line-30">        double totalBgn1 = acc1.amount;</div>
+<div class="code-line" id="line-31">        if (acc1.currencyCode == 2) totalBgn1 = acc1.amount * 1.96;</div>
+<div class="code-line" id="line-32">        </div>
+<div class="code-line" id="line-33">        double totalBgn2 = acc2.amount;</div>
+<div class="code-line" id="line-34">        if (acc2.currencyCode == 2) totalBgn2 = acc2.amount * 1.96;</div>
+<div class="code-line" id="line-35">        </div>
+<div class="code-line" id="line-36">        if (totalBgn1 > totalBgn2)</div>
+<div class="code-line" id="line-37">            Console.WriteLine("Собственик с по-голяма наличност: " + acc1.holderFirstName);</div>
+<div class="code-line" id="line-38">        else</div>
+<div class="code-line" id="line-39">            Console.WriteLine("Собственик с по-голяма наличност: " + acc2.holderFirstName);</div>
+<div class="code-line" id="line-40">    }</div>
+<div class="code-line" id="line-41">}</div>
+        </div>
+
+        <div class="controls">
+            <button id="prevBtn" onclick="prevStep()" disabled>⏪ Назад</button>
+            <button id="nextBtn" onclick="nextStep()">Напред ⏩</button>
+        </div>
+
+    </div>
+
+    <script>
+        const steps = [
+            { lines: [0, 1, 2, 3, 4, 5, 6], text: "Стъпка 1: Декларираме класа BankAccount с нужните полета.", showA1: false, showA2: false, showCon: false },
+            { lines: [14, 15, 16, 17, 18], text: "Стъпка 2: Създаваме acc1. Генерираме случайни стойности: нека се паднат 2 (EUR) и 5000.", showA1: true, vF1: "\"Ilko\"", vL1: "\"Stoev\"", vC1: "2 (EUR)", vA1: "5000.00", showA2: false, showCon: false },
+            { lines: [20, 21, 22, 23, 24], text: "Стъпка 3: Създаваме acc2. Нека случайните стойности бъдат 1 (BGN) и 8858.", showA1: true, vF1: "\"Ilko\"", vL1: "\"Stoev\"", vC1: "2 (EUR)", vA1: "5000.00", showA2: true, vF2: "\"Matt\"", vL2: "\"Damon\"", vC2: "1 (BGN)", vA2: "8858.00", showCon: false },
+            { lines: [26, 27, 28], text: "Стъпка 4: Отпечатваме данните за двете сметки в конзолата.", showA1: true, vF1: "\"Ilko\"", vL1: "\"Stoev\"", vC1: "2 (EUR)", vA1: "5000.00", showA2: true, vF2: "\"Matt\"", vL2: "\"Damon\"", vC2: "1 (BGN)", vA2: "8858.00", showCon: true, conText: "Account holder name: Ilko Stoev\nAmount: 5000,00 EUR\nAccount holder name: Matt Damon\nAmount: 8858,00 BGN\n" },
+            { lines: [30, 31, 33, 34], text: "Стъпка 5: Приравняваме всичко към лева (BGN), за да ги сравним. Ilko има Евро, затова умножаваме по 1.96 (5000 * 1.96 = 9800 BGN).", showA1: true, vF1: "\"Ilko\"", vL1: "\"Stoev\"", vC1: "2 (EUR)", vA1: "5000.00", showA2: true, vF2: "\"Matt\"", vL2: "\"Damon\"", vC2: "1 (BGN)", vA2: "8858.00", showCon: true, conText: "Account holder name: Ilko Stoev\nAmount: 5000,00 EUR\nAccount holder name: Matt Damon\nAmount: 8858,00 BGN\n" },
+            { lines: [36, 37, 38, 39], text: "Стъпка 6: 9800 BGN (Ilko) е повече от 8858 BGN (Matt). Отпечатваме победителя!", showA1: true, vF1: "\"Ilko\"", vL1: "\"Stoev\"", vC1: "2 (EUR)", vA1: "5000.00", showA2: true, vF2: "\"Matt\"", vL2: "\"Damon\"", vC2: "1 (BGN)", vA2: "8858.00", showCon: true, conText: "Account holder name: Ilko Stoev\nAmount: 5000,00 EUR\nAccount holder name: Matt Damon\nAmount: 8858,00 BGN\n\nСобственик с по-голяма наличност: Ilko" }
+        ];
+
+        let currentStep = -1;
+
+        function updateUI() {
+            document.querySelectorAll('.code-line').forEach(el => el.classList.remove('active-line'));
+            const mem1 = document.getElementById('memBox1');
+            const mem2 = document.getElementById('memBox2');
+            const conBox = document.getElementById('consoleBox');
+            const conOut = document.getElementById('consoleOutput');
+            
+            if (currentStep >= 0) {
+                const step = steps[currentStep];
+                
+                let firstLine = null;
+                step.lines.forEach(lineNum => {
+                    let el = document.getElementById('line-' + lineNum);
+                    if(el) {
+                        el.classList.add('active-line');
+                        if(!firstLine) firstLine = el;
+                    }
+                });
+                
+                if(firstLine) {
+                    firstLine.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+                
+                document.getElementById('vizText').innerText = step.text;
+
+                if (step.showA1) {
+                    mem1.style.display = 'block';
+                    document.getElementById('vFn1').innerText = step.vF1;
+                    document.getElementById('vLn1').innerText = step.vL1;
+                    document.getElementById('vCur1').innerText = step.vC1;
+                    document.getElementById('vAm1').innerText = step.vA1;
+                } else { mem1.style.display = 'none'; }
+
+                if (step.showA2) {
+                    mem2.style.display = 'block';
+                    document.getElementById('vFn2').innerText = step.vF2;
+                    document.getElementById('vLn2').innerText = step.vL2;
+                    document.getElementById('vCur2').innerText = step.vC2;
+                    document.getElementById('vAm2').innerText = step.vA2;
+                } else { mem2.style.display = 'none'; }
+
+                if (step.showCon) {
+                    conBox.style.display = 'block';
+                    conOut.innerText = step.conText;
+                } else { conBox.style.display = 'none'; }
+
+            } else {
+                document.getElementById('vizText').innerText = "Кликнете 'Напред', за да проследите примерно решение.";
+                mem1.style.display = 'none';
+                mem2.style.display = 'none';
+                conBox.style.display = 'none';
+            }
+
+            document.getElementById('prevBtn').disabled = currentStep <= -1;
+            document.getElementById('nextBtn').disabled = currentStep >= steps.length - 1;
+        }
+
+        function nextStep() { if (currentStep < steps.length - 1) { currentStep++; updateUI(); } }
+        function prevStep() { if (currentStep > -1) { currentStep--; updateUI(); } }
+
+        updateUI();
+    </script>
+</body>
+</html>
