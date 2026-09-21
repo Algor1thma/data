@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Задача 2: Заплата на служител - Algorithma</title>
+    <style>
+        body { margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; height: 100vh; background-color: #1e1e24; color: #e0e0e0; overflow: hidden;}
+        
+        /* Панели */
+        .panel { flex: 1; padding: 25px; overflow-y: auto; box-sizing: border-box; }
+        
+        /* Ляв Панел - Условие */
+        .left-panel { border-right: 2px solid #333; background-color: #2b2b36; flex: 0 0 45%; box-shadow: inset -5px 0 15px rgba(0,0,0,0.2);}
+        
+        /* Десен Панел - Визуализации */
+        .right-panel { display: flex; flex-direction: column; gap: 15px; background-color: #1e1e24; flex: 0 0 55%; position: relative;}
+        
+        /* Бутон Назад */
+        .back-to-home { display: inline-block; text-decoration: none; color: #00b894; font-weight: bold; font-size: 0.95rem; margin-bottom: 15px; padding: 8px 15px; border: 1px solid #00b894; border-radius: 8px; transition: all 0.3s ease; background: transparent; }
+        .back-to-home:hover { background-color: #00b894; color: #1e1e24; box-shadow: 0 0 10px rgba(0, 184, 148, 0.5); }
+
+        h1 { color: #ffffff; font-size: 1.8rem; margin-bottom: 5px; text-shadow: 0 2px 4px rgba(0,0,0,0.3);}
+        h2 { color: #00b894; font-size: 1.1rem; text-transform: uppercase; margin-top: 0; margin-bottom: 15px; letter-spacing: 1px;}
+        h3 { color: #fdcb6e; border-bottom: 1px solid #444; padding-bottom: 5px; margin-top: 25px; font-size: 1.15rem;}
+        p, ul, li { line-height: 1.6; color: #dcdde1; font-size: 0.95rem; margin-bottom: 10px;}
+        
+        /* Таблици */
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; margin-bottom: 20px; font-size: 0.9rem; background-color: #353b48; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.3);}
+        th, td { border: 1px solid #444; padding: 10px; text-align: left; }
+        th { background-color: #2f3640; color: #00b894; font-weight: bold;}
+
+        /* Условие - Анимирана концепция */
+        .concept-card { background: linear-gradient(135deg, #2d3436 0%, #000000 100%); border: 1px solid #555; border-radius: 12px; padding: 20px; text-align: center; margin-top: 20px; position: relative; overflow: hidden; box-shadow: 0 8px 20px rgba(0,0,0,0.5);}
+        .concept-title { color: #fdcb6e; font-weight: bold; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 2px;}
+        
+        /* Специален Раздел ВИЗУАЛИЗАЦИИ */
+        .viz-header { background: linear-gradient(90deg, #00b894, #55efc4); color: #1e1e24; padding: 10px 20px; border-radius: 8px; text-align: center; font-weight: bold; font-size: 1.2rem; text-transform: uppercase; letter-spacing: 2px; box-shadow: 0 4px 15px rgba(0, 184, 148, 0.4); flex-shrink: 0;}
+
+        /* Визуална Зона (Графика + Памет) */
+        .visualization-workspace { flex: 1; display: flex; gap: 15px; min-height: 280px; }
+        
+        /* Фиш за заплата (SVG Area) */
+        .graph-area { flex: 1; background-color: #2d3436; border: 2px solid #636e72; border-radius: 12px; position: relative; display: flex; justify-content: center; align-items: center; box-shadow: inset 0 0 20px rgba(0,0,0,0.5); overflow: hidden;}
+        
+        /* Блокове за Памет */
+        .memory-column { width: 220px; display: flex; flex-direction: column; gap: 15px;}
+        .memory-box { background: #2b2b36; border: 2px solid #00b894; border-radius: 10px; padding: 15px; box-shadow: 0 6px 12px rgba(0,0,0,0.4); position: relative; opacity: 0.3; transition: opacity 0.4s;}
+        .memory-box.active { opacity: 1; border-color: #00b894; box-shadow: 0 0 15px rgba(0, 184, 148, 0.4);}
+        .memory-title { font-weight: bold; color: #00b894; border-bottom: 1px solid #444; padding-bottom: 5px; margin-bottom: 10px; font-size: 0.95rem; text-align: center;}
+        .memory-prop { display: flex; justify-content: space-between; margin: 6px 0; font-family: Consolas, monospace; font-size: 0.85rem;}
+        .memory-prop span:nth-child(1) { color: #b2bec3; }
+        .memory-prop span:nth-child(2) { color: #fdcb6e; font-weight: bold; }
+
+        /* Конзола */
+        .console-box { background-color: #000; border: 1px solid #333; border-top: 25px solid #2d3436; border-radius: 8px; padding: 10px; font-family: Consolas, 'Courier New', monospace; font-size: 13px; position: relative; box-shadow: 0 8px 15px rgba(0,0,0,0.5); min-height: 100px; flex-shrink: 0;}
+        .console-box::before { content: "C:\\Windows\\System32\\cmd.exe"; position: absolute; top: -20px; left: 10px; color: #b2bec3; font-size: 11px; font-family: 'Segoe UI', sans-serif;}
+        .console-output { color: #55efc4; white-space: pre-wrap; line-height: 1.4; }
+        
+        /* Зона за код */
+        .code-container { background-color: #282c34; color: #abb2bf; padding: 15px; border-radius: 8px; font-family: Consolas, monospace; font-size: 13px; overflow-x: auto; overflow-y: auto; box-shadow: inset 0 0 10px rgba(0,0,0,0.8); max-height: 250px; flex-shrink: 0; border: 1px solid #444;}
+        .code-line { padding: 2px 8px; margin: 1px 0; border-radius: 4px; transition: background-color 0.3s; white-space: pre; border-left: 3px solid transparent;}
+        .active-line { background-color: #3e4451; border-left: 3px solid #fdcb6e; color: #ffffff; font-weight: bold; }
+        
+        /* Контроли */
+        .controls { display: flex; gap: 15px; justify-content: center; align-items: center; background: #2b2b36; padding: 10px; border-radius: 8px; border: 1px solid #444; flex-shrink: 0;}
+        button { padding: 10px 20px; border: none; border-radius: 6px; background: linear-gradient(180deg, #00b894, #00cec9); color: #1e1e24; font-size: 14px; font-weight: bold; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.3); text-transform: uppercase; letter-spacing: 1px;}
+        button:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 10px rgba(0, 184, 148, 0.5); }
+        button:disabled { background: #555; color: #888; cursor: not-allowed; box-shadow: none; transform: none;}
+        .step-indicator { color: #fdcb6e; font-weight: bold; font-family: Consolas, monospace; font-size: 1rem; width: 150px; text-align: center;}
+
+        /* Изскачащ панел за формулата (Math Breakdown) */
+        .math-overlay { position: absolute; top: 10%; left: 10%; right: 10%; background: rgba(45, 52, 54, 0.95); border: 2px solid #fdcb6e; border-radius: 12px; padding: 20px; z-index: 10; display: none; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 10px 30px rgba(0,0,0,0.8); backdrop-filter: blur(5px); transform: scale(0.8); opacity: 0; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);}
+        .math-overlay.show { display: flex; transform: scale(1); opacity: 1; }
+        .math-step { font-family: Consolas, monospace; font-size: 1.5rem; color: #fff; margin: 10px 0; opacity: 0; transform: translateY(10px); transition: all 0.5s ease;}
+        .math-step.visible { opacity: 1; transform: translateY(0);}
+        .math-result { color: #00b894; font-size: 2rem; font-weight: bold; border-top: 1px dashed #555; padding-top: 10px; margin-top: 10px; width: 100%; text-align: center;}
+    </style>
+    <!-- MathJax -->
+    <script>MathJax = { tex: { inlineMath: [['$', '$']] } };</script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-YYBQF66CTS"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-YYBQF66CTS');
+</script>
+
+<body>
+
+    <div class="panel left-panel">
+        <a href="../index.html" class="back-to-home">← Начало</a>
+        
+        <h1>Задача 2: Заплата на служител</h1>
+        <h2>Методи в класовете</h2>
+        
+        <p>Да се декларира клас <code>Employee</code>, който пресмята заплатата на служител чрез следните полета:</p>
+        
+        <table>
+            <tr><th>Поле</th><th>Тип</th><th>Описание</th></tr>
+            <tr><td>hours</td><td>реално число</td><td>часове на работа</td></tr>
+            <tr><td>salary</td><td>реално число</td><td>заплата за 1 час</td></tr>
+        </table>
+
+        <h3>В класа да се дефинират следните публични методи:</h3>
+        <ul>
+            <li><code>void Read()</code> - за въвеждане на стойностите за изработените часове и заплатата за 1 час.</li>
+            <li><code>double CalcTotalSalary()</code> - за изчисляване на заплатата на служителя според изработените часове.</li>
+            <li><code>void PrintTotal()</code> - за отпечатване на резултата. Този метод трябва да използва метода <code>CalcTotalSalary()</code>.</li>
+        </ul>
+
+        <div class="concept-card">
+            <div class="concept-title">Бизнес Логика</div>
+            <div style="display: flex; justify-content: space-around; align-items: center; padding: 20px 0;">
+                <div style="text-align: center;">
+                    <div style="font-size: 3rem;">⏱️</div>
+                    <div style="color: #0984e3; font-weight: bold; margin-top: 10px; font-size: 1.1rem;">Часове</div>
+                    <div style="color: #b2bec3; font-size: 0.85rem;">(hours)</div>
+                </div>
+                <div style="font-size: 2.5rem; color: #fff;">×</div>
+                <div style="text-align: center;">
+                    <div style="font-size: 3rem;">💵</div>
+                    <div style="color: #00b894; font-weight: bold; margin-top: 10px; font-size: 1.1rem;">Ставка</div>
+                    <div style="color: #b2bec3; font-size: 0.85rem;">(salary)</div>
+                </div>
+                <div style="font-size: 2.5rem; color: #fff;">=</div>
+                <div style="text-align: center;">
+                    <div style="font-size: 3rem;">💳</div>
+                    <div style="color: #d63031; font-weight: bold; margin-top: 10px; font-size: 1.1rem;">Общо</div>
+                    <div style="color: #b2bec3; font-size: 0.85rem;">(total)</div>
+                </div>
+            </div>
+            <p style="font-size: 0.85rem; color: #b2bec3; margin-top: 10px; margin-bottom: 0;">Изработеното време се умножава по цената на труда за 1 час, за да се получи крайното възнаграждение.</p>
+        </div>
+    </div>
+
+    <div class="panel right-panel">
+        
+        <div class="viz-header">
+            ⚡ Специален Раздел: ВИЗУАЛИЗАЦИИ ⚡
+        </div>
+
+        <div class="visualization-workspace">
+            
+            <!-- Фиш за заплата (Интерактивно SVG) -->
+            <div class="graph-area">
+                <svg id="paySlip" viewBox="0 0 300 200" width="100%" height="100%">
+                    <!-- Background slip -->
+                    <rect x="35" y="15" width="230" height="170" fill="#fdfce3" rx="8" stroke="#dfe6e9" stroke-width="2"/>
+                    <text x="150" y="45" font-size="18" font-family="Consolas" fill="#2d3436" text-anchor="middle" font-weight="bold">ФИШ ЗА ЗАПЛАТА</text>
+                    <line x1="50" y1="55" x2="250" y2="55" stroke="#b2bec3" stroke-width="2" stroke-dasharray="4,4"/>
+                    
+                    <text x="55" y="85" font-size="14" font-family="Consolas" fill="#636e72" font-weight="bold">Часове (Hours):</text>
+                    <text id="slipHours" x="245" y="85" font-size="15" font-family="Consolas" fill="#0984e3" text-anchor="end" font-weight="bold">-</text>
+
+                    <text x="55" y="115" font-size="14" font-family="Consolas" fill="#636e72" font-weight="bold">Ставка (Rate):</text>
+                    <text id="slipRate" x="245" y="115" font-size="15" font-family="Consolas" fill="#00b894" text-anchor="end" font-weight="bold">-</text>
+
+                    <line x1="50" y1="135" x2="250" y2="135" stroke="#2d3436" stroke-width="2" />
+                    
+                    <text x="55" y="165" font-size="16" font-family="Consolas" fill="#2d3436" font-weight="bold">СУМА (TOTAL):</text>
+                    <text id="slipTotal" x="245" y="165" font-size="18" font-family="Consolas" fill="#d63031" text-anchor="end" font-weight="bold">-</text>
+                    
+                    <!-- Печат ИЗПЛАТЕНО -->
+                    <g id="stamp" style="opacity: 0; transform-origin: 150px 150px; transform: scale(2) rotate(-15deg); transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);">
+                        <rect x="70" y="75" width="160" height="45" fill="none" stroke="#d63031" stroke-width="5" rx="5" />
+                        <text x="150" y="107" font-size="26" font-family="Impact, sans-serif" fill="#d63031" text-anchor="middle" letter-spacing="2">ИЗПЛАТЕНО</text>
+                    </g>
+                </svg>
+
+                <!-- Изскачащ Математически Панел -->
+                <div class="math-overlay" id="mathOverlay">
+                    <div style="color: #fdcb6e; font-weight: bold; margin-bottom: 15px;">ИЗЧИСЛЯВАНЕ В ПАМЕТТА:</div>
+                    <div class="math-step" id="mStep1">$hours \times salary$</div>
+                    <div class="math-step" id="mStep2">$24 \times 25.50$</div>
+                    <div class="math-result" id="mResult">612.00</div>
+                </div>
+            </div>
+
+            <!-- Блокове Памет -->
+            <div class="memory-column">
+                <div class="memory-box" id="memObj">
+                    <div class="memory-title">Обект: empl</div>
+                    <div class="memory-prop"><span>hours</span> <span id="vH">0.0</span></div>
+                    <div class="memory-prop"><span>salary</span> <span id="vS">0.0</span></div>
+                </div>
+
+                <div class="memory-box" id="memLocal" style="border-color: #ff7675;">
+                    <div class="memory-title" style="color: #ff7675;">PrintTotal() - Локални</div>
+                    <div class="memory-prop"><span>total</span> <span id="vT">0.0</span></div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Конзола -->
+        <div class="console-box">
+            <div class="console-output" id="consoleOutput"></div>
+        </div>
+
+        <!-- Код -->
+        <div class="code-container">
+<div class="code-line" id="line-0">class Employee {</div>
+<div class="code-line" id="line-1">    double hours, salary;</div>
+<div class="code-line" id="line-2">    public void Read() {</div>
+<div class="code-line" id="line-3">        Console.Write("Hours: ");</div>
+<div class="code-line" id="line-4">        hours = double.Parse(Console.ReadLine());</div>
+<div class="code-line" id="line-5">        Console.Write("Salary: ");</div>
+<div class="code-line" id="line-6">        salary = double.Parse(Console.ReadLine());</div>
+<div class="code-line" id="line-7">    }</div>
+<div class="code-line" id="line-8">    double CalcTotalSalary() {</div>
+<div class="code-line" id="line-9">        return hours * salary;</div>
+<div class="code-line" id="line-10">    }</div>
+<div class="code-line" id="line-11">    public void PrintTotal() {</div>
+<div class="code-line" id="line-12">        double total = CalcTotalSalary();</div>
+<div class="code-line" id="line-13">        Console.WriteLine($"Total salary (hours * salary): {total:f2}");</div>
+<div class="code-line" id="line-14">    }</div>
+<div class="code-line" id="line-15">}</div>
+<div class="code-line" id="line-16">class Program {</div>
+<div class="code-line" id="line-17">    static void Main() {</div>
+<div class="code-line" id="line-18">        Employee empl = new Employee();</div>
+<div class="code-line" id="line-19">        empl.Read();</div>
+<div class="code-line" id="line-20">        empl.PrintTotal();</div>
+<div class="code-line" id="line-21">    }</div>
+<div class="code-line" id="line-22">}</div>
+        </div>
+
+        <div class="controls">
+            <button id="prevBtn" onclick="prevStep()" disabled>⏪ Назад</button>
+            <div class="step-indicator" id="stepIndicator">Стъпка: 0 / 0</div>
+            <button id="nextBtn" onclick="nextStep()">Напред ⏩</button>
+        </div>
+
+    </div>
+
+    <script>
+        // Стъпките на изпълнение
+        const steps = [
+            { lines: [17], mem: false, loc: false, vH:"0.0", vS:"0.0", vT:"0.0", con: "", slipH: "-", slipR: "-", slipT: "-", stamp: false, math: 0 },
+            { lines: [18], mem: true, loc: false, vH:"0.0", vS:"0.0", vT:"0.0", con: "", slipH: "-", slipR: "-", slipT: "-", stamp: false, math: 0 },
+            { lines: [19, 2], mem: true, loc: false, vH:"0.0", vS:"0.0", vT:"0.0", con: "", slipH: "-", slipR: "-", slipT: "-", stamp: false, math: 0 },
+            { lines: [3, 4], mem: true, loc: false, vH:"24", vS:"0.0", vT:"0.0", con: "Hours: 24", slipH: "24", slipR: "-", slipT: "-", stamp: false, math: 0 },
+            { lines: [5, 6], mem: true, loc: false, vH:"24", vS:"25.50", vT:"0.0", con: "Hours: 24\nSalary: 25.50", slipH: "24", slipR: "25.50", slipT: "-", stamp: false, math: 0 },
+            { lines: [20, 11], mem: true, loc: false, vH:"24", vS:"25.50", vT:"0.0", con: "Hours: 24\nSalary: 25.50", slipH: "24", slipR: "25.50", slipT: "-", stamp: false, math: 0 },
+            { lines: [12, 8], mem: true, loc: true, vH:"24", vS:"25.50", vT:"0.0", con: "Hours: 24\nSalary: 25.50", slipH: "24", slipR: "25.50", slipT: "-", stamp: false, math: 0 },
+            { lines: [9], mem: true, loc: true, vH:"24", vS:"25.50", vT:"0.0", con: "Hours: 24\nSalary: 25.50", slipH: "24", slipR: "25.50", slipT: "-", stamp: false, math: 1 },
+            { lines: [9], mem: true, loc: true, vH:"24", vS:"25.50", vT:"0.0", con: "Hours: 24\nSalary: 25.50", slipH: "24", slipR: "25.50", slipT: "-", stamp: false, math: 2 },
+            { lines: [9], mem: true, loc: true, vH:"24", vS:"25.50", vT:"0.0", con: "Hours: 24\nSalary: 25.50", slipH: "24", slipR: "25.50", slipT: "-", stamp: false, math: 3 },
+            { lines: [12], mem: true, loc: true, vH:"24", vS:"25.50", vT:"612.00", con: "Hours: 24\nSalary: 25.50", slipH: "24", slipR: "25.50", slipT: "-", stamp: false, math: 0 },
+            { lines: [13], mem: true, loc: true, vH:"24", vS:"25.50", vT:"612.00", con: "Hours: 24\nSalary: 25.50\nTotal salary (hours * salary): 612.00", slipH: "24", slipR: "25.50", slipT: "612.00", stamp: true, math: 0 }
+        ];
+
+        let currentStep = -1;
+
+        function updateUI() {
+            // Highlights
+            document.querySelectorAll('.code-line').forEach(el => el.classList.remove('active-line'));
+            const step = steps[currentStep];
+            
+            if (step) {
+                let firstLine = null;
+                step.lines.forEach(lineNum => {
+                    let el = document.getElementById('line-' + lineNum);
+                    if(el) {
+                        el.classList.add('active-line');
+                        if(!firstLine) firstLine = el;
+                    }
+                });
+                if(firstLine) firstLine.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+                // Памет
+                const memObj = document.getElementById('memObj');
+                const memLocal = document.getElementById('memLocal');
+                if (step.mem) memObj.classList.add('active'); else memObj.classList.remove('active');
+                if (step.loc) memLocal.classList.add('active'); else memLocal.classList.remove('active');
+                
+                document.getElementById('vH').innerText = step.vH || "0.0";
+                document.getElementById('vS').innerText = step.vS || "0.0";
+                document.getElementById('vT').innerText = step.vT || "0.0";
+
+                // Конзола
+                document.getElementById('consoleOutput').innerText = step.con;
+
+                // Фиш за заплата (SVG)
+                document.getElementById('slipHours').textContent = step.slipH;
+                document.getElementById('slipRate').textContent = step.slipR;
+                document.getElementById('slipTotal').textContent = step.slipT;
+                
+                const stamp = document.getElementById('stamp');
+                if(step.stamp) {
+                    stamp.style.opacity = 1;
+                    stamp.style.transform = "scale(1) rotate(-15deg)";
+                } else {
+                    stamp.style.opacity = 0;
+                    stamp.style.transform = "scale(2) rotate(-15deg)";
+                }
+
+                // Math Overlay (Анимирано разписване на формулата)
+                const mathOverlay = document.getElementById('mathOverlay');
+                if (step.math > 0) {
+                    mathOverlay.classList.add('show');
+                    document.getElementById('mStep1').classList.add('visible');
+                    if(step.math >= 2) document.getElementById('mStep2').classList.add('visible'); else document.getElementById('mStep2').classList.remove('visible');
+                    if(step.math >= 3) document.getElementById('mResult').style.opacity = 1; else document.getElementById('mResult').style.opacity = 0;
+                } else {
+                    mathOverlay.classList.remove('show');
+                }
+
+                document.getElementById('stepIndicator').innerText = `Стъпка: ${currentStep + 1} / ${steps.length}`;
+            }
+
+            document.getElementById('prevBtn').disabled = currentStep <= 0;
+            document.getElementById('nextBtn').disabled = currentStep >= steps.length - 1;
+        }
+
+        function nextStep() { if (currentStep < steps.length - 1) { currentStep++; updateUI(); } }
+        function prevStep() { if (currentStep > 0) { currentStep--; updateUI(); } }
+
+        // Start at step 0
+        currentStep = 0;
+        window.onload = updateUI;
+    </script>
+</body>
+</html>
