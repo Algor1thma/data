@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Урок 4: Добавяне на методи - Algorithma</title>
+    <style>
+        body { 
+            margin: 0; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            display: flex; 
+            height: 100vh; 
+            background-color: #f4f4f9; 
+            overflow: hidden; 
+        }
+        
+        /* Панели */
+        .panel { 
+            padding: 25px; 
+            overflow-y: auto; 
+            box-sizing: border-box; 
+            display: flex;
+            flex-direction: column;
+        }
+        .left-panel { 
+            border-right: 2px solid #ddd; 
+            background-color: #ffffff; 
+            flex: 0 0 50%;
+            min-width: 20%;
+        }
+        .right-panel { 
+            display: flex; 
+            flex-direction: column; 
+            gap: 20px; 
+            background-color: #fdfdfd; 
+            flex: 1;
+            min-width: 20%;
+        }
+        
+        /* Съдържание на левия панел */
+        .content-wrapper {
+            flex-grow: 1;
+        }
+
+        /* Сплитер / Разделител */
+        .resizer {
+            width: 6px;
+            background-color: #ddd;
+            cursor: col-resize; 
+            transition: background-color 0.2s;
+            z-index: 10;
+        }
+        .resizer:hover, .resizer:active {
+            background-color: #95a5a6;
+        }
+
+        /* Стил за бутона "Назад" */
+        .back-to-home {
+            display: inline-block;
+            text-decoration: none;
+            color: #7f8c8d;
+            font-weight: bold;
+            font-size: 0.95rem;
+            margin-bottom: 15px;
+            padding: 5px 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #f8f9fa;
+            transition: all 0.2s ease;
+            align-self: flex-start;
+        }
+        .back-to-home:hover {
+            color: #2c3e50;
+            background-color: #ecf0f1;
+            border-color: #bdc3c7;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        h1 { color: #2c3e50; font-size: 1.8rem; margin-bottom: 5px; }
+        h2 { color: #7f8c8d; font-size: 1.1rem; text-transform: uppercase; margin-top: 0; margin-bottom: 15px; }
+        h3 { color: #34495e; border-bottom: 2px solid #3498db; padding-bottom: 5px; margin-top: 25px; font-size: 1.2rem;}
+        p, ul, li { line-height: 1.6; color: #333; font-size: 0.95rem; margin-bottom: 10px;}
+        
+        /* Блокове за код в текста */
+        .inline-code-block { background-color: #f8f9fa; border-left: 4px solid #7f8c8d; padding: 10px 15px; font-family: Consolas, monospace; font-size: 0.9rem; margin-bottom: 15px; white-space: pre-wrap; color: #2c3e50;}
+        
+        /* Подсказка / Обобщение */
+        .hint-box { background-color: #e8f4fd; border-left: 4px solid #3498db; padding: 15px; margin-top: 15px; border-radius: 4px; color: #2c3e50; font-size: 0.95rem; }
+
+        /* Авторски права */
+        .copyright {
+            margin-top: 40px;
+            padding-top: 15px;
+            border-top: 1px solid #eee;
+            color: #95a5a6;
+            font-size: 0.85rem;
+            text-align: center;
+        }
+
+        /* Визуализация - Памет и Конзола */
+        .visualization-area { flex: 0 0 auto; border: 2px dashed #bdc3c7; border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; background-color: #ecf0f1; position: relative; min-height: 380px; padding: 15px; gap: 15px;}
+        
+        .memory-container { display: flex; gap: 10px; width: 100%; justify-content: center; align-items: flex-start; flex-wrap: wrap;}
+        
+        .memory-box { display: none; background-color: #fff; border: 2px solid #3498db; border-radius: 12px; padding: 12px; box-shadow: 0 6px 12px rgba(0,0,0,0.08); width: 170px; text-align: center; border-top: 5px solid #3498db;}
+        .memory-title { font-weight: bold; color: #7f8c8d; padding-bottom: 5px; margin-bottom: 8px; font-size: 0.9rem; text-transform: uppercase;}
+        .card-image { font-size: 2.5rem; line-height: 1; margin-bottom: 10px; filter: drop-shadow(0px 3px 3px rgba(0,0,0,0.1)); }
+        .memory-prop { display: flex; justify-content: space-between; margin: 4px 0; font-family: Consolas, monospace; font-size: 0.8rem; border-bottom: 1px dashed #eee; padding-bottom: 4px;}
+        .memory-prop span:nth-child(1) { color: #95a5a6; }
+        .memory-prop span:nth-child(2) { color: #2c3e50; font-weight: bold; }
+
+        .console-box { display: none; background-color: #0c0c0c; border: 2px solid #555; border-top: 20px solid #ccc; border-radius: 5px 5px 0 0; padding: 10px; width: 90%; max-width: 450px; font-family: Consolas, 'Courier New', monospace; font-size: 13px; position: relative; box-shadow: 0 8px 15px rgba(0,0,0,0.3); margin-top: auto;}
+        .console-box::before { content: "C:\\Windows\\System32\\cmd.exe"; position: absolute; top: -18px; left: 10px; color: #333; font-size: 11px; font-family: 'Segoe UI', sans-serif; font-weight: bold; }
+        .console-output { color: #fff; font-weight: bold; white-space: pre-wrap; line-height: 1.4; }
+        
+        .viz-text { text-align: center; font-size: 1.05rem; font-weight: bold; color: #2c3e50; margin-bottom: 5px; min-height: 45px; }
+        
+        /* Зона за код (значително увеличена височина) */
+        .code-container { background-color: #282c34; color: #abb2bf; padding: 15px; border-radius: 8px; font-family: Consolas, monospace; font-size: 13px; overflow-x: auto; box-shadow: inset 0 0 10px rgba(0,0,0,0.5); flex-grow: 1; min-height: 350px; overflow-y: auto;}
+        .code-line { padding: 2px 8px; margin: 1px 0; border-radius: 4px; transition: background-color 0.3s; white-space: pre;}
+        .active-line { background-color: #3e4451; border-left: 4px solid #98c379; color: #ffffff; font-weight: bold; }
+        
+        /* Контроли */
+        .controls { display: flex; gap: 15px; justify-content: center; }
+        button { padding: 10px 20px; border: none; border-radius: 5px; background-color: #3498db; color: white; font-size: 15px; cursor: pointer; transition: background-color 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        button:hover { background-color: #2980b9; }
+        button:disabled { background-color: #95a5a6; cursor: not-allowed; box-shadow: none; }
+    </style>
+</head>
+
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-YYBQF66CTS"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-YYBQF66CTS');
+</script>
+
+<body>
+
+    <div class="panel left-panel" id="leftPanel">
+        <div class="content-wrapper">
+            <a href="../index.html" class="back-to-home">← Начало</a>
+            
+            <h1>Добавяне на методи към класове</h1>
+            <h2>МЕТОДИ</h2>
+            
+            <h3>Описание на клас – да допълним ☺</h3>
+            <p>В тялото на класа се дефинират полетата (променливите) и методите. Полетата и методите се наричат <strong>членове на класа</strong>.</p>
+            <ul>
+                <li>Полетата се декларират по същия начин, както по-рано декларирахме променливи.</li>
+                <li>Методите се дефинират по същия начин, както беше показано в рамките на обучението в 10. клас.</li>
+            </ul>
+            
+            <div class="hint-box">
+                <strong>Да обобщим!</strong>
+                <ul>
+                    <li><strong>Класът</strong> е шаблон за създаване на обекти.</li>
+                    <li><strong>Обектът</strong> е конкретна инстанция, създадена по шаблона на класа.</li>
+                    <li><strong>Членовете</strong> на класа са неговите полета и методи.</li>
+                    <li><strong>Полетата</strong> са променливи, които съхраняват данни за състоянието на обекта.</li>
+                    <li><strong>Методите</strong> са действия, които дефинират поведението на обекта.</li>
+                </ul>
+            </div>
+
+            <h3>Описание на клас – добавяне на методи</h3>
+            <p>Когато за обектите от един клас е типично някакво действие, това действие се описва като метод в рамките на класа. Така описаният метод може да бъде извикан чрез всеки един отделен обект от дадения клас. Няма ограничение за броя на методите, които могат да бъдат описани в един клас.</p>
+
+            <h3>Описание на класа „Животно“ - недостатък</h3>
+            <div class="inline-code-block">class Animal
+{
+    public string kindOfAnimal;
+    public string color;
+    public int numberOfLegs;
+    public bool hasTail;
+    public bool isMammal;
+}</div>
+            <p>В главния метод на програмата се налагаше за всеки нов обект от този клас да се изписват едни и същи команди, за да се изведе на екрана информация за обекта! ☹</p>
+            <p>По-добре е в самия клас да се създаде метод, чрез който да се извежда на екрана необходимата информация за обекта! ☺</p>
+
+            <h3>Деклариране на метод – да си припомним ☺</h3>
+            <div class="inline-code-block">[&lt;достъп&gt;] &lt;тип&gt; &lt;име&gt; ([&lt;списък с параметри&gt;])
+{
+    &lt;тяло на метода&gt;
+}
+
+Например:
+public void DisplayStudentData()
+{
+    …
+}</div>
+            <ul>
+                <li><strong>[&lt;достъп&gt;]</strong> – не е задължително да се определи, засега ще използваме <code>public</code>.</li>
+                <li><strong>&lt;тип&gt;</strong> - зависи от връщаната стойност:
+                    <ul>
+                        <li><code>void</code> – не връща нищо, само извършва определена работа;</li>
+                        <li><code>int</code> – връща стойност от тип int;</li>
+                        <li><code>double</code> – връща стойност от тип double;</li>
+                        <li><code>string</code> – връща стойност от тип string;</li>
+                    </ul>
+                </li>
+                <li><strong>[&lt;списък с параметри&gt;]</strong> – не е задължително да има такъв, използва се когато се налага да бъде изпратена информация до метода.</li>
+            </ul>
+
+            <h3>Описание на класа „Животно“ – добавяне на метод</h3>
+            <div class="inline-code-block">class Animal
+{
+    public string kindOfAnimal;
+    public string color;
+    public int numberOfLegs;
+    public bool hasTail;
+    public bool isMammal;
+
+    public void ShowInfo()
+    {
+        Console.WriteLine("Kind: " + kindOfAnimal);
+        Console.WriteLine("Color: " + color);
+        Console.WriteLine("Legs: " + numberOfLegs);
+        Console.WriteLine("Has Tail? " + hasTail);
+        Console.WriteLine("Is Mammal? " + isMammal);
+    }
+}</div>
+            <p>Тъй като полетата на класа <code>Animal</code> са по същество глобални променливи за този клас, то методът <code>ShowInfo()</code> може да ги използва директно, без да се налага да ги получава като параметри.</p>
+
+            <h3>Извикване на метод, дефиниран в клас</h3>
+            <p>Най-напред трябва да бъде създаден обект от дадения клас, а след това методът се извиква чрез този обект.</p>
+            <div class="inline-code-block">public static void Main(string[] args)
+{
+    Animal myPet = new Animal();
+    // въвеждане на стойности в полетата
+    myPet.ShowInfo();
+}</div>
+
+            <h3>Полета, методи и обекти</h3>
+            <p>Когато в един клас са описани полета и методи, всеки обект от този клас притежава собствени копия от тези полета и чрез всеки обект може да бъде извикван всеки от описаните методи. При извикване методът работи с тези стойности на полетата, които са определени от обекта, чрез който е извикан метода.</p>
+            <p>Поради тази причина извикванията <code>streetFighter.ShowInfo();</code> и <code>desertKing.ShowInfo();</code> водят до различни крайни резултати.</p>
+
+            <h3>Методи - обобщение и задача</h3>
+            <p>Обикновено в даден клас има един или няколко метода, които ви позволяват да опишете определени действия, изпълнявани от (или със) обекти от този клас.</p>
+            <div class="inline-code-block">class Rectangle
+{
+    public double width, height;
+    public void DuplicateWidth()
+    {
+        width = 2 * width;
+    }
+}</div>
+            <p><strong>Задача:</strong> Да се върнем на класа <code>Rectangle</code>. Той вече има полета за ширина и височина, както и метод, който удвоява ширината. Как бихме добавили нов метод, който изчислява и връща лицето на правоъгълника? Нека да го наречем <code>CalculateArea()</code>.</p>
+        </div>
+        
+        <div class="copyright">
+            &copy; 2026 Algorithma. Всички права запазени.
+        </div>
+    </div>
+
+    <!-- Сплитер за преоразмеряване -->
+    <div class="resizer" id="resizer"></div>
+
+    <div class="panel right-panel">
+        
+        <div class="visualization-area">
+            <div class="viz-text" id="vizText">Проследете изпълнението на методите в двата класа.</div>
+            
+            <div class="memory-container">
+                <!-- Карта Animal -->
+                <div class="memory-box" id="memBox1">
+                    <div class="memory-title">Обект: cat</div>
+                    <div class="card-image">🐈</div>
+                    <div class="memory-prop"><span>kind</span> <span id="vKind">null</span></div>
+                    <div class="memory-prop"><span>color</span> <span id="vColor">null</span></div>
+                    <div class="memory-prop"><span>legs</span> <span id="vLegs">0</span></div>
+                </div>
+
+                <!-- Карта Rectangle -->
+                <div class="memory-box" id="memBox2">
+                    <div class="memory-title">Обект: rect</div>
+                    <div class="card-image">🟦</div>
+                    <div class="memory-prop"><span>width</span> <span id="vW">0.0</span></div>
+                    <div class="memory-prop"><span>height</span> <span id="vH">0.0</span></div>
+                </div>
+
+                <!-- Карта Локални Променливи -->
+                <div class="memory-box" id="memBox3" style="border-top-color: #2ecc71; border-color: #2ecc71;">
+                    <div class="memory-title" style="color: #27ae60;">Main()</div>
+                    <div class="card-image">🧮</div>
+                    <div class="memory-prop"><span>area</span> <span id="vArea">0.0</span></div>
+                </div>
+            </div>
+
+            <div class="console-box" id="consoleBox">
+                <div class="console-output" id="consoleOutput"></div>
+            </div>
+        </div>
+
+        <div class="code-container">
+<div class="code-line" id="line-0">class Animal</div>
+<div class="code-line" id="line-1">{</div>
+<div class="code-line" id="line-2">    public string kindOfAnimal, color;</div>
+<div class="code-line" id="line-3">    public int numberOfLegs;</div>
+<div class="code-line" id="line-4"></div>
+<div class="code-line" id="line-5">    public void ShowInfo()</div>
+<div class="code-line" id="line-6">    {</div>
+<div class="code-line" id="line-7">        Console.WriteLine("Kind: " + kindOfAnimal);</div>
+<div class="code-line" id="line-8">        Console.WriteLine("Color: " + color);</div>
+<div class="code-line" id="line-9">        Console.WriteLine("Legs: " + numberOfLegs);</div>
+<div class="code-line" id="line-10">    }</div>
+<div class="code-line" id="line-11">}</div>
+<div class="code-line" id="line-12"></div>
+<div class="code-line" id="line-13">class Rectangle</div>
+<div class="code-line" id="line-14">{</div>
+<div class="code-line" id="line-15">    public double width, height;</div>
+<div class="code-line" id="line-16">    public void DuplicateWidth() { width = 2 * width; }</div>
+<div class="code-line" id="line-17">    public double CalculateArea() { return width * height; }</div>
+<div class="code-line" id="line-18">}</div>
+<div class="code-line" id="line-19"></div>
+<div class="code-line" id="line-20">class Program</div>
+<div class="code-line" id="line-21">{</div>
+<div class="code-line" id="line-22">    static void Main(string[] args)</div>
+<div class="code-line" id="line-23">    {</div>
+<div class="code-line" id="line-24">        // Пример 1: Animal</div>
+<div class="code-line" id="line-25">        Animal cat = new Animal();</div>
+<div class="code-line" id="line-26">        cat.kindOfAnimal = "cat";</div>
+<div class="code-line" id="line-27">        cat.color = "black";</div>
+<div class="code-line" id="line-28">        cat.numberOfLegs = 4;</div>
+<div class="code-line" id="line-29">        cat.ShowInfo();</div>
+<div class="code-line" id="line-30">        </div>
+<div class="code-line" id="line-31">        // Пример 2: Rectangle</div>
+<div class="code-line" id="line-32">        Rectangle rect = new Rectangle();</div>
+<div class="code-line" id="line-33">        rect.width = 5;</div>
+<div class="code-line" id="line-34">        rect.height = 10;</div>
+<div class="code-line" id="line-35">        </div>
+<div class="code-line" id="line-36">        rect.DuplicateWidth();</div>
+<div class="code-line" id="line-37">        double area = rect.CalculateArea();</div>
+<div class="code-line" id="line-38">    }</div>
+<div class="code-line" id="line-39">}</div>
+        </div>
+
+        <div class="controls">
+            <button id="prevBtn" onclick="prevStep()" disabled>⏪ Назад</button>
+            <button id="nextBtn" onclick="nextStep()">Напред ⏩</button>
+        </div>
+
+    </div>
+
+    <script>
+        const steps = [
+            { lines: [0, 13, 20], text: "Стъпка 1: Декларираме класовете Animal и Rectangle с техните полета и методи.", showA: false, showR: false, showM: false, showCon: true, conText: "[ Готовност за изпълнение ]" },
+            { lines: [25], text: "Стъпка 2: В Main() създаваме обект cat от тип Animal.", showA: true, vK: "null", vC: "null", vL: "0", showR: false, showM: false, showCon: true, conText: "[ Готовност за изпълнение ]" },
+            { lines: [26, 27, 28], text: "Стъпка 3: Задаваме стойности на полетата на cat.", showA: true, vK: "\"cat\"", vC: "\"black\"", vL: "4", showR: false, showM: false, showCon: true, conText: "[ Готовност за изпълнение ]" },
+            { lines: [29], text: "Стъпка 4: Извикваме метода ShowInfo() за обекта cat.", showA: true, vK: "\"cat\"", vC: "\"black\"", vL: "4", showR: false, showM: false, showCon: true, conText: "[ Готовност за изпълнение ]" },
+            { lines: [5, 6, 7, 8, 9, 10], text: "Стъпка 5: Методът чете директно от полетата на обекта и отпечатва в конзолата.", showA: true, vK: "\"cat\"", vC: "\"black\"", vL: "4", showR: false, showM: false, showCon: true, conText: "Kind: cat\nColor: black\nLegs: 4" },
+            { lines: [32], text: "Стъпка 6: Сега създаваме обект rect от тип Rectangle.", showA: true, vK: "\"cat\"", vC: "\"black\"", vL: "4", showR: true, vW: "0", vH: "0", showM: false, showCon: true, conText: "Kind: cat\nColor: black\nLegs: 4" },
+            { lines: [33, 34], text: "Стъпка 7: Задаваме ширина 5 и височина 10 на правоъгълника.", showA: true, vK: "\"cat\"", vC: "\"black\"", vL: "4", showR: true, vW: "5", vH: "10", showM: false, showCon: true, conText: "Kind: cat\nColor: black\nLegs: 4" },
+            { lines: [36], text: "Стъпка 8: Извикваме метода DuplicateWidth().", showA: true, vK: "\"cat\"", vC: "\"black\"", vL: "4", showR: true, vW: "5", vH: "10", showM: false, showCon: true, conText: "Kind: cat\nColor: black\nLegs: 4" },
+            { lines: [16], text: "Стъпка 9: Вътре в метода: width = 2 * 5. Ширината на обекта става 10.", showA: true, vK: "\"cat\"", vC: "\"black\"", vL: "4", showR: true, vW: "10", vH: "10", showM: false, showCon: true, conText: "Kind: cat\nColor: black\nLegs: 4" },
+            { lines: [37], text: "Стъпка 10: Извикваме CalculateArea() и запазваме резултата в променливата area.", showA: true, vK: "\"cat\"", vC: "\"black\"", vL: "4", showR: true, vW: "10", vH: "10", showM: true, vArea: "0.0", showCon: true, conText: "Kind: cat\nColor: black\nLegs: 4" },
+            { lines: [17], text: "Стъпка 11: Методът връща width * height (10 * 10 = 100). Променливата area получава стойност 100.", showA: true, vK: "\"cat\"", vC: "\"black\"", vL: "4", showR: true, vW: "10", vH: "10", showM: true, vArea: "100.0", showCon: true, conText: "Kind: cat\nColor: black\nLegs: 4" }
+        ];
+
+        let currentStep = 0; // Започва директно от Стъпка 1
+
+        function updateUI() {
+            document.querySelectorAll('.code-line').forEach(el => el.classList.remove('active-line'));
+            const mem1 = document.getElementById('memBox1');
+            const mem2 = document.getElementById('memBox2');
+            const mem3 = document.getElementById('memBox3');
+            const conBox = document.getElementById('consoleBox');
+            const conOut = document.getElementById('consoleOutput');
+            
+            if (currentStep >= 0) {
+                const step = steps[currentStep];
+                
+                let firstLine = null;
+                step.lines.forEach(lineNum => {
+                    let el = document.getElementById('line-' + lineNum);
+                    if(el) {
+                        el.classList.add('active-line');
+                        if(!firstLine) firstLine = el;
+                    }
+                });
+                
+                if(firstLine) {
+                    firstLine.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+                
+                document.getElementById('vizText').innerText = step.text;
+
+                if (step.showA) {
+                    mem1.style.display = 'block';
+                    document.getElementById('vKind').innerText = step.vK;
+                    document.getElementById('vColor').innerText = step.vC;
+                    document.getElementById('vLegs').innerText = step.vL;
+                } else { mem1.style.display = 'none'; }
+
+                if (step.showR) {
+                    mem2.style.display = 'block';
+                    document.getElementById('vW').innerText = step.vW;
+                    document.getElementById('vH').innerText = step.vH;
+                } else { mem2.style.display = 'none'; }
+                
+                if (step.showM) {
+                    mem3.style.display = 'block';
+                    document.getElementById('vArea').innerText = step.vArea;
+                } else { mem3.style.display = 'none'; }
+
+                if (step.showCon) {
+                    conBox.style.display = 'block';
+                    conOut.innerText = step.conText;
+                } else { conBox.style.display = 'none'; }
+
+            }
+
+            document.getElementById('prevBtn').disabled = currentStep <= 0;
+            document.getElementById('nextBtn').disabled = currentStep >= steps.length - 1;
+        }
+
+        function nextStep() { if (currentStep < steps.length - 1) { currentStep++; updateUI(); } }
+        function prevStep() { if (currentStep > 0) { currentStep--; updateUI(); } }
+
+        updateUI();
+
+        // ----------------------------------------------------------------
+        // Логика за преоразмеряване на панелите (Drag-to-resize)
+        // ----------------------------------------------------------------
+        const resizer = document.getElementById('resizer');
+        const leftPanel = document.getElementById('leftPanel');
+        let isResizing = false;
+
+        resizer.addEventListener('mousedown', (e) => {
+            isResizing = true;
+            document.body.style.cursor = 'col-resize';
+            document.body.style.userSelect = 'none';
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (!isResizing) return;
+            
+            let newWidthPercent = (e.clientX / window.innerWidth) * 100;
+            
+            if (newWidthPercent > 20 && newWidthPercent < 80) {
+                leftPanel.style.flex = `0 0 ${newWidthPercent}%`;
+            }
+        });
+
+        document.addEventListener('mouseup', () => {
+            if (isResizing) {
+                isResizing = false;
+                document.body.style.cursor = 'default';
+                document.body.style.userSelect = 'auto'; 
+            }
+        });
+    </script>
+</body>
+</html>
