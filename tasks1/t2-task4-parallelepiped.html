@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Задача 4: Правоъгълен паралелепипед - Algorithma</title>
+    <style>
+        body { margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; height: 100vh; background-color: #1e1e24; color: #e0e0e0; overflow: hidden;}
+        
+        /* Панели */
+        .panel { padding: 25px; overflow-y: auto; box-sizing: border-box; display: flex; flex-direction: column; }
+        
+        /* Ляв Панел - Условие */
+        .left-panel { border-right: 2px solid #333; background-color: #2b2b36; flex: 0 0 50%; min-width: 20%; box-shadow: inset -5px 0 15px rgba(0,0,0,0.2);}
+        
+        /* Съдържание на левия панел */
+        .content-wrapper { flex-grow: 1; }
+        
+        /* Десен Панел - Визуализации */
+        .right-panel { display: flex; flex-direction: column; gap: 15px; background-color: #1e1e24; flex: 1; min-width: 20%; position: relative;}
+        
+        /* Сплитер / Разделител */
+        .resizer {
+            width: 6px;
+            background-color: #444;
+            cursor: col-resize; 
+            transition: background-color 0.2s;
+            z-index: 10;
+        }
+        .resizer:hover, .resizer:active {
+            background-color: #f39c12;
+        }
+
+        /* Бутон Назад */
+        .back-to-home { display: inline-block; text-decoration: none; color: #f39c12; font-weight: bold; font-size: 0.95rem; margin-bottom: 15px; padding: 8px 15px; border: 1px solid #f39c12; border-radius: 8px; transition: all 0.3s ease; background: transparent; align-self: flex-start; }
+        .back-to-home:hover { background-color: #f39c12; color: #1e1e24; box-shadow: 0 0 10px rgba(243, 156, 18, 0.5); }
+
+        h1 { color: #ffffff; font-size: 1.6rem; margin-bottom: 5px; text-shadow: 0 2px 4px rgba(0,0,0,0.3);}
+        h2 { color: #f39c12; font-size: 1.05rem; text-transform: uppercase; margin-top: 0; margin-bottom: 15px; letter-spacing: 1px;}
+        h3 { color: #3498db; border-bottom: 1px solid #444; padding-bottom: 5px; margin-top: 20px; font-size: 1.1rem;}
+        p, ul, li { line-height: 1.5; color: #dcdde1; font-size: 0.9rem; margin-bottom: 8px;}
+        
+        /* Таблици */
+        table { width: 100%; border-collapse: collapse; margin-top: 5px; margin-bottom: 15px; font-size: 0.85rem; background-color: #353b48; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.3);}
+        th, td { border: 1px solid #444; padding: 8px; text-align: left; }
+        th { background-color: #2f3640; color: #f39c12; font-weight: bold;}
+
+        /* Условие - Формули */
+        .formula-box { background: #1e1e24; padding: 10px; border-radius: 8px; border: 1px solid #444; text-align: center; margin: 10px 0; color: #3498db; font-size: 1.1rem;}
+        
+        /* Авторски права */
+        .copyright {
+            margin-top: 40px;
+            padding-top: 15px;
+            border-top: 1px solid #444;
+            color: #7f8c8d;
+            font-size: 0.85rem;
+            text-align: center;
+        }
+
+        /* Специален Раздел ВИЗУАЛИЗАЦИИ */
+        .viz-header { background: linear-gradient(90deg, #e67e22, #f1c40f); color: #1e1e24; padding: 8px 20px; border-radius: 8px; text-align: center; font-weight: bold; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 2px; box-shadow: 0 4px 15px rgba(243, 156, 18, 0.3); flex-shrink: 0;}
+
+        /* Описание на стъпките */
+        .viz-text { text-align: center; font-size: 1.05rem; font-weight: bold; color: #dcdde1; margin: 10px 0; min-height: 45px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;}
+
+        /* Визуална Зона (Графика + Памет) */
+        .visualization-workspace { flex: 1 0 auto; display: flex; flex-direction: column; gap: 15px; min-height: 280px; }
+        
+        /* 3D Графика (Canvas) */
+        .graph-area { flex: 1 0 250px; background: radial-gradient(circle, #34495e 0%, #2c3e50 100%); border: 2px solid #555; border-radius: 12px; position: relative; display: flex; justify-content: flex-start; align-items: center; box-shadow: inset 0 0 30px rgba(0,0,0,0.8); overflow: hidden; min-height: 200px;}
+        
+        /* Блокове за Памет - хоризонтално подредени */
+        .memory-column { display: flex; flex-direction: row; justify-content: center; gap: 15px; flex-wrap: wrap; flex-shrink: 0;}
+        .memory-box { background: #2b2b36; border: 2px solid #f39c12; border-radius: 10px; padding: 12px; box-shadow: 0 6px 12px rgba(0,0,0,0.4); opacity: 0.3; transition: opacity 0.4s; width: 180px; flex-shrink: 0;}
+        .memory-box.active { opacity: 1; border-color: #f1c40f; box-shadow: 0 0 15px rgba(241, 196, 15, 0.4);}
+        .memory-title { font-weight: bold; color: #f1c40f; border-bottom: 1px solid #444; padding-bottom: 5px; margin-bottom: 8px; font-size: 0.9rem; text-align: center;}
+        .memory-prop { display: flex; justify-content: space-between; margin: 4px 0; font-family: Consolas, monospace; font-size: 0.85rem;}
+        .memory-prop span:nth-child(1) { color: #b2bec3; }
+        .memory-prop span:nth-child(2) { color: #3498db; font-weight: bold; }
+
+        /* Конзола */
+        .console-box { background-color: #0c0c0c; border: 1px solid #333; border-top: 20px solid #2d3436; border-radius: 8px; padding: 15px; font-family: Consolas, 'Courier New', monospace; font-size: 13px; position: relative; box-shadow: 0 8px 15px rgba(0,0,0,0.5); min-height: 150px; flex-shrink: 0; margin-top: auto;}
+        .console-box::before { content: "C:\\Windows\\System32\\cmd.exe"; position: absolute; top: -16px; left: 10px; color: #b2bec3; font-size: 10px; font-family: 'Segoe UI', sans-serif;}
+        .console-output { color: #bdc3c7; white-space: pre-wrap; line-height: 1.4; }
+        
+        /* Контроли */
+        .controls { display: flex; gap: 15px; justify-content: center; align-items: center; background: #2b2b36; padding: 10px; border-radius: 8px; border: 1px solid #444; flex-shrink: 0;}
+        button { padding: 8px 15px; border: none; border-radius: 6px; background: linear-gradient(180deg, #e67e22, #d35400); color: white; font-size: 13px; font-weight: bold; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.3); text-transform: uppercase;}
+        button:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 10px rgba(230, 126, 34, 0.5); }
+        button:disabled { background: #555; color: #888; cursor: not-allowed; box-shadow: none; transform: none;}
+        .step-indicator { color: #f39c12; font-weight: bold; font-family: Consolas, monospace; font-size: 0.95rem; width: 130px; text-align: center;}
+
+        /* Math Overlay */
+        .math-overlay { position: absolute; top: 5%; right: 5%; background: rgba(30, 30, 36, 0.95); border: 2px solid #3498db; border-radius: 12px; padding: 15px; z-index: 10; display: none; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 10px 30px rgba(0,0,0,0.9); backdrop-filter: blur(4px); transform: scale(0.9); opacity: 0; transition: all 0.4s ease; min-width: 250px;}
+        .math-overlay.show { display: flex; transform: scale(1); opacity: 1; }
+        .math-title { color: #3498db; font-weight: bold; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px; font-size: 0.9rem;}
+        .math-step { font-family: Consolas, monospace; font-size: 1.1rem; color: #fff; margin: 8px 0;}
+        .math-result { color: #f1c40f; font-size: 1.3rem; font-weight: bold; border-top: 1px dashed #555; padding-top: 10px; margin-top: 5px; width: 100%; text-align: center;}
+
+        /* 3D Box SVG Styles */
+        .box-face { fill: rgba(52, 152, 219, 0.2); stroke: #3498db; stroke-width: 2; transition: all 0.6s cubic-bezier(0.25, 0.8, 0.25, 1); }
+        .box-face.front { fill: rgba(41, 128, 185, 0.4); }
+        .box-face.top { fill: rgba(52, 152, 219, 0.6); }
+        .box-face.right { fill: rgba(31, 97, 141, 0.5); }
+        .box-label { fill: #f1c40f; font-family: Consolas; font-size: 13px; font-weight: bold; opacity: 0; transition: opacity 0.4s, x 0.6s, y 0.6s; text-shadow: 1px 1px 2px #000;}
+        .box-label.visible { opacity: 1; }
+    </style>
+    <!-- MathJax -->
+    <script>MathJax = { tex: { inlineMath: [['$', '$']] } };</script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-YYBQF66CTS"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-YYBQF66CTS');
+</script>
+
+<body>
+
+    <div class="panel left-panel" id="leftPanel">
+        <div class="content-wrapper">
+            <a href="../index.html" class="back-to-home">← Начало</a>
+            
+            <h1>Задача 4: Паралелепипед</h1>
+            <h2>Методи в класовете</h2>
+            
+            <p>Да се декларира клас <code>RPrlpd</code>, определящ правоъгълен паралелепипед чрез задаване на три измерения.</p>
+            
+            <table>
+                <tr><th>Поле</th><th>Тип</th><th>Описание</th></tr>
+                <tr><td>length</td><td>цяло число</td><td>дължина (a)</td></tr>
+                <tr><td>width</td><td>цяло число</td><td>ширина (b)</td></tr>
+                <tr><td>height</td><td>цяло число</td><td>височина (c)</td></tr>
+            </table>
+
+            <h3>Методи:</h3>
+            <ul>
+                <li><code>GenerateDimensions()</code> - задава случайни стойности в диапазона [5; 50].</li>
+                <li><code>ShowBriefData()</code> - извежда справка за размерите (дължина, ширина, височина).</li>
+                <li><code>GetSurfaceArea()</code> - намира лицето на повърхнината по формулата:</li>
+            </ul>
+            <div class="formula-box">$S = 2(a \cdot b + a \cdot c + b \cdot c)$</div>
+            <ul>
+                <li><code>GetVolume()</code> - намира обема на паралелепипеда:</li>
+            </ul>
+            <div class="formula-box">$V = a \cdot b \cdot c$</div>
+            <ul>
+                <li><code>Resize()</code> - генерира нови стойности за измеренията в диапазона [40; 70].</li>
+                <li><code>ShowInfo()</code> - извежда пълна справка за размерите, повърхнината и обема.</li>
+            </ul>
+        </div>
+        
+        <div class="copyright">
+            &copy; 2026 Algorithma. Всички права запазени.
+        </div>
+    </div>
+
+    <!-- Сплитер за преоразмеряване -->
+    <div class="resizer" id="resizer"></div>
+
+    <div class="panel right-panel">
+        
+        <div class="viz-header">
+            ⚡ Интерактивно Изпълнение ⚡
+        </div>
+        
+        <div class="viz-text" id="vizText">Кликнете 'Напред', за да проследите примерно изпълнение.</div>
+
+        <div class="visualization-workspace">
+            
+            <!-- 3D Визуализация -->
+            <div class="graph-area">
+                <svg id="boxSvg" viewBox="0 0 300 250" width="100%" height="100%">
+                    <!-- Дефиниции за полигоните (ще се ъпдейтват от JS) -->
+                    <!-- Начални координати: скрити в центъра (120, 180) -->
+                    <polygon id="faceTop" class="box-face top" points="120,180 120,180 120,180 120,180" />
+                    <polygon id="faceRight" class="box-face right" points="120,180 120,180 120,180 120,180" />
+                    <polygon id="faceFront" class="box-face front" points="120,180 120,180 120,180 120,180" />
+                    
+                    <text id="lblW" class="box-label" text-anchor="middle">Width</text>
+                    <text id="lblH" class="box-label" text-anchor="end">Height</text>
+                    <text id="lblL" class="box-label" text-anchor="start">Length</text>
+                </svg>
+
+                <!-- Изскачащ Математически Панел -->
+                <div class="math-overlay" id="mathOverlay">
+                    <div class="math-title" id="mTitle">Пресмятане...</div>
+                    <div class="math-step" id="mStep1"></div>
+                    <div class="math-step" id="mStep2"></div>
+                    <div class="math-result" id="mResult"></div>
+                </div>
+            </div>
+
+            <!-- Блокове Памет -->
+            <div class="memory-column">
+                <div class="memory-box" id="memObj">
+                    <div class="memory-title">Обект: box</div>
+                    <div class="memory-prop"><span>length</span> <span id="vL">0</span></div>
+                    <div class="memory-prop"><span>width</span> <span id="vW">0</span></div>
+                    <div class="memory-prop"><span>height</span> <span id="vH">0</span></div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Конзола -->
+        <div class="console-box">
+            <div class="console-output" id="consoleOutput"></div>
+        </div>
+
+        <div class="controls">
+            <button id="prevBtn" onclick="prevStep()" disabled>⏪ Назад</button>
+            <div class="step-indicator" id="stepIndicator">Стъпка: 0 / 0</div>
+            <button id="nextBtn" onclick="nextStep()">Напред ⏩</button>
+        </div>
+
+    </div>
+
+    <script>
+        // Данни за примера
+        // Сцена 1: l=37, w=39, h=12
+        // Сцена 2: l=56, w=68, h=52
+        
+        const steps = [
+            { text: "Стъпка 1: Декларираме обекта box. В паметта се заделя място, но стойностите са 0.", mem: true,  vL:"0", vW:"0", vH:"0", con: "", box: 0, math: "" },
+            { text: "Стъпка 2: Извикваме GenerateDimensions(). Генерират се случайни размери (37, 39, 12).", mem: true, vL:"37", vW:"39", vH:"12", con: "", box: 1, math: "" },
+            { text: "Стъпка 3: Извикваме ShowBriefData(). Отпечатваме текущите размери в конзолата.", mem: true, vL:"37", vW:"39", vH:"12", con: "Rectangular prlpd\nLength: 37\nWidth: 39\nHeight: 12", box: 1, math: "" },
+            { text: "Стъпка 4: Извикваме Resize(). Генерират се нови размери (56, 68, 52) и се отпечатва съобщение.", mem: true, vL:"56", vW:"68", vH:"52", con: "Rectangular prlpd\nLength: 37\nWidth: 39\nHeight: 12\nPrlpd succesfully resized!", box: 2, math: "" },
+            { text: "Стъпка 5: Извикваме ShowInfo(), което първо отпечатва новите размери чрез ShowBriefData().", mem: true, vL:"56", vW:"68", vH:"52", con: "Rectangular prlpd\nLength: 37\nWidth: 39\nHeight: 12\nPrlpd succesfully resized!\nRectangular prlpd\nLength: 56\nWidth: 68\nHeight: 52", box: 2, math: "" },
+            { text: "Стъпка 6: ShowInfo() извиква GetSurfaceArea(), за да пресметне лицето на повърхнината.", mem: true, vL:"56", vW:"68", vH:"52", con: "Rectangular prlpd\nLength: 37\nWidth: 39\nHeight: 12\nPrlpd succesfully resized!\nRectangular prlpd\nLength: 56\nWidth: 68\nHeight: 52", box: 2, math: "S1" },
+            { text: "Стъпка 7: Заместваме във формулата и получаваме резултата (20512).", mem: true, vL:"56", vW:"68", vH:"52", con: "Rectangular prlpd\nLength: 37\nWidth: 39\nHeight: 12\nPrlpd succesfully resized!\nRectangular prlpd\nLength: 56\nWidth: 68\nHeight: 52", box: 2, math: "S2" },
+            { text: "Стъпка 8: Отпечатваме изчисленото лице на повърхнината в конзолата.", mem: true, vL:"56", vW:"68", vH:"52", con: "Rectangular prlpd\nLength: 37\nWidth: 39\nHeight: 12\nPrlpd succesfully resized!\nRectangular prlpd\nLength: 56\nWidth: 68\nHeight: 52\nSurface area: 20512", box: 2, math: "" },
+            { text: "Стъпка 9: ShowInfo() извиква GetVolume(), за да пресметне обема на паралелепипеда.", mem: true, vL:"56", vW:"68", vH:"52", con: "Rectangular prlpd\nLength: 37\nWidth: 39\nHeight: 12\nPrlpd succesfully resized!\nRectangular prlpd\nLength: 56\nWidth: 68\nHeight: 52\nSurface area: 20512", box: 2, math: "V1" },
+            { text: "Стъпка 10: Заместваме във формулата и получаваме обема (198016).", mem: true, vL:"56", vW:"68", vH:"52", con: "Rectangular prlpd\nLength: 37\nWidth: 39\nHeight: 12\nPrlpd succesfully resized!\nRectangular prlpd\nLength: 56\nWidth: 68\nHeight: 52\nSurface area: 20512", box: 2, math: "V2" },
+            { text: "Стъпка 11: Отпечатваме обема в конзолата. Изпълнението приключва.", mem: true, vL:"56", vW:"68", vH:"52", con: "Rectangular prlpd\nLength: 37\nWidth: 39\nHeight: 12\nPrlpd succesfully resized!\nRectangular prlpd\nLength: 56\nWidth: 68\nHeight: 52\nSurface area: 20512\nVolume: 198016", box: 2, math: "" }
+        ];
+
+        let currentStep = -1;
+
+        function updateUI() {
+            const step = steps[currentStep];
+            
+            if (step) {
+                // Показване на текста за стъпката
+                document.getElementById('vizText').innerText = step.text;
+
+                // Памет
+                const memObj = document.getElementById('memObj');
+                if (step.mem) memObj.classList.add('active'); else memObj.classList.remove('active');
+                
+                document.getElementById('vL').innerText = step.vL;
+                document.getElementById('vW').innerText = step.vW;
+                document.getElementById('vH').innerText = step.vH;
+
+                // Конзола
+                document.getElementById('consoleOutput').innerText = step.con;
+
+                // 3D BOX (SVG)
+                drawBox(step.box, parseInt(step.vL), parseInt(step.vW), parseInt(step.vH));
+
+                // Математически Панел (Math Overlay)
+                handleMathOverlay(step.math);
+
+                document.getElementById('stepIndicator').innerText = `Стъпка: ${currentStep + 1} /${steps.length}`;
+            }
+
+            document.getElementById('prevBtn').disabled = currentStep <= 0;
+            document.getElementById('nextBtn').disabled = currentStep >= steps.length - 1;
+        }
+
+        function drawBox(state, l, w, h) {
+            const front = document.getElementById('faceFront');
+            const top = document.getElementById('faceTop');
+            const right = document.getElementById('faceRight');
+            const lblW = document.getElementById('lblW');
+            const lblH = document.getElementById('lblH');
+            const lblL = document.getElementById('lblL');
+
+            // Стартова точка (долен ляв ъгъл на предната стена)
+            const ox = 70; 
+            const oy = 210;
+
+            if (state === 0) {
+                const zeroPts = `${ox},${oy} ${ox},${oy} ${ox},${oy} ${ox},${oy}`;
+                front.setAttribute('points', zeroPts);
+                top.setAttribute('points', zeroPts);
+                right.setAttribute('points', zeroPts);
+                lblW.classList.remove('visible');
+                lblH.classList.remove('visible');
+                lblL.classList.remove('visible');
+                return;
+            }
+
+            // Мащабиране за визуално удоволствие
+            const scaleW = w * 1.5;
+            const scaleH = h * 1.5;
+            const scaleLx = l * 0.8;
+            const scaleLy = l * 0.4;
+
+            // Изчисляване на върховете
+            // Front: (ox, oy), (ox+W, oy), (ox+W, oy-H), (ox, oy-H)
+            front.setAttribute('points', `${ox},${oy} ${ox + scaleW},${oy} ${ox + scaleW},${oy - scaleH} ${ox},${oy - scaleH}`);
+            
+            // Top: (ox, oy-H), (ox+L, oy-H-L), (ox+W+L, oy-H-L), (ox+W, oy-H)
+            top.setAttribute('points', `${ox},${oy - scaleH} ${ox + scaleLx},${oy - scaleH - scaleLy} ${ox + scaleW + scaleLx},${oy - scaleH - scaleLy} ${ox + scaleW},${oy - scaleH}`);
+            
+            // Right: (ox+W, oy), (ox+W+L, oy-L), (ox+W+L, oy-H-L), (ox+W, oy-H)
+            right.setAttribute('points', `${ox + scaleW},${oy} ${ox + scaleW + scaleLx},${oy - scaleLy} ${ox + scaleW + scaleLx},${oy - scaleH - scaleLy} ${ox + scaleW},${oy - scaleH}`);
+
+            // Labels
+            lblW.setAttribute('x', ox + scaleW / 2); lblW.setAttribute('y', oy + 20);
+            lblW.textContent = `w=${w}`;
+            lblW.classList.add('visible');
+
+            lblH.setAttribute('x', ox - 10); lblH.setAttribute('y', oy - scaleH / 2);
+            lblH.textContent = `h=${h}`;
+            lblH.classList.add('visible');
+
+            lblL.setAttribute('x', ox + scaleW + scaleLx / 2 + 10); lblL.setAttribute('y', oy - scaleLy / 2 + 15);
+            lblL.textContent = `l=${l}`;
+            lblL.classList.add('visible');
+        }
+
+        function handleMathOverlay(mathState) {
+            const overlay = document.getElementById('mathOverlay');
+            const mTitle = document.getElementById('mTitle');
+            const mStep1 = document.getElementById('mStep1');
+            const mStep2 = document.getElementById('mStep2');
+            const mResult = document.getElementById('mResult');
+
+            if (!mathState) {
+                overlay.classList.remove('show');
+                return;
+            }
+
+            overlay.classList.add('show');
+            
+            if (mathState === "S1") {
+                mTitle.textContent = "Изчисляване на Повърхнина (S)";
+                mStep1.innerHTML = `2 &times; (l&times;w + l&times;h + w&times;h)`;
+                mStep2.innerHTML = ``;
+                mResult.textContent = ``;
+            } else if (mathState === "S2") {
+                mTitle.textContent = "Изчисляване на Повърхнина (S)";
+                mStep1.innerHTML = `2 &times; (56&times;68 + 56&times;52 + 68&times;52)`;
+                mStep2.innerHTML = `2 &times; (3808 + 2912 + 3536)`;
+                mResult.textContent = `20512`;
+            } else if (mathState === "V1") {
+                mTitle.textContent = "Изчисляване на Обем (V)";
+                mStep1.innerHTML = `l &times; w &times; h`;
+                mStep2.innerHTML = ``;
+                mResult.textContent = ``;
+            } else if (mathState === "V2") {
+                mTitle.textContent = "Изчисляване на Обем (V)";
+                mStep1.innerHTML = `56 &times; 68 &times; 52`;
+                mStep2.innerHTML = `3808 &times; 52`;
+                mResult.textContent = `198016`;
+            }
+        }
+
+        function nextStep() { if (currentStep < steps.length - 1) { currentStep++; updateUI(); } }
+        function prevStep() { if (currentStep > 0) { currentStep--; updateUI(); } }
+
+        currentStep = 0;
+        window.onload = updateUI;
+
+        // ----------------------------------------------------------------
+        // Логика за преоразмеряване на панелите (Drag-to-resize)
+        // ----------------------------------------------------------------
+        const resizer = document.getElementById('resizer');
+        const leftPanel = document.getElementById('leftPanel');
+        let isResizing = false;
+
+        resizer.addEventListener('mousedown', (e) => {
+            isResizing = true;
+            document.body.style.cursor = 'col-resize';
+            document.body.style.userSelect = 'none';
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (!isResizing) return;
+            
+            let newWidthPercent = (e.clientX / window.innerWidth) * 100;
+            
+            if (newWidthPercent > 20 && newWidthPercent < 80) {
+                leftPanel.style.flex = `0 0 ${newWidthPercent}%`;
+            }
+        });
+
+        document.addEventListener('mouseup', () => {
+            if (isResizing) {
+                isResizing = false;
+                document.body.style.cursor = 'default';
+                document.body.style.userSelect = 'auto'; 
+            }
+        });
+    </script>
+</body>
+</html>
