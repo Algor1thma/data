@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Задача 1: Разстояние между две точки - Algorithma</title>
+    <style>
+        body { margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; height: 100vh; background-color: #1e1e24; color: #e0e0e0; overflow: hidden;}
+        
+        /* Панели */
+        .panel { flex: 1; padding: 25px; overflow-y: auto; box-sizing: border-box; }
+        
+        /* Ляв Панел - Условие */
+        .left-panel { border-right: 2px solid #333; background-color: #2b2b36; flex: 0 0 45%; box-shadow: inset -5px 0 15px rgba(0,0,0,0.2);}
+        
+        /* Десен Панел - Визуализации */
+        .right-panel { display: flex; flex-direction: column; gap: 15px; background-color: #1e1e24; flex: 0 0 55%; position: relative;}
+        
+        /* Бутон Назад */
+        .back-to-home { display: inline-block; text-decoration: none; color: #a29bfe; font-weight: bold; font-size: 0.95rem; margin-bottom: 15px; padding: 8px 15px; border: 1px solid #a29bfe; border-radius: 8px; transition: all 0.3s ease; background: transparent; }
+        .back-to-home:hover { background-color: #a29bfe; color: #1e1e24; box-shadow: 0 0 10px rgba(162, 155, 254, 0.5); }
+
+        h1 { color: #ffffff; font-size: 1.8rem; margin-bottom: 5px; text-shadow: 0 2px 4px rgba(0,0,0,0.3);}
+        h2 { color: #a29bfe; font-size: 1.1rem; text-transform: uppercase; margin-top: 0; margin-bottom: 15px; letter-spacing: 1px;}
+        h3 { color: #00cec9; border-bottom: 1px solid #444; padding-bottom: 5px; margin-top: 25px; font-size: 1.15rem;}
+        p, ul, li { line-height: 1.6; color: #dcdde1; font-size: 0.95rem; margin-bottom: 10px;}
+        
+        /* Таблици */
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; margin-bottom: 20px; font-size: 0.9rem; background-color: #353b48; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.3);}
+        th, td { border: 1px solid #444; padding: 10px; text-align: left; }
+        th { background-color: #2f3640; color: #00cec9; font-weight: bold;}
+
+        /* Условие - Анимирана концепция */
+        .concept-card { background: linear-gradient(135deg, #2d3436 0%, #000000 100%); border: 1px solid #555; border-radius: 12px; padding: 20px; text-align: center; margin-top: 20px; position: relative; overflow: hidden; box-shadow: 0 8px 20px rgba(0,0,0,0.5);}
+        .concept-title { color: #fdcb6e; font-weight: bold; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 2px;}
+        
+        /* Специален Раздел ВИЗУАЛИЗАЦИИ */
+        .viz-header { background: linear-gradient(90deg, #6c5ce7, #a29bfe); color: white; padding: 10px 20px; border-radius: 8px; text-align: center; font-weight: bold; font-size: 1.2rem; text-transform: uppercase; letter-spacing: 2px; box-shadow: 0 4px 15px rgba(108, 92, 231, 0.4); flex-shrink: 0;}
+
+        /* Визуална Зона (Графика + Памет) */
+        .visualization-workspace { flex: 1; display: flex; gap: 15px; min-height: 300px; }
+        
+        /* Координатна система (Canvas) */
+        .graph-area { flex: 1; background-color: #2d3436; border: 2px solid #636e72; border-radius: 12px; position: relative; display: flex; justify-content: center; align-items: center; box-shadow: inset 0 0 20px rgba(0,0,0,0.5); overflow: hidden;}
+        
+        /* Блокове за Памет */
+        .memory-column { width: 220px; display: flex; flex-direction: column; gap: 15px;}
+        .memory-box { background: #2b2b36; border: 2px solid #00cec9; border-radius: 10px; padding: 15px; box-shadow: 0 6px 12px rgba(0,0,0,0.4); position: relative; opacity: 0.3; transition: opacity 0.4s;}
+        .memory-box.active { opacity: 1; border-color: #00cec9; box-shadow: 0 0 15px rgba(0, 206, 201, 0.4);}
+        .memory-title { font-weight: bold; color: #00cec9; border-bottom: 1px solid #444; padding-bottom: 5px; margin-bottom: 10px; font-size: 0.95rem; text-align: center;}
+        .memory-prop { display: flex; justify-content: space-between; margin: 6px 0; font-family: Consolas, monospace; font-size: 0.85rem;}
+        .memory-prop span:nth-child(1) { color: #b2bec3; }
+        .memory-prop span:nth-child(2) { color: #fdcb6e; font-weight: bold; }
+
+        /* Конзола */
+        .console-box { background-color: #000; border: 1px solid #333; border-top: 25px solid #2d3436; border-radius: 8px; padding: 10px; font-family: Consolas, 'Courier New', monospace; font-size: 13px; position: relative; box-shadow: 0 8px 15px rgba(0,0,0,0.5); min-height: 100px; flex-shrink: 0;}
+        .console-box::before { content: "C:\\Windows\\System32\\cmd.exe"; position: absolute; top: -20px; left: 10px; color: #b2bec3; font-size: 11px; font-family: 'Segoe UI', sans-serif;}
+        .console-output { color: #00b894; white-space: pre-wrap; line-height: 1.4; }
+        
+        /* Зона за код */
+        .code-container { background-color: #282c34; color: #abb2bf; padding: 15px; border-radius: 8px; font-family: Consolas, monospace; font-size: 13px; overflow-x: auto; overflow-y: auto; box-shadow: inset 0 0 10px rgba(0,0,0,0.8); max-height: 250px; flex-shrink: 0; border: 1px solid #444;}
+        .code-line { padding: 2px 8px; margin: 1px 0; border-radius: 4px; transition: background-color 0.3s; white-space: pre; border-left: 3px solid transparent;}
+        .active-line { background-color: #3e4451; border-left: 3px solid #fdcb6e; color: #ffffff; font-weight: bold; }
+        
+        /* Контроли */
+        .controls { display: flex; gap: 15px; justify-content: center; align-items: center; background: #2b2b36; padding: 10px; border-radius: 8px; border: 1px solid #444; flex-shrink: 0;}
+        button { padding: 10px 20px; border: none; border-radius: 6px; background: linear-gradient(180deg, #0984e3, #0652dd); color: white; font-size: 14px; font-weight: bold; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.3); text-transform: uppercase; letter-spacing: 1px;}
+        button:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 10px rgba(9, 132, 227, 0.5); }
+        button:disabled { background: #555; color: #888; cursor: not-allowed; box-shadow: none; transform: none;}
+        .step-indicator { color: #00cec9; font-weight: bold; font-family: Consolas, monospace; font-size: 1rem; width: 150px; text-align: center;}
+
+        /* Изскачащ панел за формулата (Math Breakdown) */
+        .math-overlay { position: absolute; top: 10%; left: 10%; right: 10%; background: rgba(45, 52, 54, 0.95); border: 2px solid #fdcb6e; border-radius: 12px; padding: 20px; z-index: 10; display: none; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 10px 30px rgba(0,0,0,0.8); backdrop-filter: blur(5px); transform: scale(0.8); opacity: 0; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);}
+        .math-overlay.show { display: flex; transform: scale(1); opacity: 1; }
+        .math-step { font-family: Consolas, monospace; font-size: 1.2rem; color: #fff; margin: 10px 0; opacity: 0; transform: translateY(10px); transition: all 0.5s ease;}
+        .math-step.visible { opacity: 1; transform: translateY(0);}
+        .math-result { color: #00cec9; font-size: 1.5rem; font-weight: bold; border-top: 1px dashed #555; padding-top: 10px; margin-top: 10px; width: 100%; text-align: center;}
+
+        /* SVG Анимации за графиката */
+        @keyframes drawLine { to { stroke-dashoffset: 0; } }
+        @keyframes popIn { 0% { r: 0; opacity: 0; } 70% { r: 8; opacity: 1; } 100% { r: 6; opacity: 1; } }
+        .point { fill: #fdcb6e; stroke: #fff; stroke-width: 2; opacity: 0; }
+        .point.drawn { animation: popIn 0.5s forwards; }
+        .segment-line { stroke: #00cec9; stroke-width: 3; stroke-dasharray: 1000; stroke-dashoffset: 1000; }
+        .segment-line.drawn { animation: drawLine 1s ease-in-out forwards; }
+        .grid-line { stroke: #444; stroke-width: 1; }
+        .axis { stroke: #a29bfe; stroke-width: 2; }
+        .coord-label { fill: #b2bec3; font-family: Consolas; font-size: 12px; opacity: 0; transition: opacity 0.5s;}
+        .coord-label.visible { opacity: 1; }
+    </style>
+    <script>
+        MathJax = { tex: { inlineMath: [['$', '$']] } };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-YYBQF66CTS"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-YYBQF66CTS');
+</script>
+
+<body>
+
+    <div class="panel left-panel">
+        <a href="../index.html" class="back-to-home">← Начало</a>
+        
+        <h1>Задача 1: Разстояние между две точки в равнината</h1>
+        <h2>Методи в класовете</h2>
+        
+        <p>Да се декларира клас <code>Pnts</code>, определящ две точки от равнината с декартови координати и разстоянието между тях. Класът да има следните полета:</p>
+        
+        <table>
+            <tr><th>Поле</th><th>Тип</th><th>Описание</th></tr>
+            <tr><td>x1</td><td>реално число</td><td>x координата на първата точка</td></tr>
+            <tr><td>y1</td><td>реално число</td><td>y координата на първата точка</td></tr>
+            <tr><td>x2</td><td>реално число</td><td>x координата на втората точка</td></tr>
+            <tr><td>y2</td><td>реално число</td><td>y координата на втората точка</td></tr>
+        </table>
+
+        <h3>В класа да се дефинират следните публични методи:</h3>
+        <ul>
+            <li><code>void CreatePoints()</code> - за въвеждане на данните от клавиатурата.</li>
+            <li><code>void ShowPoints()</code> - за отпечатване на точките.</li>
+            <li><code>double Segment()</code> - за намиране на разстоянието между двете точки по формулата: <br><br>
+                <div style="text-align: center; font-size: 1.2rem; background: #1e1e24; padding: 10px; border-radius: 8px; border: 1px solid #444;">
+                    $Distance = \sqrt{(x_2 - x_1)^2 + (y_2 - y_1)^2}$
+                </div>
+            </li>
+        </ul>
+
+        <div class="concept-card">
+            <div class="concept-title">Концептуална визуализация</div>
+            <svg viewBox="0 0 300 200" width="100%" height="200px" style="background: #2d3436; border-radius: 8px; box-shadow: inset 0 0 10px #000;">
+                <!-- Grid -->
+                <line x1="0" y1="100" x2="300" y2="100" class="axis" />
+                <line x1="50" y1="0" x2="50" y2="200" class="axis" />
+                
+                <!-- Helper lines for right triangle -->
+                <line x1="100" y1="150" x2="250" y2="150" stroke="#ff7675" stroke-width="2" stroke-dasharray="5,5" />
+                <line x1="250" y1="150" x2="250" y2="50" stroke="#74b9ff" stroke-width="2" stroke-dasharray="5,5" />
+                
+                <!-- Main Segment -->
+                <line x1="100" y1="150" x2="250" y2="50" stroke="#00cec9" stroke-width="3" />
+                
+                <!-- Points -->
+                <circle cx="100" cy="150" r="6" fill="#fdcb6e" stroke="#fff" stroke-width="2"/>
+                <circle cx="250" cy="50" r="6" fill="#fdcb6e" stroke="#fff" stroke-width="2"/>
+                
+                <!-- Labels -->
+                <text x="60" y="165" fill="#fff" font-size="12" font-family="Consolas">P1(x1, y1)</text>
+                <text x="260" y="45" fill="#fff" font-size="12" font-family="Consolas">P2(x2, y2)</text>
+                <text x="160" y="165" fill="#ff7675" font-size="12" font-family="Consolas">|x2 - x1|</text>
+                <text x="260" y="105" fill="#74b9ff" font-size="12" font-family="Consolas">|y2 - y1|</text>
+                <text x="140" y="90" fill="#00cec9" font-size="14" font-family="Consolas" font-weight="bold">Distance (c)</text>
+            </svg>
+            <p style="font-size: 0.85rem; color: #b2bec3; margin-top: 10px; margin-bottom: 0;">Използваме Питагоровата теорема ($a^2 + b^2 = c^2$), където катетите са разликите по осите X и Y.</p>
+        </div>
+    </div>
+
+    <div class="panel right-panel">
+        
+        <div class="viz-header">
+            ⚡ Специален Раздел: ВИЗУАЛИЗАЦИИ ⚡
+        </div>
+
+        <div class="visualization-workspace">
+            
+            <!-- Координатна система -->
+            <div class="graph-area">
+                <svg id="dynamicSvg" viewBox="0 0 200 200" width="100%" height="100%">
+                    <!-- Axes -->
+                    <line x1="0" y1="100" x2="200" y2="100" class="axis"/>
+                    <line x1="100" y1="0" x2="100" y2="200" class="axis"/>
+                    
+                    <!-- Dynamic Elements -->
+                    <line id="svgLine" x1="0" y1="0" x2="0" y2="0" class="segment-line"/>
+                    <circle id="svgP1" cx="0" cy="0" r="0" class="point"/>
+                    <circle id="svgP2" cx="0" cy="0" r="0" class="point"/>
+                    
+                    <text id="lblP1" x="0" y="0" class="coord-label">P1</text>
+                    <text id="lblP2" x="0" y="0" class="coord-label">P2</text>
+                </svg>
+
+                <!-- Изскачащ Математически Панел -->
+                <div class="math-overlay" id="mathOverlay">
+                    <div style="color: #fdcb6e; font-weight: bold; margin-bottom: 10px;">КАЛКУЛАЦИЯ В ПАМЕТТА:</div>
+                    <div class="math-step" id="mStep1">$\sqrt{(x_2 - x_1)^2 + (y_2 - y_1)^2}$</div>
+                    <div class="math-step" id="mStep2">$\sqrt{(9.3 - 8.9)^2 + (5.7 - 8.6)^2}$</div>
+                    <div class="math-step" id="mStep3">$\sqrt{(0.4)^2 + (-2.9)^2}$</div>
+                    <div class="math-step" id="mStep4">$\sqrt{0.16 + 8.41} = \sqrt{8.57}$</div>
+                    <div class="math-result" id="mResult">2.927456...</div>
+                </div>
+            </div>
+
+            <!-- Блокове Памет -->
+            <div class="memory-column">
+                <div class="memory-box" id="memObj">
+                    <div class="memory-title">Обект: pn</div>
+                    <div class="memory-prop"><span>x1</span> <span id="vX1">0.0</span></div>
+                    <div class="memory-prop"><span>y1</span> <span id="vY1">0.0</span></div>
+                    <div class="memory-prop"><span>x2</span> <span id="vX2">0.0</span></div>
+                    <div class="memory-prop"><span>y2</span> <span id="vY2">0.0</span></div>
+                </div>
+
+                <div class="memory-box" id="memLocal" style="border-color: #ff7675;">
+                    <div class="memory-title" style="color: #ff7675;">Main() - Локални</div>
+                    <div class="memory-prop"><span>seg</span> <span id="vSeg">0.0</span></div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Конзола -->
+        <div class="console-box">
+            <div class="console-output" id="consoleOutput"></div>
+        </div>
+
+        <!-- Код -->
+        <div class="code-container">
+<div class="code-line" id="line-0">class Pnts {</div>
+<div class="code-line" id="line-1">    double x1, y1, x2, y2;</div>
+<div class="code-line" id="line-2">    public void CreatePoints() {</div>
+<div class="code-line" id="line-3">        Console.Write("point 1 (x): "); x1 = Convert.ToDouble(Console.ReadLine());</div>
+<div class="code-line" id="line-4">        Console.Write("point 1 (y): "); y1 = Convert.ToDouble(Console.ReadLine());</div>
+<div class="code-line" id="line-5">        Console.Write("point 2 (x): "); x2 = Convert.ToDouble(Console.ReadLine());</div>
+<div class="code-line" id="line-6">        Console.Write("point 2 (y): "); y2 = Convert.ToDouble(Console.ReadLine());</div>
+<div class="code-line" id="line-7">    }</div>
+<div class="code-line" id="line-8">    public void ShowPoints() {</div>
+<div class="code-line" id="line-9">        Console.WriteLine("Points:");</div>
+<div class="code-line" id="line-10">        Console.WriteLine("point 1: " + x1 + "; " + y1);</div>
+<div class="code-line" id="line-11">        Console.WriteLine("point 2: " + x2 + "; " + y2);</div>
+<div class="code-line" id="line-12">    }</div>
+<div class="code-line" id="line-13">    public double Segment() {</div>
+<div class="code-line" id="line-14">        return Math.Sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));</div>
+<div class="code-line" id="line-15">    }</div>
+<div class="code-line" id="line-16">}</div>
+<div class="code-line" id="line-17">class Program {</div>
+<div class="code-line" id="line-18">    static void Main() {</div>
+<div class="code-line" id="line-19">        Pnts pn = new Pnts();</div>
+<div class="code-line" id="line-20">        pn.CreatePoints();</div>
+<div class="code-line" id="line-21">        pn.ShowPoints();</div>
+<div class="code-line" id="line-22">        double seg = pn.Segment();</div>
+<div class="code-line" id="line-23">        Console.WriteLine("Distance between points: " + seg.ToString("f2"));</div>
+<div class="code-line" id="line-24">    }</div>
+<div class="code-line" id="line-25">}</div>
+        </div>
+
+        <div class="controls">
+            <button id="prevBtn" onclick="prevStep()" disabled>⏪ Назад</button>
+            <div class="step-indicator" id="stepIndicator">Стъпка: 0 / 0</div>
+            <button id="nextBtn" onclick="nextStep()">Напред ⏩</button>
+        </div>
+
+    </div>
+
+    <script>
+        // Координатна трансформация (За да изглеждат добре на малкия canvas)
+        // Център: (100, 100). Скала: 1 единица = 10px. Осите са обърнати (y расте надолу в SVG)
+        function getSvgX(val) { return 100 + (parseFloat(val) * 8); }
+        function getSvgY(val) { return 100 - (parseFloat(val) * 8); }
+
+        const steps = [
+            { lines: [18], mem: false, loc: false, vX1:"0", vY1:"0", vX2:"0", vY2:"0", con: "", svgP1: false, svgP2: false, line: false, math: 0 },
+            { lines: [19], mem: true, loc: true, vX1:"0", vY1:"0", vX2:"0", vY2:"0", con: "", svgP1: false, svgP2: false, line: false, math: 0 },
+            { lines: [20, 2], mem: true, loc: true, vX1:"0", vY1:"0", vX2:"0", vY2:"0", con: "", svgP1: false, svgP2: false, line: false, math: 0 },
+            { lines: [3], mem: true, loc: true, vX1:"8.9", vY1:"0", vX2:"0", vY2:"0", con: "point 1 (x): 8.9", svgP1: false, svgP2: false, line: false, math: 0 },
+            { lines: [4], mem: true, loc: true, vX1:"8.9", vY1:"8.6", vX2:"0", vY2:"0", con: "point 1 (x): 8.9\npoint 1 (y): 8.6", svgP1: true, svgP2: false, line: false, math: 0 },
+            { lines: [5], mem: true, loc: true, vX1:"8.9", vY1:"8.6", vX2:"9.3", vY2:"0", con: "point 1 (x): 8.9\npoint 1 (y): 8.6\npoint 2 (x): 9.3", svgP1: true, svgP2: false, line: false, math: 0 },
+            { lines: [6], mem: true, loc: true, vX1:"8.9", vY1:"8.6", vX2:"9.3", vY2:"5.7", con: "point 1 (x): 8.9\npoint 1 (y): 8.6\npoint 2 (x): 9.3\npoint 2 (y): 5.7", svgP1: true, svgP2: true, line: false, math: 0 },
+            { lines: [21, 8], mem: true, loc: true, vX1:"8.9", vY1:"8.6", vX2:"9.3", vY2:"5.7", con: "point 1 (x): 8.9\npoint 1 (y): 8.6\npoint 2 (x): 9.3\npoint 2 (y): 5.7", svgP1: true, svgP2: true, line: false, math: 0 },
+            { lines: [9, 10, 11], mem: true, loc: true, vX1:"8.9", vY1:"8.6", vX2:"9.3", vY2:"5.7", con: "point 1 (x): 8.9\npoint 1 (y): 8.6\npoint 2 (x): 9.3\npoint 2 (y): 5.7\nPoints:\npoint 1: 8.9; 8.6\npoint 2: 9.3; 5.7", svgP1: true, svgP2: true, line: false, math: 0 },
+            { lines: [22, 13], mem: true, loc: true, vX1:"8.9", vY1:"8.6", vX2:"9.3", vY2:"5.7", con: "point 1 (x): 8.9\npoint 1 (y): 8.6\npoint 2 (x): 9.3\npoint 2 (y): 5.7\nPoints:\npoint 1: 8.9; 8.6\npoint 2: 9.3; 5.7", svgP1: true, svgP2: true, line: false, math: 0 },
+            { lines: [14], mem: true, loc: true, vX1:"8.9", vY1:"8.6", vX2:"9.3", vY2:"5.7", con: "point 1 (x): 8.9\npoint 1 (y): 8.6\npoint 2 (x): 9.3\npoint 2 (y): 5.7\nPoints:\npoint 1: 8.9; 8.6\npoint 2: 9.3; 5.7", svgP1: true, svgP2: true, line: true, math: 1 },
+            { lines: [14], mem: true, loc: true, vX1:"8.9", vY1:"8.6", vX2:"9.3", vY2:"5.7", con: "point 1 (x): 8.9\npoint 1 (y): 8.6\npoint 2 (x): 9.3\npoint 2 (y): 5.7\nPoints:\npoint 1: 8.9; 8.6\npoint 2: 9.3; 5.7", svgP1: true, svgP2: true, line: true, math: 2 },
+            { lines: [14], mem: true, loc: true, vX1:"8.9", vY1:"8.6", vX2:"9.3", vY2:"5.7", con: "point 1 (x): 8.9\npoint 1 (y): 8.6\npoint 2 (x): 9.3\npoint 2 (y): 5.7\nPoints:\npoint 1: 8.9; 8.6\npoint 2: 9.3; 5.7", svgP1: true, svgP2: true, line: true, math: 3 },
+            { lines: [14], mem: true, loc: true, vX1:"8.9", vY1:"8.6", vX2:"9.3", vY2:"5.7", con: "point 1 (x): 8.9\npoint 1 (y): 8.6\npoint 2 (x): 9.3\npoint 2 (y): 5.7\nPoints:\npoint 1: 8.9; 8.6\npoint 2: 9.3; 5.7", svgP1: true, svgP2: true, line: true, math: 4 },
+            { lines: [22], mem: true, loc: true, vX1:"8.9", vY1:"8.6", vX2:"9.3", vY2:"5.7", vSeg:"2.93", con: "point 1 (x): 8.9\npoint 1 (y): 8.6\npoint 2 (x): 9.3\npoint 2 (y): 5.7\nPoints:\npoint 1: 8.9; 8.6\npoint 2: 9.3; 5.7", svgP1: true, svgP2: true, line: true, math: 0 },
+            { lines: [23], mem: true, loc: true, vX1:"8.9", vY1:"8.6", vX2:"9.3", vY2:"5.7", vSeg:"2.93", con: "point 1 (x): 8.9\npoint 1 (y): 8.6\npoint 2 (x): 9.3\npoint 2 (y): 5.7\nPoints:\npoint 1: 8.9; 8.6\npoint 2: 9.3; 5.7\nDistance between points: 2.93", svgP1: true, svgP2: true, line: true, math: 0 }
+        ];
+
+        let currentStep = -1;
+
+        function updateUI() {
+            // Highlights
+            document.querySelectorAll('.code-line').forEach(el => el.classList.remove('active-line'));
+            const step = steps[currentStep];
+            
+            if (step) {
+                let firstLine = null;
+                step.lines.forEach(lineNum => {
+                    let el = document.getElementById('line-' + lineNum);
+                    if(el) {
+                        el.classList.add('active-line');
+                        if(!firstLine) firstLine = el;
+                    }
+                });
+                if(firstLine) firstLine.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+                // Памет
+                const memObj = document.getElementById('memObj');
+                const memLocal = document.getElementById('memLocal');
+                if (step.mem) memObj.classList.add('active'); else memObj.classList.remove('active');
+                if (step.loc) memLocal.classList.add('active'); else memLocal.classList.remove('active');
+                
+                document.getElementById('vX1').innerText = step.vX1 || "0.0";
+                document.getElementById('vY1').innerText = step.vY1 || "0.0";
+                document.getElementById('vX2').innerText = step.vX2 || "0.0";
+                document.getElementById('vY2').innerText = step.vY2 || "0.0";
+                document.getElementById('vSeg').innerText = step.vSeg || "0.0";
+
+                // Конзола
+                document.getElementById('consoleOutput').innerText = step.con;
+
+                // SVG Графика
+                const p1 = document.getElementById('svgP1');
+                const p2 = document.getElementById('svgP2');
+                const lbl1 = document.getElementById('lblP1');
+                const lbl2 = document.getElementById('lblP2');
+                const line = document.getElementById('svgLine');
+
+                if (step.svgP1) {
+                    p1.setAttribute('cx', getSvgX(step.vX1)); p1.setAttribute('cy', getSvgY(step.vY1));
+                    p1.classList.add('drawn');
+                    lbl1.setAttribute('x', getSvgX(step.vX1) + 10); lbl1.setAttribute('y', getSvgY(step.vY1) - 10);
+                    lbl1.classList.add('visible');
+                    lbl1.textContent = `(${step.vX1}, ${step.vY1})`;
+                } else { p1.classList.remove('drawn'); lbl1.classList.remove('visible'); }
+
+                if (step.svgP2) {
+                    p2.setAttribute('cx', getSvgX(step.vX2)); p2.setAttribute('cy', getSvgY(step.vY2));
+                    p2.classList.add('drawn');
+                    lbl2.setAttribute('x', getSvgX(step.vX2) + 10); lbl2.setAttribute('y', getSvgY(step.vY2) - 10);
+                    lbl2.classList.add('visible');
+                    lbl2.textContent = `(${step.vX2}, ${step.vY2})`;
+                } else { p2.classList.remove('drawn'); lbl2.classList.remove('visible'); }
+
+                if (step.line) {
+                    line.setAttribute('x1', getSvgX(step.vX1)); line.setAttribute('y1', getSvgY(step.vY1));
+                    line.setAttribute('x2', getSvgX(step.vX2)); line.setAttribute('y2', getSvgY(step.vY2));
+                    // Force reflow to restart animation
+                    line.classList.remove('drawn'); void line.offsetWidth; line.classList.add('drawn');
+                } else { line.classList.remove('drawn'); }
+
+                // Math Overlay (Анимирано разписване на формулата)
+                const mathOverlay = document.getElementById('mathOverlay');
+                if (step.math > 0) {
+                    mathOverlay.classList.add('show');
+                    document.getElementById('mStep1').classList.add('visible');
+                    if(step.math >= 2) document.getElementById('mStep2').classList.add('visible'); else document.getElementById('mStep2').classList.remove('visible');
+                    if(step.math >= 3) { document.getElementById('mStep3').classList.add('visible'); document.getElementById('mStep4').classList.add('visible'); } 
+                    else { document.getElementById('mStep3').classList.remove('visible'); document.getElementById('mStep4').classList.remove('visible'); }
+                    if(step.math >= 4) document.getElementById('mResult').style.opacity = 1; else document.getElementById('mResult').style.opacity = 0;
+                } else {
+                    mathOverlay.classList.remove('show');
+                }
+
+                document.getElementById('stepIndicator').innerText = `Стъпка: ${currentStep + 1} / ${steps.length}`;
+            }
+
+            document.getElementById('prevBtn').disabled = currentStep <= 0;
+            document.getElementById('nextBtn').disabled = currentStep >= steps.length - 1;
+        }
+
+        function nextStep() { if (currentStep < steps.length - 1) { currentStep++; updateUI(); } }
+        function prevStep() { if (currentStep > 0) { currentStep--; updateUI(); } }
+
+        // Start at step 0
+        currentStep = 0;
+        window.onload = updateUI;
+    </script>
+</body>
+</html>
