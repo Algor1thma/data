@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Задача 6: Разделянето на Нигония - Algorithma</title>
+    <style>
+        body { margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; height: 100vh; background-color: #1e1e24; color: #e0e0e0; overflow: hidden;}
+        
+        /* Панели */
+        .panel { padding: 25px; overflow-y: auto; box-sizing: border-box; display: flex; flex-direction: column;}
+        
+        /* Ляв Панел - Условие */
+        .left-panel { border-right: 2px solid #333; background-color: #2b2b36; flex: 0 0 50%; min-width: 20%; box-shadow: inset -5px 0 15px rgba(0,0,0,0.2);}
+        
+        /* Съдържание на левия панел */
+        .content-wrapper { flex-grow: 1; }
+
+        /* Десен Панел - Интерактивна Визуализация */
+        .right-panel { display: flex; flex-direction: column; gap: 15px; background-color: #1e1e24; flex: 1; min-width: 20%; position: relative;}
+        
+        /* Сплитер / Разделител */
+        .resizer {
+            width: 6px;
+            background-color: #444;
+            cursor: col-resize; 
+            transition: background-color 0.2s;
+            z-index: 10;
+        }
+        .resizer:hover, .resizer:active {
+            background-color: #2ecc71;
+        }
+
+        /* Бутон Назад */
+        .back-to-home { display: inline-block; text-decoration: none; color: #2ecc71; font-weight: bold; font-size: 0.95rem; margin-bottom: 15px; padding: 8px 15px; border: 1px solid #2ecc71; border-radius: 8px; transition: all 0.3s ease; background: transparent; align-self: flex-start;}
+        .back-to-home:hover { background-color: #2ecc71; color: #1e1e24; box-shadow: 0 0 10px rgba(46, 204, 113, 0.5); }
+
+        h1 { color: #ffffff; font-size: 1.7rem; margin-bottom: 5px; text-shadow: 0 2px 4px rgba(0,0,0,0.3);}
+        h2 { color: #2ecc71; font-size: 1.1rem; text-transform: uppercase; margin-top: 0; margin-bottom: 15px; letter-spacing: 1px;}
+        h3 { color: #3498db; border-bottom: 1px solid #444; padding-bottom: 5px; margin-top: 25px; font-size: 1.15rem;}
+        p, ul, li { line-height: 1.6; color: #dcdde1; font-size: 0.95rem; margin-bottom: 10px;}
+        ol { line-height: 1.6; color: #dcdde1; font-size: 0.95rem; margin-bottom: 10px; padding-left: 20px;}
+        
+        /* Таблици */
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; margin-bottom: 20px; font-size: 0.9rem; background-color: #353b48; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.3);}
+        th, td { border: 1px solid #444; padding: 10px; text-align: left; }
+        th { background-color: #2f3640; color: #2ecc71; font-weight: bold;}
+        
+        /* Примери - Конзолен изглед */
+        .examples-grid { display: grid; grid-template-columns: 1fr; gap: 10px; margin-top: 15px;}
+        .example-box { background-color: #0c0c0c; border: 1px solid #555; border-top: 10px solid #2d3436; border-radius: 6px; padding: 10px; font-family: Consolas, monospace; color: #bdc3c7; font-size: 0.85rem; white-space: pre-wrap;}
+
+        /* Авторски права */
+        .copyright {
+            margin-top: 40px;
+            padding-top: 15px;
+            border-top: 1px solid #444;
+            color: #7f8c8d;
+            font-size: 0.85rem;
+            text-align: center;
+        }
+
+        /* Специален Раздел ВИЗУАЛИЗАЦИИ */
+        .viz-header { background: linear-gradient(90deg, #27ae60, #2ecc71); color: #1e1e24; padding: 10px 20px; border-radius: 8px; text-align: center; font-weight: bold; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 2px; box-shadow: 0 4px 15px rgba(46, 204, 113, 0.4); flex-shrink: 0;}
+
+        /* Интерактивна Зона */
+        .interactive-workspace { flex: 1; display: flex; flex-direction: column; gap: 15px; align-items: stretch; justify-content: flex-start; padding-top: 10px;}
+        
+        /* Контролери */
+        .controls-container { display: flex; flex-wrap: wrap; gap: 15px; background: #2b2b36; padding: 15px; border-radius: 12px; border: 1px solid #444; box-shadow: 0 8px 15px rgba(0,0,0,0.4);}
+        .control-section { flex: 1; min-width: 200px; display: flex; flex-direction: column; gap: 10px;}
+        .control-title { text-align: center; font-weight: bold; font-size: 0.9rem; text-transform: uppercase; border-bottom: 1px solid #555; padding-bottom: 5px; margin-bottom: 5px;}
+        
+        .slider-group { display: flex; align-items: center; gap: 10px;}
+        .slider-label { font-size: 0.9rem; color: #dcdde1; font-weight: bold; font-family: Consolas, monospace; width: 50px;}
+        input[type=range] { flex: 1; cursor: pointer;}
+        input[type=range].slider-div { accent-color: #e67e22; }
+        input[type=range].slider-res { accent-color: #3498db; }
+
+        /* Графична Зона */
+        .graph-panel { display: flex; gap: 15px; flex: 1; min-height: 350px;}
+        
+        /* Координатна система (SVG) */
+        .svg-container { flex: 1; background: #2d3436; border: 2px solid #636e72; border-radius: 12px; box-shadow: inset 0 0 20px rgba(0,0,0,0.6); position: relative; display: flex; justify-content: center; align-items: center;}
+        
+        /* Панел за Резултата */
+        .result-panel { width: 200px; display: flex; flex-direction: column; gap: 10px;}
+        .result-box { background: #0c0c0c; border: 2px solid #555; border-radius: 10px; padding: 15px; text-align: center; display: flex; flex-direction: column; justify-content: center; box-shadow: 0 6px 12px rgba(0,0,0,0.4); flex: 1; transition: border-color 0.3s;}
+        .result-title { color: #b2bec3; font-size: 0.85rem; text-transform: uppercase; margin-bottom: 10px; font-weight: bold;}
+        .result-value { font-family: Consolas, monospace; font-size: 1.2rem; font-weight: bold; line-height: 1.4; color: #fff;}
+        .math-breakdown { margin-top: 15px; font-family: Consolas, monospace; font-size: 0.85rem; color: #a4b0be; text-align: left; background: #1e1e24; padding: 10px; border-radius: 6px; border: 1px solid #333;}
+        
+        /* SVG Стилове */
+        .axis-main { stroke: #636e72; stroke-width: 2; }
+        .axis-div { stroke: #e67e22; stroke-width: 3; }
+        .grid-line { stroke: #444; stroke-width: 1; }
+        .region { transition: fill 0.3s ease, x 0.2s, y 0.2s, width 0.2s, height 0.2s; }
+        
+        /* Цветове на регионите */
+        .reg-nw { fill: rgba(155, 89, 182, 0.2); }
+        .reg-ne { fill: rgba(52, 152, 219, 0.2); }
+        .reg-sw { fill: rgba(231, 76, 60, 0.2); }
+        .reg-se { fill: rgba(46, 204, 113, 0.2); }
+        
+        .point-div { fill: #e67e22; stroke: #fff; stroke-width: 2; r: 5; transition: cx 0.2s, cy 0.2s;}
+        .point-res { fill: #3498db; stroke: #fff; stroke-width: 2; r: 7; transition: cx 0.2s, cy 0.2s; filter: drop-shadow(0 0 5px #3498db);}
+        .label-text { font-family: Consolas, monospace; font-size: 12px; font-weight: bold; fill: #fff; text-shadow: 1px 1px 2px #000; transition: x 0.2s, y 0.2s;}
+    </style>
+</head>
+
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-YYBQF66CTS"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-YYBQF66CTS');
+</script>
+
+<body>
+
+    <div class="panel left-panel" id="leftPanel">
+        <div class="content-wrapper">
+            <a href="../index.html" class="back-to-home">← Начало</a>
+            
+            <h1>Задача 6: Разделянето на Нигония</h1>
+            <h2>Параметрични методи</h2>
+            
+            <p>Държавата Нигония е разделена на 4 независими територии от ООН, НАТО, Г7. Договорено е, че една точка, наречена „точка на разделяне", с координати, които трябвало да се установят в преговорите, ще определи разделянето на страната. Две линии пресичат точката на разделяне: едната в посока север-юг, а другата в посока изток-запад (вижте фигурата).</p>
+
+            <p>Вашата задача е да напишете програма, която по дадени координати на точката на разделяне и дадени координати на конкретен дом да се определя в коя от четирите държави се намира.</p>
+            
+            <p>Да се декларира клас <code>Division</code> със следните полета:</p>
+            <table>
+                <tr><th>Поле</th><th>Тип</th><th>Описание</th></tr>
+                <tr><td>n</td><td>цяло число</td><td>х координата на разделителната точка</td></tr>
+                <tr><td>m</td><td>цяло число</td><td>у координата на разделителната точка</td></tr>
+            </table>
+
+            <h3>В класа да се дефинират следните три метода като сами прецените кои от тях да са публични:</h3>
+            <ol>
+                <li>Метод от тип <code>void</code> с име <code>CreateDivisionPoint</code> за въвеждане на координатите на разделителната точка.</li>
+                <li>Метод от тип <code>string</code> с име <code>ReturnSolution(x, y)</code><br>
+                    Параметърът х очаква информация (цяло число) за х координатата на дома на гражданин, а параметърът у (цяло число) за у координатата.<br>
+                    Методът връща един от следните отговори:
+                    <ul>
+                        <li>"border", ако местоживеенето е на една от граничните линии (север-юг или изток-запад);</li>
+                        <li>"Northwestern Nigonia", ако домът се намира в Северозападна Нигония;</li>
+                        <li>"Northeastern Nigonia", ако домът е в Североизточна Нигония;</li>
+                        <li>"Southeastern Nigonia", ако домът е в Югоизточна Нигония;</li>
+                        <li>"Southwestern Nigonia", ако домът е в Югозападна Нигония.</li>
+                    </ul>
+                </li>
+                <li>Метод от тип <code>void</code> с име <code>PrintResult</code> - за въвеждане от клавиатурата на координатите на дом на гражданин и за отпечатване на резултата (използва метода ReturnSolution(x, y)).</li>
+            </ol>
+            
+            <h3>Като се използват методите на този клас, да се напише програма, която извършва следните действия:</h3>
+            <ul>
+                <li>Създава обект от класа;</li>
+                <li>Въвежда от клавиатурата:
+                    <ul>
+                        <li>х координатата на разделителната точка n;</li>
+                        <li>у координатата на разделителната точка m;</li>
+                        <li>х координатата на дома на гражданина х;</li>
+                        <li>у координатата на дома на гражданина у.</li>
+                    </ul>
+                </li>
+                <li>За модел използвайте фигурите, дадени в примерите.</li>
+                <li>Отпечатва на екрана:<br>
+                Един от следните отговори според условието на задачата: "border", "Northwestern Nigonia", "Northeastern Nigonia", "Southeastern Nigonia", "Southwestern Nigonia"</li>
+            </ul>
+
+            <h3>Примери:</h3>
+            <div class="examples-grid">
+                <div class="example-box">Division Point coordinates:
+Enter X coordinate: 2
+Enter Y coordinate: 1
+Residence coordinates:
+Enter X coordinate: 10
+Enter Y coordinate: 10
+Northeastern Nigonia</div>
+                
+                <div class="example-box">Division Point coordinates:
+Enter X coordinate: -1
+Enter Y coordinate: -1
+Residence coordinates:
+Enter X coordinate: -1
+Enter Y coordinate: -1
+border</div>
+                
+                <div class="example-box">Division Point coordinates:
+Enter X coordinate: -1
+Enter Y coordinate: -1
+Residence coordinates:
+Enter X coordinate: -20
+Enter Y coordinate: -10
+Southwestern Nigonia</div>
+            </div>
+        </div>
+
+        <div class="copyright">
+            &copy; 2026 Algorithma. Всички права запазени.
+        </div>
+    </div>
+
+    <!-- Сплитер за преоразмеряване -->
+    <div class="resizer" id="resizer"></div>
+
+    <div class="panel right-panel">
+        
+        <div class="viz-header">
+            ⚡ Интерактивна Карта на Нигония ⚡
+        </div>
+
+        <div class="interactive-workspace">
+            
+            <!-- Контролери -->
+            <div class="controls-container">
+                <!-- Разделителна точка -->
+                <div class="control-section" style="border-right: 1px solid #444; padding-right: 15px;">
+                    <div class="control-title" style="color: #e67e22;">Разделителна точка (n, m)</div>
+                    <div class="slider-group">
+                        <div class="slider-label">n=<span id="valN">0</span></div>
+                        <input type="range" id="sliderN" class="slider-div" min="-10" max="10" value="0" step="1">
+                    </div>
+                    <div class="slider-group">
+                        <div class="slider-label">m=<span id="valM">0</span></div>
+                        <input type="range" id="sliderM" class="slider-div" min="-10" max="10" value="0" step="1">
+                    </div>
+                </div>
+                
+                <!-- Дом на гражданина -->
+                <div class="control-section" style="padding-left: 5px;">
+                    <div class="control-title" style="color: #3498db;">Дом на гражданина (x, y)</div>
+                    <div class="slider-group">
+                        <div class="slider-label">x=<span id="valX">5</span></div>
+                        <input type="range" id="sliderX" class="slider-res" min="-10" max="10" value="5" step="1">
+                    </div>
+                    <div class="slider-group">
+                        <div class="slider-label">y=<span id="valY">5</span></div>
+                        <input type="range" id="sliderY" class="slider-res" min="-10" max="10" value="5" step="1">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Графична Зона -->
+            <div class="graph-panel">
+                
+                <!-- Координатна система (SVG) -->
+                <div class="svg-container">
+                    <svg viewBox="0 0 400 400" width="100%" height="100%" id="mapSvg">
+                        <!-- Дефинираме мрежа (1 единица = 20px, център 200,200) -->
+                        <g id="gridLines">
+                            <!-- Генерират се от JS -->
+                        </g>
+
+                        <!-- Региони -->
+                        <rect id="regNW" class="region reg-nw" x="0" y="0" width="200" height="200" />
+                        <rect id="regNE" class="region reg-ne" x="200" y="0" width="200" height="200" />
+                        <rect id="regSW" class="region reg-sw" x="0" y="200" width="200" height="200" />
+                        <rect id="regSE" class="region reg-se" x="200" y="200" width="200" height="200" />
+
+                        <!-- Главни Оси (Център 0,0) -->
+                        <line x1="0" y1="200" x2="400" y2="200" class="axis-main" />
+                        <line x1="200" y1="0" x2="200" y2="400" class="axis-main" />
+                        <text x="205" y="195" fill="#636e72" font-family="Consolas" font-size="10">(0,0)</text>
+
+                        <!-- Оси на разделяне -->
+                        <line id="divLineX" x1="0" y1="200" x2="400" y2="200" class="axis-div" />
+                        <line id="divLineY" x1="200" y1="0" x2="200" y2="400" class="axis-div" />
+                        
+                        <!-- Точка на разделяне -->
+                        <circle id="ptDiv" class="point-div" cx="200" cy="200" />
+                        <text id="lblDiv" class="label-text" fill="#e67e22" x="210" y="190">Div(0,0)</text>
+
+                        <!-- Дом на гражданина -->
+                        <circle id="ptRes" class="point-res" cx="300" cy="100" />
+                        <text id="lblRes" class="label-text" fill="#3498db" x="310" y="90">Res(5,5)</text>
+                    </svg>
+                </div>
+
+                <!-- Резултат -->
+                <div class="result-panel">
+                    <div class="result-box" id="resBox">
+                        <div class="result-title">Местоживеене:</div>
+                        <div class="result-value" id="finalResult">Northeastern Nigonia</div>
+                        
+                        <div class="math-breakdown" id="mathBreakdown">
+                            <!-- Тук ще се изписва логиката -->
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <script>
+        const sliderN = document.getElementById('sliderN');
+        const sliderM = document.getElementById('sliderM');
+        const sliderX = document.getElementById('sliderX');
+        const sliderY = document.getElementById('sliderY');
+        
+        const valN = document.getElementById('valN');
+        const valM = document.getElementById('valM');
+        const valX = document.getElementById('valX');
+        const valY = document.getElementById('valY');
+        
+        // Мащаб: 1 единица = 20px. Център е 200, 200.
+        function getSvgX(val) { return 200 + (val * 20); }
+        function getSvgY(val) { return 200 - (val * 20); }
+
+        function drawGrid() {
+            const grid = document.getElementById('gridLines');
+            let lines = '';
+            for(let i = 0; i <= 400; i += 20) {
+                lines += `<line x1="${i}" y1="0" x2="${i}" y2="400" class="grid-line" />`;
+                lines += `<line x1="0" y1="${i}" x2="400" y2="${i}" class="grid-line" />`;
+            }
+            grid.innerHTML = lines;
+        }
+
+        function updateMap() {
+            const n = parseInt(sliderN.value);
+            const m = parseInt(sliderM.value);
+            const x = parseInt(sliderX.value);
+            const y = parseInt(sliderY.value);
+            
+            // Ъпдейт на стойностите в UI
+            valN.textContent = n;
+            valM.textContent = m;
+            valX.textContent = x;
+            valY.textContent = y;
+
+            // Изчисляване на SVG координати
+            const svgN = getSvgX(n);
+            const svgM = getSvgY(m);
+            const svgX = getSvgX(x);
+            const svgY = getSvgY(y);
+
+            // Ъпдейт на разделителните линии и точката
+            document.getElementById('divLineX').setAttribute('y1', svgM);
+            document.getElementById('divLineX').setAttribute('y2', svgM);
+            document.getElementById('divLineY').setAttribute('x1', svgN);
+            document.getElementById('divLineY').setAttribute('x2', svgN);
+            
+            document.getElementById('ptDiv').setAttribute('cx', svgN);
+            document.getElementById('ptDiv').setAttribute('cy', svgM);
+            document.getElementById('lblDiv').setAttribute('x', svgN + 10);
+            document.getElementById('lblDiv').setAttribute('y', svgM - 10);
+            document.getElementById('lblDiv').textContent = `Div(${n},${m})`;
+
+            // Ъпдейт на дома
+            document.getElementById('ptRes').setAttribute('cx', svgX);
+            document.getElementById('ptRes').setAttribute('cy', svgY);
+            document.getElementById('lblRes').setAttribute('x', svgX + 10);
+            document.getElementById('lblRes').setAttribute('y', svgY - 10);
+            document.getElementById('lblRes').textContent = `Res(${x},${y})`;
+
+            // Ъпдейт на 4-те региона (квадрантите спрямо Div)
+            // NW: x от 0 до svgN, y от 0 до svgM
+            document.getElementById('regNW').setAttribute('width', svgN);
+            document.getElementById('regNW').setAttribute('height', svgM);
+            
+            // NE: x от svgN до 400, y от 0 до svgM
+            document.getElementById('regNE').setAttribute('x', svgN);
+            document.getElementById('regNE').setAttribute('width', 400 - svgN);
+            document.getElementById('regNE').setAttribute('height', svgM);
+            
+            // SW: x от 0 до svgN, y от svgM до 400
+            document.getElementById('regSW').setAttribute('y', svgM);
+            document.getElementById('regSW').setAttribute('width', svgN);
+            document.getElementById('regSW').setAttribute('height', 400 - svgM);
+            
+            // SE: x от svgN до 400, y от svgM до 400
+            document.getElementById('regSE').setAttribute('x', svgN);
+            document.getElementById('regSE').setAttribute('y', svgM);
+            document.getElementById('regSE').setAttribute('width', 400 - svgN);
+            document.getElementById('regSE').setAttribute('height', 400 - svgM);
+
+            // ЛОГИКА ЗА РЕЗУЛТАТА
+            const resBox = document.getElementById('resBox');
+            const finalResult = document.getElementById('finalResult');
+            const breakdown = document.getElementById('mathBreakdown');
+            
+            if (x === n || y === m) {
+                resBox.style.borderColor = "#f1c40f";
+                finalResult.style.color = "#f1c40f";
+                finalResult.textContent = "border";
+                breakdown.innerHTML = `Проверка:<br>(${x} == ${n}) ИЛИ (${y} == ${m})<br><br><b>ИСТИНА.</b> Точката е на самата гранична линия.`;
+            } 
+            else if (x > n && y > m) {
+                resBox.style.borderColor = "#3498db";
+                finalResult.style.color = "#3498db";
+                finalResult.textContent = "Northeastern Nigonia";
+                breakdown.innerHTML = `Проверка:<br>X: ${x} > ${n} (ИЗТОК)<br>Y: ${y} > ${m} (СЕВЕР)<br><br>Точката е в <b>Североизточна</b> Нигония.`;
+            }
+            else if (x < n && y > m) {
+                resBox.style.borderColor = "#9b59b6";
+                finalResult.style.color = "#9b59b6";
+                finalResult.textContent = "Northwestern Nigonia";
+                breakdown.innerHTML = `Проверка:<br>X: ${x} < ${n} (ЗАПАД)<br>Y: ${y} > ${m} (СЕВЕР)<br><br>Точката е в <b>Северозападна</b> Нигония.`;
+            }
+            else if (x > n && y < m) {
+                resBox.style.borderColor = "#2ecc71";
+                finalResult.style.color = "#2ecc71";
+                finalResult.textContent = "Southeastern Nigonia";
+                breakdown.innerHTML = `Проверка:<br>X: ${x} > ${n} (ИЗТОК)<br>Y: ${y} < ${m} (ЮГ)<br><br>Точката е в <b>Югоизточна</b> Нигония.`;
+            }
+            else if (x < n && y < m) {
+                resBox.style.borderColor = "#e74c3c";
+                finalResult.style.color = "#e74c3c";
+                finalResult.textContent = "Southwestern Nigonia";
+                breakdown.innerHTML = `Проверка:<br>X: ${x} < ${n} (ЗАПАД)<br>Y: ${y} < ${m} (ЮГ)<br><br>Точката е в <b>Югозападна</b> Нигония.`;
+            }
+        }
+
+        // Event Listeners
+        sliderN.addEventListener('input', updateMap);
+        sliderM.addEventListener('input', updateMap);
+        sliderX.addEventListener('input', updateMap);
+        sliderY.addEventListener('input', updateMap);
+
+        // Инициализация
+        drawGrid();
+        updateMap();
+
+        // ----------------------------------------------------------------
+        // Логика за преоразмеряване на панелите (Drag-to-resize)
+        // ----------------------------------------------------------------
+        const resizer = document.getElementById('resizer');
+        const leftPanel = document.getElementById('leftPanel');
+        let isResizing = false;
+
+        resizer.addEventListener('mousedown', (e) => {
+            isResizing = true;
+            document.body.style.cursor = 'col-resize';
+            document.body.style.userSelect = 'none';
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (!isResizing) return;
+            
+            let newWidthPercent = (e.clientX / window.innerWidth) * 100;
+            
+            if (newWidthPercent > 20 && newWidthPercent < 80) {
+                leftPanel.style.flex = `0 0 ${newWidthPercent}%`;
+            }
+        });
+
+        document.addEventListener('mouseup', () => {
+            if (isResizing) {
+                isResizing = false;
+                document.body.style.cursor = 'default';
+                document.body.style.userSelect = 'auto'; 
+            }
+        });
+    </script>
+</body>
+</html>
