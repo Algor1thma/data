@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Задача: Делители (методи) - Algorithma</title>
+    <style>
+        body { margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; height: 100vh; background-color: #1e1e24; color: #e0e0e0; overflow: hidden;}
+        
+        /* Панели */
+        .panel { padding: 25px; overflow-y: auto; box-sizing: border-box; display: flex; flex-direction: column;}
+        
+        /* Ляв Панел - Условие */
+        .left-panel { border-right: 2px solid #333; background-color: #2b2b36; flex: 0 0 50%; min-width: 20%; box-shadow: inset -5px 0 15px rgba(0,0,0,0.2);}
+        
+        /* Съдържание на левия панел */
+        .content-wrapper { flex-grow: 1; }
+
+        /* Десен Панел - Интерактивна Визуализация */
+        .right-panel { display: flex; flex-direction: column; gap: 20px; background-color: #1e1e24; flex: 1; min-width: 20%; position: relative;}
+        
+        /* Сплитер / Разделител */
+        .resizer {
+            width: 6px;
+            background-color: #444;
+            cursor: col-resize; 
+            transition: background-color 0.2s;
+            z-index: 10;
+        }
+        .resizer:hover, .resizer:active {
+            background-color: #9b59b6;
+        }
+
+        /* Бутон Назад */
+        .back-to-home { display: inline-block; text-decoration: none; color: #9b59b6; font-weight: bold; font-size: 0.95rem; margin-bottom: 15px; padding: 8px 15px; border: 1px solid #9b59b6; border-radius: 8px; transition: all 0.3s ease; background: transparent; align-self: flex-start;}
+        .back-to-home:hover { background-color: #9b59b6; color: #1e1e24; box-shadow: 0 0 10px rgba(155, 89, 182, 0.5); }
+
+        h1 { color: #ffffff; font-size: 1.7rem; margin-bottom: 5px; text-shadow: 0 2px 4px rgba(0,0,0,0.3);}
+        h2 { color: #9b59b6; font-size: 1.1rem; text-transform: uppercase; margin-top: 0; margin-bottom: 15px; letter-spacing: 1px;}
+        h3 { color: #00cec9; border-bottom: 1px solid #444; padding-bottom: 5px; margin-top: 25px; font-size: 1.15rem;}
+        p, ul, li { line-height: 1.6; color: #dcdde1; font-size: 0.95rem; margin-bottom: 10px;}
+        
+        /* Таблици */
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; margin-bottom: 20px; font-size: 0.9rem; background-color: #353b48; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.3);}
+        th, td { border: 1px solid #444; padding: 10px; text-align: left; }
+        th { background-color: #2f3640; color: #9b59b6; font-weight: bold;}
+
+        /* Примери - Конзолен изглед */
+        .examples-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-top: 15px;}
+        .example-box { background-color: #0c0c0c; border: 1px solid #555; border-top: 15px solid #2d3436; border-radius: 6px; padding: 10px; font-family: Consolas, monospace; color: #bdc3c7; font-size: 0.85rem; white-space: pre-wrap;}
+
+        /* Авторски права */
+        .copyright {
+            margin-top: 40px;
+            padding-top: 15px;
+            border-top: 1px solid #444;
+            color: #7f8c8d;
+            font-size: 0.85rem;
+            text-align: center;
+        }
+
+        /* Специален Раздел ВИЗУАЛИЗАЦИИ */
+        .viz-header { background: linear-gradient(90deg, #9b59b6, #8e44ad); color: #fff; padding: 12px 20px; border-radius: 8px; text-align: center; font-weight: bold; font-size: 1.2rem; text-transform: uppercase; letter-spacing: 2px; box-shadow: 0 4px 15px rgba(155, 89, 182, 0.4); flex-shrink: 0;}
+
+        /* Интерактивна Зона */
+        .interactive-workspace { flex: 1; display: flex; flex-direction: column; gap: 15px; align-items: stretch; justify-content: flex-start; padding-top: 10px;}
+        
+        /* Контролери */
+        .controls-container { display: flex; justify-content: space-between; gap: 15px; background: #2b2b36; padding: 20px; border-radius: 12px; border: 1px solid #444; box-shadow: 0 8px 15px rgba(0,0,0,0.4);}
+        .slider-group { flex: 1; display: flex; flex-direction: column; align-items: center; }
+        .slider-label { font-size: 1rem; color: #dcdde1; font-weight: bold; margin-bottom: 10px; font-family: Consolas, monospace;}
+        .slider-label span { color: #fff; font-size: 1.2rem; margin-left: 5px; }
+        input[type=range] { width: 100%; cursor: pointer;}
+        input[type=range].slider-x { accent-color: #0984e3; }
+        input[type=range].slider-y { accent-color: #d63031; }
+        input[type=range].slider-n { accent-color: #f39c12; }
+
+        /* Логически панел */
+        .logic-inspector { background: #0c0c0c; border: 2px dashed #636e72; border-radius: 8px; padding: 15px; text-align: center; font-family: Consolas, monospace; font-size: 1.1rem; color: #b2bec3; min-height: 50px; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: inset 0 0 10px rgba(0,0,0,0.8);}
+        .highlight-x { color: #0984e3; font-weight: bold; }
+        .highlight-y { color: #d63031; font-weight: bold; }
+        .highlight-xy { color: #9b59b6; font-weight: bold; }
+
+        /* Числова решетка (Grid) */
+        .numbers-grid { display: flex; flex-wrap: wrap; gap: 10px; background: #2d3436; border-radius: 12px; border: 2px solid #636e72; padding: 20px; box-shadow: inset 0 0 20px rgba(0,0,0,0.5); overflow-y: auto; max-height: 400px; justify-content: center;}
+        
+        .num-box { width: 50px; height: 50px; border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-weight: bold; font-family: Consolas, monospace; font-size: 1.2rem; cursor: crosshair; transition: all 0.2s ease; border: 2px solid transparent; background-color: #353b48; color: #b2bec3; box-shadow: 0 4px 6px rgba(0,0,0,0.2);}
+        .num-box:hover { transform: scale(1.1); border-color: #fff; z-index: 10;}
+        .num-box .sub { font-size: 0.7rem; margin-top: 2px; height: 12px; letter-spacing: 1px;}
+        
+        /* Цветове според делението */
+        .num-x { background-color: rgba(9, 132, 227, 0.2); border-color: rgba(9, 132, 227, 0.5); color: #74b9ff; }
+        .num-y { background-color: rgba(214, 48, 49, 0.2); border-color: rgba(214, 48, 49, 0.5); color: #ff7675; }
+        .num-xy { background-color: rgba(155, 89, 182, 0.3); border-color: #9b59b6; color: #fd79a8; box-shadow: 0 0 10px rgba(155, 89, 182, 0.6);}
+        
+        /* Стилизиране на условията в ляво */
+        .math-formula-box { background: #1e1e24; padding: 15px; border-radius: 8px; border: 1px solid #444; text-align: center; margin: 15px 0; color: #b2bec3; font-family: Consolas, monospace;}
+    </style>
+</head>
+
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-YYBQF66CTS"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-YYBQF66CTS');
+</script>
+
+<body>
+
+    <div class="panel left-panel" id="leftPanel">
+        <div class="content-wrapper">
+            <a href="../index.html" class="back-to-home">← Начало</a>
+            
+            <h1>Задача: Делители (методи)</h1>
+            <h2>Методи в класовете</h2>
+            
+            <p>Да се напише програма, която отпечатва целите числа от 1 до N. До тях, след двоеточие се отпечатва "X", ако числото се дели на X, или "Y", ако числото се дели на Y. Ако числото се дели и на X и на Y, програмата да отпечатва "XY".</p>
+            
+            <p>Да се декларира клас <code>DivisibleXY</code> със следните полета:</p>
+            <table>
+                <tr><th>Поле</th><th>Тип</th><th>Описание</th></tr>
+                <tr><td>X</td><td>цяло число</td><td>делител X</td></tr>
+                <tr><td>Y</td><td>цяло число</td><td>делител Y</td></tr>
+                <tr><td>n</td><td>цяло число</td><td>последно число в редицата</td></tr>
+            </table>
+
+            <h3>В класа да се дефинират следните методи:</h3>
+            <ul>
+                <li><code>void Read()</code> - за въвеждане на данните (двата делителя и последното число).</li>
+                <li><code>void PrintAns()</code> - за отпечатване на целите числа от 1 до n по зададения модел.</li>
+            </ul>
+            
+            <div class="math-formula-box">
+                <strong>Алгоритмична логика (Модулно деление):</strong><br><br>
+                <span style="color: #9b59b6;">АКО</span> (число % X == 0) <span style="color: #9b59b6;">И</span> (число % Y == 0) &rarr; "XY"<br>
+                <span style="color: #0984e3;">ИНАЧЕ АКО</span> (число % X == 0) &rarr; "X"<br>
+                <span style="color: #d63031;">ИНАЧЕ АКО</span> (число % Y == 0) &rarr; "Y"<br>
+                <span style="color: #b2bec3;">ИНАЧЕ</span> &rarr; само числото
+            </div>
+
+            <h3>Примери:</h3>
+            <div class="examples-grid">
+                <div class="example-box">Enter X: 2
+Enter Y: 3
+Enter N: 7
+1
+2: X
+3: Y
+4: X
+5
+6: XY
+7</div>
+                <div class="example-box">Enter X: 3
+Enter Y: 5
+Enter N: 7
+1
+2
+3: X
+4
+5: Y
+6: X
+7</div>
+            </div>
+        </div>
+
+        <div class="copyright">
+            &copy; 2026 Algorithma. Всички права запазени.
+        </div>
+    </div>
+
+    <!-- Сплитер за преоразмеряване -->
+    <div class="resizer" id="resizer"></div>
+
+    <div class="panel right-panel">
+        
+        <div class="viz-header">
+            ⚡ Интерактивна Визуализация на алгоритъма ⚡
+        </div>
+
+        <div class="interactive-workspace">
+            
+            <!-- Контролери -->
+            <div class="controls-container">
+                <div class="slider-group">
+                    <div class="slider-label" style="color: #0984e3;">Делител X: <span id="valX">2</span></div>
+                    <input type="range" id="sliderX" class="slider-x" min="2" max="10" value="2" step="1">
+                </div>
+                <div class="slider-group">
+                    <div class="slider-label" style="color: #d63031;">Делител Y: <span id="valY">3</span></div>
+                    <input type="range" id="sliderY" class="slider-y" min="2" max="10" value="3" step="1">
+                </div>
+                <div class="slider-group">
+                    <div class="slider-label" style="color: #f39c12;">До число N: <span id="valN">30</span></div>
+                    <input type="range" id="sliderN" class="slider-n" min="5" max="100" value="30" step="1">
+                </div>
+            </div>
+
+            <!-- Логически инспектор -->
+            <div class="logic-inspector" id="logicInspector">
+                <div>Посочете число от решетката, за да видите математическата проверка...</div>
+            </div>
+
+            <!-- Числова решетка (Grid) -->
+            <div class="numbers-grid" id="numbersGrid">
+                <!-- Клетките се генерират динамично от JavaScript -->
+            </div>
+
+        </div>
+
+    </div>
+
+    <script>
+        const sliderX = document.getElementById('sliderX');
+        const sliderY = document.getElementById('sliderY');
+        const sliderN = document.getElementById('sliderN');
+        
+        const valX = document.getElementById('valX');
+        const valY = document.getElementById('valY');
+        const valN = document.getElementById('valN');
+        
+        const numbersGrid = document.getElementById('numbersGrid');
+        const logicInspector = document.getElementById('logicInspector');
+
+        function generateGrid() {
+            const x = parseInt(sliderX.value);
+            const y = parseInt(sliderY.value);
+            const n = parseInt(sliderN.value);
+            
+            valX.textContent = x;
+            valY.textContent = y;
+            valN.textContent = n;
+
+            let html = '';
+            for (let i = 1; i <= n; i++) {
+                const isDivX = (i % x === 0);
+                const isDivY = (i % y === 0);
+                
+                let subText = '';
+                let cssClass = '';
+                
+                if (isDivX && isDivY) {
+                    subText = 'XY';
+                    cssClass = 'num-xy';
+                } else if (isDivX) {
+                    subText = 'X';
+                    cssClass = 'num-x';
+                } else if (isDivY) {
+                    subText = 'Y';
+                    cssClass = 'num-y';
+                }
+
+                html += `<div class="num-box ${cssClass}" 
+                              data-num="${i}" 
+                              data-x="${x}" 
+                              data-y="${y}" 
+                              data-isx="${isDivX}" 
+                              data-isy="${isDivY}"
+                              onmouseover="inspectNumber(this)"
+                              onmouseout="clearInspector()">
+                            ${i}
+                            <span class="sub">${subText}</span>
+                         </div>`;
+            }
+            
+            numbersGrid.innerHTML = html;
+        }
+
+        function inspectNumber(element) {
+            const num = element.getAttribute('data-num');
+            const x = element.getAttribute('data-x');
+            const y = element.getAttribute('data-y');
+            const isX = element.getAttribute('data-isx') === 'true';
+            const isY = element.getAttribute('data-isy') === 'true';
+
+            // Обвиваме логиката в <span> елементи вместо да ползваме <br>, 
+            // за да стои като единен параграф (прав текст).
+            let conditionLogic = `<span style="color:#fff;">Проверка за числото ${num}:</span> `;
+            
+            if (isX && isY) {
+                conditionLogic += `<span class="highlight-xy">(${num} % ${x} == 0) И (${num} % ${y} == 0) &rarr; Отпечатваме XY.</span>`;
+            } else if (isX) {
+                conditionLogic += `<span class="highlight-x">(${num} % ${x} == 0) &rarr; Отпечатваме X.</span> <span style="color:#636e72; font-size:0.9rem;">(${num} % ${y} != 0)</span>`;
+            } else if (isY) {
+                conditionLogic += `<span class="highlight-y">(${num} % ${y} == 0) &rarr; Отпечатваме Y.</span> <span style="color:#636e72; font-size:0.9rem;">(${num} % ${x} != 0)</span>`;
+            } else {
+                conditionLogic += `<span style="color:#b2bec3;">Остатъкът при деление и на ${x}, и на ${y} е различен от 0. Отпечатваме само числото.</span>`;
+            }
+
+            // Обвиваме всичко в един <div>, за да гарантираме, че flexbox ще го третира като един блок
+            logicInspector.innerHTML = `<div>${conditionLogic}</div>`;
+        }
+
+        function clearInspector() {
+            logicInspector.innerHTML = "<div>Посочете число от решетката, за да видите математическата проверка...</div>";
+        }
+
+        // Event Listeners
+        sliderX.addEventListener('input', generateGrid);
+        sliderY.addEventListener('input', generateGrid);
+        sliderN.addEventListener('input', generateGrid);
+
+        // Първоначално генериране
+        window.onload = generateGrid;
+
+        // ----------------------------------------------------------------
+        // Логика за преоразмеряване на панелите (Drag-to-resize)
+        // ----------------------------------------------------------------
+        const resizer = document.getElementById('resizer');
+        const leftPanel = document.getElementById('leftPanel');
+        let isResizing = false;
+
+        resizer.addEventListener('mousedown', (e) => {
+            isResizing = true;
+            document.body.style.cursor = 'col-resize';
+            document.body.style.userSelect = 'none';
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (!isResizing) return;
+            
+            let newWidthPercent = (e.clientX / window.innerWidth) * 100;
+            
+            if (newWidthPercent > 20 && newWidthPercent < 80) {
+                leftPanel.style.flex = `0 0 ${newWidthPercent}%`;
+            }
+        });
+
+        document.addEventListener('mouseup', () => {
+            if (isResizing) {
+                isResizing = false;
+                document.body.style.cursor = 'default';
+                document.body.style.userSelect = 'auto'; 
+            }
+        });
+    </script>
+</body>
+</html>
