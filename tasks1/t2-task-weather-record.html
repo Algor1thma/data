@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Задача 10: Метеорологична справка - Algorithma</title>
+    <style>
+        body { margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; height: 100vh; background-color: #1e1e24; color: #e0e0e0; overflow: hidden;}
+        
+        /* Панели */
+        .panel { padding: 25px; overflow-y: auto; box-sizing: border-box; display: flex; flex-direction: column; }
+        
+        /* Ляв Панел - Условие */
+        .left-panel { border-right: 2px solid #333; background-color: #2b2b36; flex: 0 0 50%; min-width: 20%; box-shadow: inset -5px 0 15px rgba(0,0,0,0.2);}
+        
+        /* Съдържание на левия панел */
+        .content-wrapper { flex-grow: 1; }
+        
+        /* Десен Панел - Визуализации */
+        .right-panel { display: flex; flex-direction: column; gap: 15px; background-color: #1e1e24; flex: 1; min-width: 20%; position: relative;}
+        
+        /* Сплитер / Разделител */
+        .resizer {
+            width: 6px;
+            background-color: #444;
+            cursor: col-resize; 
+            transition: background-color 0.2s;
+            z-index: 10;
+        }
+        .resizer:hover, .resizer:active {
+            background-color: #3498db;
+        }
+
+        /* Бутон Назад */
+        .back-to-home { display: inline-block; text-decoration: none; color: #3498db; font-weight: bold; font-size: 0.95rem; margin-bottom: 15px; padding: 8px 15px; border: 1px solid #3498db; border-radius: 8px; transition: all 0.3s ease; background: transparent; align-self: flex-start; }
+        .back-to-home:hover { background-color: #3498db; color: #1e1e24; box-shadow: 0 0 10px rgba(52, 152, 219, 0.5); }
+
+        h1 { color: #ffffff; font-size: 1.6rem; margin-bottom: 5px; text-shadow: 0 2px 4px rgba(0,0,0,0.3);}
+        h2 { color: #3498db; font-size: 1.05rem; text-transform: uppercase; margin-top: 0; margin-bottom: 15px; letter-spacing: 1px;}
+        h3 { color: #9b59b6; border-bottom: 1px solid #444; padding-bottom: 5px; margin-top: 20px; font-size: 1.1rem;}
+        p, ul, li { line-height: 1.5; color: #dcdde1; font-size: 0.9rem; margin-bottom: 8px;}
+        
+        /* Таблици */
+        table { width: 100%; border-collapse: collapse; margin-top: 5px; margin-bottom: 15px; font-size: 0.85rem; background-color: #353b48; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.3);}
+        th, td { border: 1px solid #444; padding: 8px; text-align: left; }
+        th { background-color: #2f3640; color: #3498db; font-weight: bold;}
+
+        /* Условие - Формули */
+        .formula-box { background: #1e1e24; padding: 10px; border-radius: 8px; border: 1px solid #444; text-align: center; margin: 10px 0; color: #f1c40f; font-size: 1.1rem;}
+        
+        /* Примери - Конзолен изглед */
+        .example-box { background-color: #0c0c0c; border: 1px solid #555; border-top: 10px solid #2d3436; border-radius: 6px; padding: 10px; font-family: Consolas, monospace; color: #bdc3c7; font-size: 0.85rem; white-space: pre-wrap;}
+
+        /* Авторски права */
+        .copyright {
+            margin-top: 40px;
+            padding-top: 15px;
+            border-top: 1px solid #444;
+            color: #7f8c8d;
+            font-size: 0.85rem;
+            text-align: center;
+        }
+
+        /* Специален Раздел ВИЗУАЛИЗАЦИИ */
+        .viz-header { background: linear-gradient(90deg, #2980b9, #3498db); color: #fff; padding: 8px 20px; border-radius: 8px; text-align: center; font-weight: bold; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 2px; box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3); flex-shrink: 0;}
+
+        /* Описание на стъпките */
+        .viz-text { text-align: center; font-size: 1.05rem; font-weight: bold; color: #dcdde1; margin: 10px 0; min-height: 45px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;}
+
+        /* Визуална Зона */
+        .visualization-workspace { flex: 1 0 auto; display: flex; flex-direction: row; gap: 20px; min-height: 280px; align-items: stretch; justify-content: center; padding: 10px;}
+        
+        /* Блокове за Памет */
+        .memory-column { display: flex; flex-direction: column; justify-content: center; align-items: center; flex-shrink: 0; min-width: 220px;}
+        .memory-box { background: #2b2b36; border: 2px solid #3498db; border-radius: 10px; padding: 15px; box-shadow: 0 6px 12px rgba(0,0,0,0.4); opacity: 0.3; transition: opacity 0.4s; width: 100%; box-sizing: border-box;}
+        .memory-box.active { opacity: 1; border-color: #3498db; box-shadow: 0 0 15px rgba(52, 152, 219, 0.4);}
+        .memory-title { font-weight: bold; color: #3498db; border-bottom: 1px solid #444; padding-bottom: 5px; margin-bottom: 10px; font-size: 0.95rem; text-align: center;}
+        .card-image { font-size: 3rem; text-align: center; margin-bottom: 10px; filter: drop-shadow(0px 3px 3px rgba(0,0,0,0.2)); }
+        .memory-prop { display: flex; justify-content: space-between; margin: 6px 0; font-family: Consolas, monospace; font-size: 0.9rem; border-bottom: 1px dashed #444; padding-bottom: 4px;}
+        .memory-prop span:nth-child(1) { color: #b2bec3; }
+        .memory-prop span:nth-child(2) { color: #f1c40f; font-weight: bold; }
+
+        /* Изчислителен Панел (Math Overlay) */
+        .math-panel-wrapper { flex: 1; display: flex; justify-content: center; align-items: center; position: relative;}
+        .math-overlay { background: rgba(30, 30, 36, 0.95); border: 2px solid #9b59b6; border-radius: 12px; padding: 20px; z-index: 10; display: none; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 10px 30px rgba(0,0,0,0.6); transform: scale(0.9); opacity: 0; transition: all 0.4s ease; width: 100%; max-width: 350px;}
+        .math-overlay.show { display: flex; transform: scale(1); opacity: 1; }
+        .math-title { color: #9b59b6; font-weight: bold; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1px; font-size: 0.9rem; text-align: center;}
+        .math-step { font-family: Consolas, monospace; font-size: 1.1rem; color: #fff; margin: 8px 0; text-align: center;}
+        .math-result { color: #f1c40f; font-size: 1.4rem; font-weight: bold; border-top: 1px dashed #555; padding-top: 15px; margin-top: 10px; width: 100%; text-align: center;}
+
+        /* Конзола */
+        .console-box { background-color: #0c0c0c; border: 1px solid #333; border-top: 20px solid #2d3436; border-radius: 8px; padding: 15px; font-family: Consolas, 'Courier New', monospace; font-size: 13px; position: relative; box-shadow: 0 8px 15px rgba(0,0,0,0.5); min-height: 160px; flex-shrink: 0; margin-top: auto;}
+        .console-box::before { content: "C:\\Windows\\System32\\cmd.exe"; position: absolute; top: -16px; left: 10px; color: #b2bec3; font-size: 10px; font-family: 'Segoe UI', sans-serif;}
+        .console-output { color: #bdc3c7; white-space: pre-wrap; line-height: 1.4; }
+        
+        /* Контроли */
+        .controls { display: flex; gap: 15px; justify-content: center; align-items: center; background: #2b2b36; padding: 10px; border-radius: 8px; border: 1px solid #444; flex-shrink: 0;}
+        button { padding: 8px 15px; border: none; border-radius: 6px; background: linear-gradient(180deg, #2980b9, #2c3e50); color: white; font-size: 13px; font-weight: bold; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.3); text-transform: uppercase;}
+        button:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 10px rgba(41, 128, 185, 0.5); }
+        button:disabled { background: #555; color: #888; cursor: not-allowed; box-shadow: none; transform: none;}
+        .step-indicator { color: #3498db; font-weight: bold; font-family: Consolas, monospace; font-size: 0.95rem; width: 130px; text-align: center;}
+    </style>
+    <!-- MathJax -->
+    <script>MathJax = { tex: { inlineMath: [['$', '$']] } };</script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+
+    <div class="panel left-panel" id="leftPanel">
+        <div class="content-wrapper">
+            <a href="../index.html" class="back-to-home">← Начало</a>
+            
+            <h1>Задача 10: Метеорологична справка</h1>
+            <h2>Методи в класовете</h2>
+            
+            <p>Да се декларира клас <code>WeatherRecord</code>, описващ дневен метеорологичен запис. Класът да има следните полета:</p>
+            
+            <table>
+                <tr><th>Поле</th><th>Тип</th><th>Описание</th></tr>
+                <tr><td>city</td><td>текст</td><td>име на града</td></tr>
+                <tr><td>morningTemp</td><td>цяло число</td><td>температура сутринта в 7:00</td></tr>
+                <tr><td>noonTemp</td><td>цяло число</td><td>температура на обяд в 14:00</td></tr>
+                <tr><td>eveningTemp</td><td>цяло число</td><td>температура вечерта в 21:00</td></tr>
+            </table>
+
+            <h3>В класа да се дефинират следните публични методи:</h3>
+            <ul>
+                <li>Метод от тип <code>void</code> с име <code>GenerateData()</code> за задаване на име на град от клавиатурата и генериране на случайни числа за трите температури в следните диапазони: сутрин [5; 15], обяд [15; 35], вечер [10; 20].</li>
+                <li>Метод от тип <code>double</code> с име <code>GetAverageTemp()</code> за изчисляване и връщане на средната дневна температура по следната формула:</li>
+            </ul>
+            <div class="formula-box">$T_{avg}=\frac{T_{7}+T_{14}+2 \cdot T_{21}}{4}$</div>
+            <ul>
+                <li>Метод от тип <code>void</code> с име <code>ShowWeather()</code> за извеждане на справка за града, трите температури и средната дневна температура. Този метод трябва да използва <code>GetAverageTemp()</code> за извеждането на средната стойност.</li>
+                <li>Метод от тип <code>void</code> с име <code>CoolDown()</code> за промяна на вечерната температура чрез изваждане от текущата вечерна температура на генерирано случайно число в диапазона [5; 10].</li>
+            </ul>
+
+            <h3>Да се напише програма, която създава обект от класа <code>WeatherRecord</code> и като се използват методите на класа:</h3>
+            <ul>
+                <li>генерира данните за обекта;</li>
+                <li>извежда първоначална справка за времето;</li>
+                <li>променя вечерната температура чрез метода за застудяване и извежда съобщение за преминал студен фронт (по модела от примера);</li>
+                <li>извежда обновената справка за времето.</li>
+            </ul>
+
+            <h3>Примерен резултат:</h3>
+            <div class="example-box">Enter city name: Varna
+Weather in Varna:
+Morning: 12°C
+Noon: 28°C
+Evening: 19°C
+Average: 19.5°C
+Cool front arrived! Evening temperature dropped.
+Weather in Varna:
+Morning: 12°C
+Noon: 28°C
+Evening: 11°C
+Average: 15.5°C</div>
+        </div>
+        
+        <div class="copyright">
+            &copy; 2026 Algorithma. Всички права запазени.
+        </div>
+    </div>
+
+    <!-- Сплитер за преоразмеряване -->
+    <div class="resizer" id="resizer"></div>
+
+    <div class="panel right-panel">
+        
+        <div class="viz-header">
+            ⚡ Интерактивно Изпълнение ⚡
+        </div>
+        
+        <div class="viz-text" id="vizText">Кликнете 'Напред', за да проследите примерно изпълнение.</div>
+
+        <div class="visualization-workspace">
+            
+            <!-- Блокове Памет -->
+            <div class="memory-column">
+                <div class="memory-box" id="memObj">
+                    <div class="memory-title">Обект: weather</div>
+                    <div class="card-image">⛅</div>
+                    <div class="memory-prop"><span>city</span> <span id="vCity">null</span></div>
+                    <div class="memory-prop"><span>morningTemp</span> <span id="vM">0</span></div>
+                    <div class="memory-prop"><span>noonTemp</span> <span id="vN">0</span></div>
+                    <div class="memory-prop"><span>eveningTemp</span> <span id="vE">0</span></div>
+                </div>
+            </div>
+
+            <!-- Изчислителен Панел -->
+            <div class="math-panel-wrapper">
+                <div class="math-overlay" id="mathOverlay">
+                    <div class="math-title" id="mTitle">Пресмятане на Средна Температура</div>
+                    <div class="math-step" id="mStep1"></div>
+                    <div class="math-step" id="mStep2"></div>
+                    <div class="math-result" id="mResult"></div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Конзола -->
+        <div class="console-box">
+            <div class="console-output" id="consoleOutput"></div>
+        </div>
+
+        <div class="controls">
+            <button id="prevBtn" onclick="prevStep()" disabled>⏪ Назад</button>
+            <div class="step-indicator" id="stepIndicator">Стъпка: 0 / 0</div>
+            <button id="nextBtn" onclick="nextStep()">Напред ⏩</button>
+        </div>
+
+    </div>
+
+    <script>
+        const steps = [
+            { text: "Стъпка 1: Декларираме обекта weather. Заделя се памет с начални нулеви стойности.", mem: true, vC: "null", vM: "0", vN: "0", vE: "0", con: "", math: "" },
+            { text: "Стъпка 2: Извикваме GenerateData(). Програмата изисква въвеждане на град.", mem: true, vC: "null", vM: "0", vN: "0", vE: "0", con: "Enter city name: ", math: "" },
+            { text: "Стъпка 3: Въвеждаме 'Varna' и се генерират случайни температури: 12°C (сутрин), 28°C (обяд), 19°C (вечер).", mem: true, vC: "\"Varna\"", vM: "12", vN: "28", vE: "19", con: "Enter city name: Varna\n", math: "" },
+            { text: "Стъпка 4: Извикваме ShowWeather(). За да отпечата данните, методът извиква GetAverageTemp().", mem: true, vC: "\"Varna\"", vM: "12", vN: "28", vE: "19", con: "Enter city name: Varna\nWeather in Varna:\nMorning: 12°C\nNoon: 28°C\nEvening: 19°C\n", math: "A1" },
+            { text: "Стъпка 5: Пресмята се средната температура и се отпечатва в конзолата.", mem: true, vC: "\"Varna\"", vM: "12", vN: "28", vE: "19", con: "Enter city name: Varna\nWeather in Varna:\nMorning: 12°C\nNoon: 28°C\nEvening: 19°C\nAverage: 19.5°C\n", math: "" },
+            { text: "Стъпка 6: Извикваме CoolDown(). Генерира се число на спад (напр. 8). Вечерната температура става 11°C.", mem: true, vC: "\"Varna\"", vM: "12", vN: "28", vE: "11", con: "Enter city name: Varna\nWeather in Varna:\nMorning: 12°C\nNoon: 28°C\nEvening: 19°C\nAverage: 19.5°C\nCool front arrived! Evening temperature dropped.\n", math: "" },
+            { text: "Стъпка 7: Отново извикваме ShowWeather(). Отпечатват се обновените данни.", mem: true, vC: "\"Varna\"", vM: "12", vN: "28", vE: "11", con: "Enter city name: Varna\nWeather in Varna:\nMorning: 12°C\nNoon: 28°C\nEvening: 19°C\nAverage: 19.5°C\nCool front arrived! Evening temperature dropped.\nWeather in Varna:\nMorning: 12°C\nNoon: 28°C\nEvening: 11°C\n", math: "A2" },
+            { text: "Стъпка 8: Пресмята се новата средна температура и изпълнението приключва.", mem: true, vC: "\"Varna\"", vM: "12", vN: "28", vE: "11", con: "Enter city name: Varna\nWeather in Varna:\nMorning: 12°C\nNoon: 28°C\nEvening: 19°C\nAverage: 19.5°C\nCool front arrived! Evening temperature dropped.\nWeather in Varna:\nMorning: 12°C\nNoon: 28°C\nEvening: 11°C\nAverage: 15.5°C", math: "" }
+        ];
+
+        let currentStep = 0;
+
+        function updateUI() {
+            const step = steps[currentStep];
+            
+            if (step) {
+                // Текст за стъпката
+                document.getElementById('vizText').innerText = step.text;
+
+                // Памет
+                const memObj = document.getElementById('memObj');
+                if (step.mem) memObj.classList.add('active'); else memObj.classList.remove('active');
+                
+                document.getElementById('vCity').innerText = step.vC;
+                document.getElementById('vM').innerText = step.vM;
+                document.getElementById('vN').innerText = step.vN;
+                document.getElementById('vE').innerText = step.vE;
+
+                // Конзола
+                document.getElementById('consoleOutput').innerText = step.con;
+
+                // Математически Панел
+                handleMathOverlay(step.math);
+
+                document.getElementById('stepIndicator').innerText = `Стъпка: ${currentStep + 1} / ${steps.length}`;
+            }
+
+            document.getElementById('prevBtn').disabled = currentStep <= 0;
+            document.getElementById('nextBtn').disabled = currentStep >= steps.length - 1;
+        }
+
+        function handleMathOverlay(mathState) {
+            const overlay = document.getElementById('mathOverlay');
+            const mTitle = document.getElementById('mTitle');
+            const mStep1 = document.getElementById('mStep1');
+            const mStep2 = document.getElementById('mStep2');
+            const mResult = document.getElementById('mResult');
+
+            if (!mathState) {
+                overlay.classList.remove('show');
+                return;
+            }
+
+            overlay.classList.add('show');
+            mTitle.textContent = "Изчисляване на Средна Температура";
+            
+            if (mathState === "A1") {
+                mStep1.innerHTML = `(12 + 28 + 2 &times; 19) / 4`;
+                mStep2.innerHTML = `78 / 4`;
+                mResult.textContent = `19.5 °C`;
+            } else if (mathState === "A2") {
+                mStep1.innerHTML = `(12 + 28 + 2 &times; 11) / 4`;
+                mStep2.innerHTML = `62 / 4`;
+                mResult.textContent = `15.5 °C`;
+            }
+        }
+
+        function nextStep() { if (currentStep < steps.length - 1) { currentStep++; updateUI(); } }
+        function prevStep() { if (currentStep > 0) { currentStep--; updateUI(); } }
+
+        window.onload = updateUI;
+
+        // ----------------------------------------------------------------
+        // Логика за преоразмеряване на панелите (Drag-to-resize)
+        // ----------------------------------------------------------------
+        const resizer = document.getElementById('resizer');
+        const leftPanel = document.getElementById('leftPanel');
+        let isResizing = false;
+
+        resizer.addEventListener('mousedown', (e) => {
+            isResizing = true;
+            document.body.style.cursor = 'col-resize';
+            document.body.style.userSelect = 'none';
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (!isResizing) return;
+            
+            let newWidthPercent = (e.clientX / window.innerWidth) * 100;
+            
+            if (newWidthPercent > 20 && newWidthPercent < 80) {
+                leftPanel.style.flex = `0 0 ${newWidthPercent}%`;
+            }
+        });
+
+        document.addEventListener('mouseup', () => {
+            if (isResizing) {
+                isResizing = false;
+                document.body.style.cursor = 'default';
+                document.body.style.userSelect = 'auto'; 
+            }
+        });
+    </script>
+</body>
+</html>

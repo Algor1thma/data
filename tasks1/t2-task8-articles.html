@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Задача 8: Интернет статии - Algorithma</title>
+    <style>
+        body { margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; height: 100vh; background-color: #1e1e24; color: #e0e0e0; overflow: hidden;}
+        
+        /* Панели */
+        .panel { flex: 1; padding: 25px; overflow-y: auto; box-sizing: border-box; }
+        
+        /* Ляв Панел - Условие */
+        .left-panel { border-right: 2px solid #333; background-color: #2b2b36; flex: 0 0 45%; box-shadow: inset -5px 0 15px rgba(0,0,0,0.2);}
+        
+        /* Десен Панел - Интерактивна Визуализация */
+        .right-panel { display: flex; flex-direction: column; gap: 15px; background-color: #1e1e24; flex: 0 0 55%; position: relative;}
+        
+        /* Бутон Назад */
+        .back-to-home { display: inline-block; text-decoration: none; color: #1abc9c; font-weight: bold; font-size: 0.95rem; margin-bottom: 15px; padding: 8px 15px; border: 1px solid #1abc9c; border-radius: 8px; transition: all 0.3s ease; background: transparent; }
+        .back-to-home:hover { background-color: #1abc9c; color: #1e1e24; box-shadow: 0 0 10px rgba(26, 188, 156, 0.5); }
+
+        h1 { color: #ffffff; font-size: 1.7rem; margin-bottom: 5px; text-shadow: 0 2px 4px rgba(0,0,0,0.3);}
+        h2 { color: #1abc9c; font-size: 1.1rem; text-transform: uppercase; margin-top: 0; margin-bottom: 15px; letter-spacing: 1px;}
+        h3 { color: #3498db; border-bottom: 1px solid #444; padding-bottom: 5px; margin-top: 25px; font-size: 1.15rem;}
+        p, ul, li { line-height: 1.6; color: #dcdde1; font-size: 0.95rem; margin-bottom: 10px;}
+        
+        /* Таблици */
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; margin-bottom: 20px; font-size: 0.9rem; background-color: #353b48; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.3);}
+        th, td { border: 1px solid #444; padding: 10px; text-align: left; }
+        th { background-color: #2f3640; color: #1abc9c; font-weight: bold;}
+        
+        /* Примери - Конзолен изглед */
+        .examples-grid { display: flex; flex-direction: column; gap: 10px; margin-top: 15px;}
+        .example-box { background-color: #0c0c0c; border: 1px solid #555; border-top: 10px solid #2d3436; border-radius: 6px; padding: 10px; font-family: Consolas, monospace; color: #bdc3c7; font-size: 0.85rem; white-space: pre-wrap;}
+
+        /* Специален Раздел ВИЗУАЛИЗАЦИИ */
+        .viz-header { background: linear-gradient(90deg, #1abc9c, #16a085); color: #1e1e24; padding: 10px 20px; border-radius: 8px; text-align: center; font-weight: bold; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 2px; box-shadow: 0 4px 15px rgba(26, 188, 156, 0.4); flex-shrink: 0;}
+
+        /* Интерактивна Зона */
+        .interactive-workspace { flex: 1; display: flex; flex-direction: column; gap: 15px; align-items: stretch; justify-content: flex-start; padding-top: 10px;}
+        
+        /* Контролери */
+        .controls-container { display: flex; justify-content: center; gap: 15px; background: #2b2b36; padding: 15px; border-radius: 12px; border: 1px solid #444; box-shadow: 0 8px 15px rgba(0,0,0,0.4);}
+        .action-btn { flex: 1; padding: 12px; border: none; border-radius: 8px; font-size: 0.95rem; font-weight: bold; cursor: pointer; transition: all 0.2s; text-transform: uppercase; display: flex; align-items: center; justify-content: center; gap: 10px;}
+        .btn-init { background: linear-gradient(135deg, #2980b9, #3498db); color: #fff; box-shadow: 0 4px 10px rgba(52, 152, 219, 0.4);}
+        .btn-init:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(52, 152, 219, 0.6);}
+        .btn-traffic { background: linear-gradient(135deg, #e67e22, #d35400); color: #fff; box-shadow: 0 4px 10px rgba(230, 126, 34, 0.4);}
+        .btn-traffic:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(230, 126, 34, 0.6);}
+        .btn-traffic:disabled { background: #555; color: #888; cursor: not-allowed; box-shadow: none; transform: none;}
+
+        /* Дашборд за статиите */
+        .dashboard { display: flex; gap: 15px; flex: 1;}
+        .article-card { flex: 1; background: #2d3436; border: 2px solid #636e72; border-radius: 12px; padding: 20px; box-shadow: inset 0 0 20px rgba(0,0,0,0.5); display: flex; flex-direction: column; gap: 15px; transition: border-color 0.3s;}
+        .article-title { text-align: center; font-weight: bold; color: #1abc9c; font-size: 1.2rem; border-bottom: 1px dashed #555; padding-bottom: 10px;}
+        
+        /* Метрики (Броячи) */
+        .metrics-row { display: flex; justify-content: space-between; gap: 10px;}
+        .metric-box { flex: 1; background: #353b48; border-radius: 8px; padding: 10px; text-align: center; border: 1px solid #444;}
+        .metric-icon { font-size: 1.5rem; margin-bottom: 5px;}
+        .metric-value { font-family: Consolas, monospace; font-size: 1.3rem; font-weight: bold; color: #fff;}
+        .metric-label { font-size: 0.75rem; color: #b2bec3; text-transform: uppercase;}
+        
+        /* Индекси (Прогрес барове) */
+        .index-container { background: #353b48; padding: 15px; border-radius: 8px; border: 1px solid #444;}
+        .index-header { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.9rem;}
+        .index-title { color: #dcdde1; font-weight: bold;}
+        .index-val { font-family: Consolas, monospace; color: #1abc9c; font-weight: bold;}
+        
+        .progress-track { width: 100%; height: 10px; background: #1e1e24; border-radius: 5px; overflow: hidden; box-shadow: inset 0 2px 5px rgba(0,0,0,0.5);}
+        .progress-fill-pos { height: 100%; background: linear-gradient(90deg, #27ae60, #2ecc71); width: 0%; transition: width 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);}
+        .progress-fill-emo { height: 100%; background: linear-gradient(90deg, #8e44ad, #9b59b6); width: 0%; transition: width 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);}
+
+        /* Конзола */
+        .console-box { background-color: #0c0c0c; border: 1px solid #333; border-top: 20px solid #2d3436; border-radius: 8px; padding: 15px; font-family: Consolas, 'Courier New', monospace; font-size: 0.9rem; position: relative; box-shadow: 0 8px 15px rgba(0,0,0,0.5); min-height: 100px; flex-shrink: 0; max-height: 200px; overflow-y: auto;}
+        .console-box::before { content: "C:\\Windows\\System32\\cmd.exe"; position: absolute; top: -17px; left: 10px; color: #b2bec3; font-size: 11px; font-family: 'Segoe UI', sans-serif;}
+        .console-output { color: #bdc3c7; white-space: pre-wrap; line-height: 1.5; }
+        .highlight { color: #1abc9c; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <div class="panel left-panel">
+        <a href="../index.html" class="back-to-home">← Начало</a>
+        
+        <h1>Задача 8: Интернет статии</h1>
+        <h2>Методи в класовете</h2>
+        
+        <p>Да се декларира клас <code>NetArticle</code>, определящ броя на хората, които са прочели дадена статия, както и на тези, които са дали положителна и съответно отрицателна оценка за статията:</p>
+        
+        <table>
+            <tr><th>Поле</th><th>Тип</th><th>Описание</th></tr>
+            <tr><td>readers</td><td>цяло число</td><td>брой хора, прочели статията</td></tr>
+            <tr><td>likes</td><td>цяло число</td><td>брой на харесванията</td></tr>
+            <tr><td>dislikes</td><td>цяло число</td><td>брой на нехаресванията</td></tr>
+        </table>
+
+        <h3>В класа да се дефинират следните публични методи:</h3>
+        <ul>
+            <li>1) Метод от тип <code>void</code> с име <code>Initialize()</code> - за задаване на стойности на трите полета чрез въвеждане от клавиатурата;</li>
+            <li>2) Метод от тип <code>void</code> с име <code>AddReaders(int rdrs)</code> - за увеличаване на стойността на полето readers чрез прибавяне на стойността на параметъра rdrs.</li>
+            <li>3) Метод от тип <code>void</code> с име <code>AddLikes(int lks)</code> - за увеличаване на стойността на полето likes чрез прибавяне на стойността на параметъра lks. При извършване на промяна се увеличава със същата стойност и полето readers;</li>
+            <li>4) Метод от тип <code>void</code> с име <code>AddDislikes(int dslks)</code> - за увеличаване на стойността на полето dislikes чрез прибавяне на стойността на параметъра dslks. При извършване на промяна се увеличава със същата стойност и полето readers;</li>
+            <li>5) Метод от тип <code>double</code> с име <code>GetPositiveIndex()</code> за изчисляване на коефициента на харесване чрез формулата: likes : (likes + dislikes)</li>
+            <li>6) Метод от тип <code>double</code> с име <code>GetEmotionalIndex()</code> за изчисляване на коефициента на емоции на оценки чрез формулата: (likes + dislikes) : readers</li>
+            <li>7) Метод от тип <code>void</code> с име <code>Information()</code> - за извеждане на справка за текущите стойности на полетата readers, likes, dislikes, както и за коефициентите на харесване и емоции;</li>
+        </ul>
+        
+        <h3>Като се използват методите на класа NetArticle, да се напише програма, която:</h3>
+        <ul>
+            <li>създава два обекта от класа NetArticle и ги запълва със стойности;</li>
+            <li>извежда на екрана информация за двата обекта;</li>
+            <li>добавя читатели, харесвания и нехаресвания към всеки от двата обекта чрез използване на подходящите методи със стойности случайни числа в интервала [10; 100];</li>
+            <li>извежда отново на екрана информация за двата "обновени" обекта.</li>
+        </ul>
+
+        <h3>Примери:</h3>
+        <div class="examples-grid">
+            <div class="example-box">New article
+Enter number of readers: 50
+Enter number of likes: 10
+Enter number of dislikes: 15
+New article
+Enter number of readers: 120
+Enter number of likes: 60
+Enter number of dislikes: 30
+
+Article stats
+Readers: 50
+Likes: 10
+Dislikes: 15
+Positive index: 0,400
+Emotional index: 0,500
+
+Article stats
+Readers: 120
+Likes: 60
+Dislikes: 30
+Positive index: 0,667
+Emotional index: 0,750
+
+Updated information
+
+Article stats
+Readers: 269
+Likes: 62
+Dislikes: 113
+Positive index: 0,354
+Emotional index: 0,651
+
+Article stats
+Readers: 328
+Likes: 160
+Dislikes: 47
+Positive index: 0,773
+Emotional index: 0,631</div>
+        </div>
+    </div>
+
+    <div class="panel right-panel">
+        
+        <div class="viz-header">
+            ⚡ Интерактивен Анализ на Статии ⚡
+        </div>
+
+        <div class="interactive-workspace">
+            
+            <!-- Контролери -->
+            <div class="controls-container">
+                <button class="action-btn btn-init" onclick="initArticles()">
+                    ⚙️ Създай и Инициализирай
+                </button>
+                <button class="action-btn btn-traffic" id="btnTraffic" onclick="simulateTraffic()" disabled>
+                    🌐 Добави случаен трафик
+                </button>
+            </div>
+
+            <!-- Дашборд -->
+            <div class="dashboard">
+                <!-- Статия 1 -->
+                <div class="article-card" id="cardA1">
+                    <div class="article-title">Статия 1 (Обект 1)</div>
+                    
+                    <div class="metrics-row">
+                        <div class="metric-box">
+                            <div class="metric-icon">👤</div>
+                            <div class="metric-value" id="r1">0</div>
+                            <div class="metric-label">Readers</div>
+                        </div>
+                        <div class="metric-box" style="border-color: #2ecc71; background: rgba(46, 204, 113, 0.1);">
+                            <div class="metric-icon">👍</div>
+                            <div class="metric-value" style="color: #2ecc71;" id="l1">0</div>
+                            <div class="metric-label">Likes</div>
+                        </div>
+                        <div class="metric-box" style="border-color: #e74c3c; background: rgba(231, 76, 60, 0.1);">
+                            <div class="metric-icon">👎</div>
+                            <div class="metric-value" style="color: #e74c3c;" id="d1">0</div>
+                            <div class="metric-label">Dislikes</div>
+                        </div>
+                    </div>
+
+                    <div class="index-container">
+                        <div class="index-header">
+                            <span class="index-title">Positive Index</span>
+                            <span class="index-val" id="piVal1">0.000</span>
+                        </div>
+                        <div class="progress-track"><div class="progress-fill-pos" id="piBar1"></div></div>
+                    </div>
+
+                    <div class="index-container">
+                        <div class="index-header">
+                            <span class="index-title">Emotional Index</span>
+                            <span class="index-val" id="eiVal1">0.000</span>
+                        </div>
+                        <div class="progress-track"><div class="progress-fill-emo" id="eiBar1"></div></div>
+                    </div>
+                </div>
+
+                <!-- Статия 2 -->
+                <div class="article-card" id="cardA2">
+                    <div class="article-title">Статия 2 (Обект 2)</div>
+                    
+                    <div class="metrics-row">
+                        <div class="metric-box">
+                            <div class="metric-icon">👤</div>
+                            <div class="metric-value" id="r2">0</div>
+                            <div class="metric-label">Readers</div>
+                        </div>
+                        <div class="metric-box" style="border-color: #2ecc71; background: rgba(46, 204, 113, 0.1);">
+                            <div class="metric-icon">👍</div>
+                            <div class="metric-value" style="color: #2ecc71;" id="l2">0</div>
+                            <div class="metric-label">Likes</div>
+                        </div>
+                        <div class="metric-box" style="border-color: #e74c3c; background: rgba(231, 76, 60, 0.1);">
+                            <div class="metric-icon">👎</div>
+                            <div class="metric-value" style="color: #e74c3c;" id="d2">0</div>
+                            <div class="metric-label">Dislikes</div>
+                        </div>
+                    </div>
+
+                    <div class="index-container">
+                        <div class="index-header">
+                            <span class="index-title">Positive Index</span>
+                            <span class="index-val" id="piVal2">0.000</span>
+                        </div>
+                        <div class="progress-track"><div class="progress-fill-pos" id="piBar2"></div></div>
+                    </div>
+
+                    <div class="index-container">
+                        <div class="index-header">
+                            <span class="index-title">Emotional Index</span>
+                            <span class="index-val" id="eiVal2">0.000</span>
+                        </div>
+                        <div class="progress-track"><div class="progress-fill-emo" id="eiBar2"></div></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Конзола -->
+            <div class="console-box">
+                <div class="console-output" id="consoleOutput">Изчаква се инициализация...</div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <script>
+        // Дефиниране на класа NetArticle логически
+        class NetArticle {
+            constructor() {
+                this.readers = 0;
+                this.likes = 0;
+                this.dislikes = 0;
+            }
+            
+            Initialize(r, l, d) {
+                this.readers = r;
+                this.likes = l;
+                this.dislikes = d;
+            }
+
+            AddReaders(rdrs) { this.readers += rdrs; }
+            AddLikes(lks) { this.likes += lks; this.readers += lks; }
+            AddDislikes(dslks) { this.dislikes += dslks; this.readers += dslks; }
+
+            GetPositiveIndex() {
+                let totalVotes = this.likes + this.dislikes;
+                if (totalVotes === 0) return 0;
+                return this.likes / totalVotes;
+            }
+
+            GetEmotionalIndex() {
+                if (this.readers === 0) return 0;
+                return (this.likes + this.dislikes) / this.readers;
+            }
+        }
+
+        let article1 = new NetArticle();
+        let article2 = new NetArticle();
+        const consoleOut = document.getElementById('consoleOutput');
+        const btnTraffic = document.getElementById('btnTraffic');
+
+        function updateUI() {
+            // Update Article 1
+            document.getElementById('r1').textContent = article1.readers;
+            document.getElementById('l1').textContent = article1.likes;
+            document.getElementById('d1').textContent = article1.dislikes;
+            
+            let pi1 = article1.GetPositiveIndex();
+            let ei1 = article1.GetEmotionalIndex();
+            document.getElementById('piVal1').textContent = pi1.toFixed(3);
+            document.getElementById('piBar1').style.width = `${pi1 * 100}%`;
+            document.getElementById('eiVal1').textContent = ei1.toFixed(3);
+            document.getElementById('eiBar1').style.width = `${ei1 * 100}%`;
+
+            // Update Article 2
+            document.getElementById('r2').textContent = article2.readers;
+            document.getElementById('l2').textContent = article2.likes;
+            document.getElementById('d2').textContent = article2.dislikes;
+            
+            let pi2 = article2.GetPositiveIndex();
+            let ei2 = article2.GetEmotionalIndex();
+            document.getElementById('piVal2').textContent = pi2.toFixed(3);
+            document.getElementById('piBar2').style.width = `${pi2 * 100}%`;
+            document.getElementById('eiVal2').textContent = ei2.toFixed(3);
+            document.getElementById('eiBar2').style.width = `${ei2 * 100}%`;
+            
+            // Visual feedback on cards
+            document.getElementById('cardA1').style.borderColor = '#1abc9c';
+            document.getElementById('cardA2').style.borderColor = '#1abc9c';
+            setTimeout(() => {
+                document.getElementById('cardA1').style.borderColor = '#636e72';
+                document.getElementById('cardA2').style.borderColor = '#636e72';
+            }, 500);
+        }
+
+        function initArticles() {
+            // Инициализация със стойностите от примера
+            article1.Initialize(50, 10, 15);
+            article2.Initialize(120, 60, 30);
+            
+            updateUI();
+            
+            consoleOut.innerHTML = `New article\nEnter number of readers: 50\nEnter number of likes: 10\nEnter number of dislikes: 15\nNew article\nEnter number of readers: 120\nEnter number of likes: 60\nEnter number of dislikes: 30\n\n<span class="highlight">Article stats (1)</span>\nReaders: ${article1.readers}\nLikes: ${article1.likes}\nDislikes: ${article1.dislikes}\nPositive index: ${article1.GetPositiveIndex().toFixed(3)}\nEmotional index: ${article1.GetEmotionalIndex().toFixed(3)}\n\n<span class="highlight">Article stats (2)</span>\nReaders: ${article2.readers}\nLikes: ${article2.likes}\nDislikes: ${article2.dislikes}\nPositive index: ${article2.GetPositiveIndex().toFixed(3)}\nEmotional index: ${article2.GetEmotionalIndex().toFixed(3)}`;
+            
+            btnTraffic.disabled = false;
+        }
+
+        function simulateTraffic() {
+            // Помощна функция за случайно число [10; 100]
+            const rnd = () => Math.floor(Math.random() * 91) + 10;
+            
+            // Трафик за Статия 1
+            let r1 = rnd(), l1 = rnd(), d1 = rnd();
+            article1.AddReaders(r1);
+            article1.AddLikes(l1);
+            article1.AddDislikes(d1);
+            
+            // Трафик за Статия 2
+            let r2 = rnd(), l2 = rnd(), d2 = rnd();
+            article2.AddReaders(r2);
+            article2.AddLikes(l2);
+            article2.AddDislikes(d2);
+            
+            updateUI();
+            
+            consoleOut.innerHTML = `Updated information\n\n<span class="highlight">Article stats (1)</span>\nReaders: ${article1.readers}\nLikes: ${article1.likes}\nDislikes: ${article1.dislikes}\nPositive index: ${article1.GetPositiveIndex().toFixed(3)}\nEmotional index: ${article1.GetEmotionalIndex().toFixed(3)}\n\n<span class="highlight">Article stats (2)</span>\nReaders: ${article2.readers}\nLikes: ${article2.likes}\nDislikes: ${article2.dislikes}\nPositive index: ${article2.GetPositiveIndex().toFixed(3)}\nEmotional index: ${article2.GetEmotionalIndex().toFixed(3)}`;
+        }
+    </script>
+</body>
+</html>

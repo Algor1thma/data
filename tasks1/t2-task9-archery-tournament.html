@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Задача 9: Турнир по стрелба - Algorithma</title>
+    <style>
+        body { margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; height: 100vh; background-color: #1e1e24; color: #e0e0e0; overflow: hidden;}
+        
+        /* Панели */
+        .panel { padding: 25px; overflow-y: auto; box-sizing: border-box; display: flex; flex-direction: column; }
+        
+        /* Ляв Панел - Условие */
+        .left-panel { border-right: 2px solid #333; background-color: #2b2b36; flex: 0 0 50%; min-width: 20%; box-shadow: inset -5px 0 15px rgba(0,0,0,0.2);}
+        
+        /* Съдържание на левия панел */
+        .content-wrapper { flex-grow: 1; }
+        
+        /* Десен Панел - Визуализации */
+        .right-panel { display: flex; flex-direction: column; gap: 15px; background-color: #1e1e24; flex: 1; min-width: 20%; position: relative;}
+        
+        /* Сплитер / Разделител */
+        .resizer {
+            width: 6px;
+            background-color: #444;
+            cursor: col-resize; 
+            transition: background-color 0.2s;
+            z-index: 10;
+        }
+        .resizer:hover, .resizer:active {
+            background-color: #f39c12;
+        }
+
+        /* Бутон Назад */
+        .back-to-home { display: inline-block; text-decoration: none; color: #f39c12; font-weight: bold; font-size: 0.95rem; margin-bottom: 15px; padding: 8px 15px; border: 1px solid #f39c12; border-radius: 8px; transition: all 0.3s ease; background: transparent; align-self: flex-start; }
+        .back-to-home:hover { background-color: #f39c12; color: #1e1e24; box-shadow: 0 0 10px rgba(243, 156, 18, 0.5); }
+
+        h1 { color: #ffffff; font-size: 1.6rem; margin-bottom: 5px; text-shadow: 0 2px 4px rgba(0,0,0,0.3);}
+        h2 { color: #f39c12; font-size: 1.05rem; text-transform: uppercase; margin-top: 0; margin-bottom: 15px; letter-spacing: 1px;}
+        h3 { color: #3498db; border-bottom: 1px solid #444; padding-bottom: 5px; margin-top: 20px; font-size: 1.1rem;}
+        p, ul, li { line-height: 1.5; color: #dcdde1; font-size: 0.9rem; margin-bottom: 8px;}
+        
+        /* Таблици */
+        table { width: 100%; border-collapse: collapse; margin-top: 5px; margin-bottom: 15px; font-size: 0.85rem; background-color: #353b48; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.3);}
+        th, td { border: 1px solid #444; padding: 8px; text-align: left; }
+        th { background-color: #2f3640; color: #f39c12; font-weight: bold;}
+
+        /* Подсказка */
+        .hint-box { background-color: #1e1e24; border-left: 4px solid #f1c40f; padding: 15px; margin-top: 15px; border-radius: 4px; color: #bdc3c7; font-family: Consolas, monospace; font-size: 0.85rem; white-space: pre-wrap; box-shadow: inset 0 0 10px rgba(0,0,0,0.5);}
+
+        /* Примери - Конзолен изглед */
+        .examples-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px;}
+        .example-box { background-color: #0c0c0c; border: 1px solid #555; border-top: 10px solid #2d3436; border-radius: 6px; padding: 10px; font-family: Consolas, monospace; color: #bdc3c7; font-size: 0.75rem; white-space: pre-wrap;}
+
+        /* Авторски права */
+        .copyright {
+            margin-top: 40px;
+            padding-top: 15px;
+            border-top: 1px solid #444;
+            color: #7f8c8d;
+            font-size: 0.85rem;
+            text-align: center;
+        }
+
+        /* Специален Раздел ВИЗУАЛИЗАЦИИ */
+        .viz-header { background: linear-gradient(90deg, #e67e22, #f1c40f); color: #1e1e24; padding: 8px 20px; border-radius: 8px; text-align: center; font-weight: bold; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 2px; box-shadow: 0 4px 15px rgba(243, 156, 18, 0.3); flex-shrink: 0;}
+
+        /* Описание на стъпките */
+        .viz-text { text-align: center; font-size: 1.05rem; font-weight: bold; color: #dcdde1; margin: 10px 0; min-height: 45px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;}
+
+        /* Визуална Зона (Памет и Конзола) */
+        .visualization-workspace { flex: 1 0 auto; display: flex; flex-direction: column; gap: 20px; min-height: 280px; align-items: center; justify-content: flex-start; padding-top: 20px;}
+        
+        /* Блокове за Памет - хоризонтално подредени */
+        .memory-column { display: flex; flex-direction: row; justify-content: center; gap: 25px; flex-wrap: wrap; flex-shrink: 0; width: 100%;}
+        .memory-box { background: #2b2b36; border: 2px solid #f39c12; border-radius: 10px; padding: 15px; box-shadow: 0 6px 12px rgba(0,0,0,0.4); opacity: 0.3; transition: opacity 0.4s; width: 220px; flex-shrink: 0;}
+        .memory-box.active { opacity: 1; border-color: #f1c40f; box-shadow: 0 0 15px rgba(241, 196, 15, 0.4);}
+        .memory-title { font-weight: bold; color: #f1c40f; border-bottom: 1px solid #444; padding-bottom: 5px; margin-bottom: 10px; font-size: 0.95rem; text-align: center; text-transform: uppercase;}
+        .card-image { font-size: 3rem; text-align: center; margin-bottom: 10px; filter: drop-shadow(0px 3px 3px rgba(0,0,0,0.2)); }
+        .memory-prop { display: flex; justify-content: space-between; margin: 6px 0; font-family: Consolas, monospace; font-size: 0.85rem; border-bottom: 1px dashed #444; padding-bottom: 4px;}
+        .memory-prop span:nth-child(1) { color: #b2bec3; }
+        .memory-prop span:nth-child(2) { color: #3498db; font-weight: bold; }
+
+        /* Конзола */
+        .console-box { background-color: #0c0c0c; border: 1px solid #333; border-top: 20px solid #2d3436; border-radius: 8px; padding: 15px; font-family: Consolas, 'Courier New', monospace; font-size: 13px; position: relative; box-shadow: 0 8px 15px rgba(0,0,0,0.5); min-height: 180px; width: 90%; max-width: 550px; flex-shrink: 0; margin-top: auto;}
+        .console-box::before { content: "C:\\Windows\\System32\\cmd.exe"; position: absolute; top: -16px; left: 10px; color: #b2bec3; font-size: 10px; font-family: 'Segoe UI', sans-serif;}
+        .console-output { color: #bdc3c7; white-space: pre-wrap; line-height: 1.4; }
+        
+        /* Контроли */
+        .controls { display: flex; gap: 15px; justify-content: center; align-items: center; background: #2b2b36; padding: 10px; border-radius: 8px; border: 1px solid #444; flex-shrink: 0; margin-top: 10px;}
+        button { padding: 8px 15px; border: none; border-radius: 6px; background: linear-gradient(180deg, #e67e22, #d35400); color: white; font-size: 13px; font-weight: bold; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.3); text-transform: uppercase;}
+        button:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 10px rgba(230, 126, 34, 0.5); }
+        button:disabled { background: #555; color: #888; cursor: not-allowed; box-shadow: none; transform: none;}
+        .step-indicator { color: #f39c12; font-weight: bold; font-family: Consolas, monospace; font-size: 0.95rem; width: 130px; text-align: center;}
+    </style>
+</head>
+<body>
+
+    <div class="panel left-panel" id="leftPanel">
+        <div class="content-wrapper">
+            <a href="../index.html" class="back-to-home">← Начало</a>
+            
+            <h1>Задача 9: Турнир по стрелба</h1>
+            <h2>Методи в класовете</h2>
+            
+            <p>Според регламента на един турнир по стрелба всеки състезател произвежда 3 изстрела, като за всеки изстрел се присъждат между 1 и 20 точки. Крайният резултат на състезателя е равен на сумата от точките, получени от трите изстрела.</p>
+            
+            <p>Да се декларира клас <code>ArcherScore</code>, който да осигурява запаметяване на резултата на един стрелец с помощта на следните полета:</p>
+            
+            <table>
+                <tr><th>Поле</th><th>Тип</th><th>Описание</th></tr>
+                <tr><td>nickname</td><td>текст</td><td>прозвище (прякор) на стрелеца</td></tr>
+                <tr><td>shot1</td><td>цяло число</td><td>точките, получени за първия изстрел</td></tr>
+                <tr><td>shot2</td><td>цяло число</td><td>точките, получени за втория изстрел</td></tr>
+                <tr><td>shot3</td><td>цяло число</td><td>точките, получени за третия изстрел</td></tr>
+            </table>
+
+            <h3>В класа да се дефинират следните публични методи:</h3>
+            <ol>
+                <li>Метод <code>void SetData(string nm, int s1, int s2, int s3)</code> за въвеждане на стойности в полетата nickname, shot1, shot2 и shot3 чрез копиране съответно на nm, s1, s2 и s3;</li>
+                <li>Метод <code>int GetTotalScore()</code> за изчисляване и връщане на крайния резултат;</li>
+                <li>Метод <code>void ShowPoints()</code> - за отпечатване на прозвището на стрелеца, точките от трите изстрела, както и на крайния резултат. За целта този метод трябва да използва метода GetTotalScore();</li>
+                <li>Метод <code>void BetterArcherThan(ArcherScore ar)</code> за определяне и отпечатване на информация за това кой стрелец е по-добър – текущият (този, чрез който се извиква метода) или ar (този, който се изпраща като параметър). Най-напред се извеждат данните за двамата стрелци чрез извикване на ShowPoints() за всеки един. За по-добър се определя този стрелец, който има по-висок краен резултат. При равенство се гледа последния изстрел, като по-добър е този, който има повече точки. При ново равенство се изписва, че са нужни допълнителни изстрели (т. нар. shootout).</li>
+            </ol>
+
+            <div class="hint-box"><strong>Упътване:</strong>
+Когато в рамките на метод от даден клас се споменават полетата от същия клас, се подразбират стойностите на тези полета за обекта, чрез който методът ще бъде извикан. Когато метод получава като параметър обект от същия клас, за да става ясно кои стойности на полетата ще се използват, се възприемат такива обръщения:
+
+public void TestMethod(ArcherScore archo)
+{
+    this.nickname // това е обръщение към прозвището на текущия стрелец
+    archo.nickname // това е обръщение към прозвището на другия стрелец – параметъра
+    this.GetTotalScore() // това ще върне резултатът на текущия стрелец
+    archo.GetTotalScore() // това ще върне резултатът на другия стрелец
+}</div>
+
+            <h3>Програмата да извършва следните действия:</h3>
+            <ul>
+                <li>създава два обекта от типа ArcherScore;</li>
+                <li>запълва обектите със стойности чрез въвеждане на прозвища от клавиатурата и на точки от изстрелите като случайни числа в интервала [1; 20];</li>
+                <li>сравнява резултатите на двамата стрелци и извежда съответната информация.</li>
+            </ul>
+
+            <h3>Примери:</h3>
+            <div class="examples-grid">
+                <div class="example-box">The first archer's nickname: Hawk Eye
+The second archer's nickname: Deadly Arrow
+Archer: Hawk Eye
+Shot1: 2
+Shot2: 5
+Shot3: 13
+Total score:20
+Archer: Deadly Arrow
+Shot1: 1
+Shot2: 18
+Shot3: 5
+Total score:24
+This time Deadly Arrow is better than Hawk Eye
+Press any key to continue . . .</div>
+                <div class="example-box">The first archer's nickname: Old Goat
+The second archer's nickname: The Kid
+Archer: Old Goat
+Shot1: 15
+Shot2: 15
+Shot3: 15
+Total score:45
+Archer: The Kid
+Shot1: 9
+Shot2: 5
+Shot3: 19
+Total score:33
+This time Old Goat is better than The Kid
+Press any key to continue . . .</div>
+            </div>
+        </div>
+        
+        <div class="copyright">
+            &copy; 2026 Algorithma. Всички права запазени.
+        </div>
+    </div>
+
+    <!-- Сплитер за преоразмеряване -->
+    <div class="resizer" id="resizer"></div>
+
+    <div class="panel right-panel">
+        
+        <div class="viz-header">
+            ⚡ Интерактивно Изпълнение ⚡
+        </div>
+        
+        <div class="viz-text" id="vizText">Кликнете 'Напред', за да проследите примерно изпълнение.</div>
+
+        <div class="visualization-workspace">
+            
+            <!-- Блокове Памет -->
+            <div class="memory-column">
+                <div class="memory-box" id="memObj1">
+                    <div class="memory-title">Обект: archer1 (this)</div>
+                    <div class="card-image">🎯</div>
+                    <div class="memory-prop"><span>nickname</span> <span id="vN1">null</span></div>
+                    <div class="memory-prop"><span>shot1</span> <span id="vS1_1">0</span></div>
+                    <div class="memory-prop"><span>shot2</span> <span id="vS1_2">0</span></div>
+                    <div class="memory-prop"><span>shot3</span> <span id="vS1_3">0</span></div>
+                </div>
+
+                <div class="memory-box" id="memObj2">
+                    <div class="memory-title">Обект: archer2 (ar)</div>
+                    <div class="card-image">🏹</div>
+                    <div class="memory-prop"><span>nickname</span> <span id="vN2">null</span></div>
+                    <div class="memory-prop"><span>shot1</span> <span id="vS2_1">0</span></div>
+                    <div class="memory-prop"><span>shot2</span> <span id="vS2_2">0</span></div>
+                    <div class="memory-prop"><span>shot3</span> <span id="vS2_3">0</span></div>
+                </div>
+            </div>
+
+            <!-- Конзола -->
+            <div class="console-box">
+                <div class="console-output" id="consoleOutput"></div>
+            </div>
+
+        </div>
+
+        <div class="controls">
+            <button id="prevBtn" onclick="prevStep()" disabled>⏪ Назад</button>
+            <div class="step-indicator" id="stepIndicator">Стъпка: 0 / 0</div>
+            <button id="nextBtn" onclick="nextStep()">Напред ⏩</button>
+        </div>
+
+    </div>
+
+    <script>
+        // Данни за примера
+        // archer1: Hawk Eye (2, 5, 13)
+        // archer2: Deadly Arrow (1, 18, 5)
+        
+        const steps = [
+            { text: "Стъпка 1: Декларираме два обекта от тип ArcherScore. В паметта се заделя място, полетата са празни.", mem1: true, mem2: true, vN1:"null", vS1_1:"0", vS1_2:"0", vS1_3:"0", vN2:"null", vS2_1:"0", vS2_2:"0", vS2_3:"0", con: "The first archer's nickname: \nThe second archer's nickname: " },
+            
+            { text: "Стъпка 2: Програмата прочита двете прозвища от конзолата.", mem1: true, mem2: true, vN1:"\"Hawk Eye\"", vS1_1:"0", vS1_2:"0", vS1_3:"0", vN2:"\"Deadly Arrow\"", vS2_1:"0", vS2_2:"0", vS2_3:"0", con: "The first archer's nickname: Hawk Eye\nThe second archer's nickname: Deadly Arrow\n" },
+            
+            { text: "Стъпка 3: Генерират се 3 случайни числа за първия стрелец и се извиква SetData().", mem1: true, mem2: true, vN1:"\"Hawk Eye\"", vS1_1:"2", vS1_2:"5", vS1_3:"13", vN2:"\"Deadly Arrow\"", vS2_1:"0", vS2_2:"0", vS2_3:"0", con: "The first archer's nickname: Hawk Eye\nThe second archer's nickname: Deadly Arrow\n" },
+            
+            { text: "Стъпка 4: Генерират се 3 случайни числа за втория стрелец и се извиква SetData().", mem1: true, mem2: true, vN1:"\"Hawk Eye\"", vS1_1:"2", vS1_2:"5", vS1_3:"13", vN2:"\"Deadly Arrow\"", vS2_1:"1", vS2_2:"18", vS2_3:"5", con: "The first archer's nickname: Hawk Eye\nThe second archer's nickname: Deadly Arrow\n" },
+            
+            { text: "Стъпка 5: Извикваме archer1.BetterArcherThan(archer2). Първо се извиква this.ShowPoints().", mem1: true, mem2: true, vN1:"\"Hawk Eye\"", vS1_1:"2", vS1_2:"5", vS1_3:"13", vN2:"\"Deadly Arrow\"", vS2_1:"1", vS2_2:"18", vS2_3:"5", con: "The first archer's nickname: Hawk Eye\nThe second archer's nickname: Deadly Arrow\nArcher: Hawk Eye\nShot1: 2\nShot2: 5\nShot3: 13\nTotal score:20\n" },
+            
+            { text: "Стъпка 6: В рамките на същия метод се извиква ar.ShowPoints() за втория стрелец.", mem1: true, mem2: true, vN1:"\"Hawk Eye\"", vS1_1:"2", vS1_2:"5", vS1_3:"13", vN2:"\"Deadly Arrow\"", vS2_1:"1", vS2_2:"18", vS2_3:"5", con: "The first archer's nickname: Hawk Eye\nThe second archer's nickname: Deadly Arrow\nArcher: Hawk Eye\nShot1: 2\nShot2: 5\nShot3: 13\nTotal score:20\nArcher: Deadly Arrow\nShot1: 1\nShot2: 18\nShot3: 5\nTotal score:24\n" },
+            
+            { text: "Стъпка 7: Методът сравнява GetTotalScore(). 24 > 20, следователно Deadly Arrow е победител.", mem1: true, mem2: true, vN1:"\"Hawk Eye\"", vS1_1:"2", vS1_2:"5", vS1_3:"13", vN2:"\"Deadly Arrow\"", vS2_1:"1", vS2_2:"18", vS2_3:"5", con: "The first archer's nickname: Hawk Eye\nThe second archer's nickname: Deadly Arrow\nArcher: Hawk Eye\nShot1: 2\nShot2: 5\nShot3: 13\nTotal score:20\nArcher: Deadly Arrow\nShot1: 1\nShot2: 18\nShot3: 5\nTotal score:24\nThis time Deadly Arrow is better than Hawk Eye\nPress any key to continue . . ." }
+        ];
+
+        let currentStep = -1;
+
+        function updateUI() {
+            const step = steps[currentStep];
+            
+            if (step) {
+                // Показване на текста за стъпката
+                document.getElementById('vizText').innerText = step.text;
+
+                // Памет Обект 1
+                const memObj1 = document.getElementById('memObj1');
+                if (step.mem1) memObj1.classList.add('active'); else memObj1.classList.remove('active');
+                document.getElementById('vN1').innerText = step.vN1;
+                document.getElementById('vS1_1').innerText = step.vS1_1;
+                document.getElementById('vS1_2').innerText = step.vS1_2;
+                document.getElementById('vS1_3').innerText = step.vS1_3;
+
+                // Памет Обект 2
+                const memObj2 = document.getElementById('memObj2');
+                if (step.mem2) memObj2.classList.add('active'); else memObj2.classList.remove('active');
+                document.getElementById('vN2').innerText = step.vN2;
+                document.getElementById('vS2_1').innerText = step.vS2_1;
+                document.getElementById('vS2_2').innerText = step.vS2_2;
+                document.getElementById('vS2_3').innerText = step.vS2_3;
+
+                // Конзола
+                document.getElementById('consoleOutput').innerText = step.con;
+
+                document.getElementById('stepIndicator').innerText = `Стъпка: ${currentStep + 1} / ${steps.length}`;
+            }
+
+            document.getElementById('prevBtn').disabled = currentStep <= 0;
+            document.getElementById('nextBtn').disabled = currentStep >= steps.length - 1;
+        }
+
+        function nextStep() { if (currentStep < steps.length - 1) { currentStep++; updateUI(); } }
+        function prevStep() { if (currentStep > 0) { currentStep--; updateUI(); } }
+
+        currentStep = 0;
+        window.onload = updateUI;
+
+        // ----------------------------------------------------------------
+        // Логика за преоразмеряване на панелите (Drag-to-resize)
+        // ----------------------------------------------------------------
+        const resizer = document.getElementById('resizer');
+        const leftPanel = document.getElementById('leftPanel');
+        let isResizing = false;
+
+        resizer.addEventListener('mousedown', (e) => {
+            isResizing = true;
+            document.body.style.cursor = 'col-resize';
+            document.body.style.userSelect = 'none';
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (!isResizing) return;
+            
+            let newWidthPercent = (e.clientX / window.innerWidth) * 100;
+            
+            if (newWidthPercent > 20 && newWidthPercent < 80) {
+                leftPanel.style.flex = `0 0 ${newWidthPercent}%`;
+            }
+        });
+
+        document.addEventListener('mouseup', () => {
+            if (isResizing) {
+                isResizing = false;
+                document.body.style.cursor = 'default';
+                document.body.style.userSelect = 'auto'; 
+            }
+        });
+    </script>
+</body>
+</html>

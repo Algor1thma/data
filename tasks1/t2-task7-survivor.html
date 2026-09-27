@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Задача 7: Последният оцелял - Algorithma</title>
+    <style>
+        body { margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; height: 100vh; background-color: #1e1e24; color: #e0e0e0; overflow: hidden;}
+        
+        /* Панели */
+        .panel { flex: 1; padding: 25px; overflow-y: auto; box-sizing: border-box; }
+        
+        /* Ляв Панел - Условие */
+        .left-panel { border-right: 2px solid #333; background-color: #2b2b36; flex: 0 0 45%; box-shadow: inset -5px 0 15px rgba(0,0,0,0.2);}
+        
+        /* Десен Панел - Интерактивна Визуализация */
+        .right-panel { display: flex; flex-direction: column; gap: 15px; background-color: #1e1e24; flex: 0 0 55%; position: relative;}
+        
+        /* Бутон Назад */
+        .back-to-home { display: inline-block; text-decoration: none; color: #f1c40f; font-weight: bold; font-size: 0.95rem; margin-bottom: 15px; padding: 8px 15px; border: 1px solid #f1c40f; border-radius: 8px; transition: all 0.3s ease; background: transparent; }
+        .back-to-home:hover { background-color: #f1c40f; color: #1e1e24; box-shadow: 0 0 10px rgba(241, 196, 15, 0.5); }
+
+        h1 { color: #ffffff; font-size: 1.7rem; margin-bottom: 5px; text-shadow: 0 2px 4px rgba(0,0,0,0.3);}
+        h2 { color: #f1c40f; font-size: 1.1rem; text-transform: uppercase; margin-top: 0; margin-bottom: 15px; letter-spacing: 1px;}
+        h3 { color: #3498db; border-bottom: 1px solid #444; padding-bottom: 5px; margin-top: 25px; font-size: 1.15rem;}
+        p, ul, li { line-height: 1.6; color: #dcdde1; font-size: 0.95rem; margin-bottom: 10px;}
+        ol { line-height: 1.6; color: #dcdde1; font-size: 0.95rem; margin-bottom: 10px; padding-left: 20px;}
+        
+        /* Таблици */
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; margin-bottom: 20px; font-size: 0.9rem; background-color: #353b48; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.3);}
+        th, td { border: 1px solid #444; padding: 10px; text-align: left; }
+        th { background-color: #2f3640; color: #f1c40f; font-weight: bold;}
+        
+        /* Примери - Конзолен изглед */
+        .examples-grid { display: flex; flex-direction: column; gap: 10px; margin-top: 15px;}
+        .example-box { background-color: #0c0c0c; border: 1px solid #555; border-top: 10px solid #2d3436; border-radius: 6px; padding: 10px; font-family: Consolas, monospace; color: #bdc3c7; font-size: 0.85rem; white-space: pre-wrap;}
+
+        /* Специален Раздел ВИЗУАЛИЗАЦИИ */
+        .viz-header { background: linear-gradient(90deg, #f39c12, #f1c40f); color: #1e1e24; padding: 10px 20px; border-radius: 8px; text-align: center; font-weight: bold; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 2px; box-shadow: 0 4px 15px rgba(241, 196, 15, 0.4); flex-shrink: 0;}
+
+        /* Интерактивна Зона */
+        .interactive-workspace { flex: 1; display: flex; flex-direction: column; gap: 15px; align-items: stretch; justify-content: flex-start; padding-top: 10px;}
+        
+        /* Контролери */
+        .controls-container { display: flex; justify-content: center; gap: 15px; background: #2b2b36; padding: 15px; border-radius: 12px; border: 1px solid #444; box-shadow: 0 8px 15px rgba(0,0,0,0.4);}
+        .action-btn { flex: 1; padding: 12px; border: none; border-radius: 8px; font-size: 1rem; font-weight: bold; cursor: pointer; transition: all 0.2s; text-transform: uppercase; display: flex; align-items: center; justify-content: center; gap: 10px;}
+        .btn-test { background: linear-gradient(135deg, #2980b9, #3498db); color: #fff; box-shadow: 0 4px 10px rgba(52, 152, 219, 0.4);}
+        .btn-test:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(52, 152, 219, 0.6);}
+        .btn-random { background: linear-gradient(135deg, #8e44ad, #9b59b6); color: #fff; box-shadow: 0 4px 10px rgba(155, 89, 182, 0.4);}
+        .btn-random:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(155, 89, 182, 0.6);}
+
+        /* Арена на служителите */
+        .employees-arena { display: flex; justify-content: space-around; align-items: center; background: #2d3436; border-radius: 12px; border: 2px solid #636e72; padding: 30px 20px; box-shadow: inset 0 0 20px rgba(0,0,0,0.5); min-height: 200px; flex: 1;}
+        
+        .employee-card { background: #353b48; border: 2px solid #555; border-radius: 12px; width: 140px; padding: 20px 10px; text-align: center; position: relative; box-shadow: 0 6px 12px rgba(0,0,0,0.4); transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); display: flex; flex-direction: column; gap: 10px;}
+        .employee-icon { font-size: 3.5rem; line-height: 1; filter: drop-shadow(0 4px 4px rgba(0,0,0,0.3));}
+        .employee-title { font-size: 0.9rem; color: #b2bec3; text-transform: uppercase; font-weight: bold; margin-bottom: 5px;}
+        .employee-salary { font-family: Consolas, monospace; font-size: 1.4rem; font-weight: bold; color: #fff; background: #1e1e24; padding: 5px; border-radius: 6px; border: 1px solid #444;}
+        
+        /* Статуси */
+        .status-badge { position: absolute; top: -15px; left: 50%; transform: translateX(-50%) scale(0); font-size: 1.5rem; background: #fff; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.5); opacity: 0; transition: all 0.5s ease 0.2s;}
+        
+        .card-fired-max { border-color: #e74c3c; background: linear-gradient(to bottom, #353b48, rgba(231, 76, 60, 0.2)); transform: translateY(10px) scale(0.95); opacity: 0.7;}
+        .card-fired-max .status-badge { transform: translateX(-50%) scale(1); opacity: 1; border: 3px solid #e74c3c;}
+        .card-fired-max .employee-salary { color: #e74c3c; text-decoration: line-through;}
+        
+        .card-fired-min { border-color: #e67e22; background: linear-gradient(to bottom, #353b48, rgba(230, 126, 34, 0.2)); transform: translateY(10px) scale(0.95); opacity: 0.7;}
+        .card-fired-min .status-badge { transform: translateX(-50%) scale(1); opacity: 1; border: 3px solid #e67e22;}
+        .card-fired-min .employee-salary { color: #e67e22; text-decoration: line-through;}
+        
+        .card-survivor { border-color: #2ecc71; background: linear-gradient(to bottom, #353b48, rgba(46, 204, 113, 0.3)); transform: translateY(-10px) scale(1.05); box-shadow: 0 10px 25px rgba(46, 204, 113, 0.4); z-index: 10;}
+        .card-survivor .status-badge { transform: translateX(-50%) scale(1.2); opacity: 1; border: 3px solid #2ecc71; background: #f1c40f;}
+        .card-survivor .employee-salary { color: #2ecc71; background: #000; border-color: #2ecc71;}
+
+        /* Конзола */
+        .console-box { background-color: #0c0c0c; border: 1px solid #333; border-top: 20px solid #2d3436; border-radius: 8px; padding: 15px; font-family: Consolas, 'Courier New', monospace; font-size: 0.95rem; position: relative; box-shadow: 0 8px 15px rgba(0,0,0,0.5); min-height: 120px; flex-shrink: 0;}
+        .console-box::before { content: "C:\\Windows\\System32\\cmd.exe"; position: absolute; top: -17px; left: 10px; color: #b2bec3; font-size: 11px; font-family: 'Segoe UI', sans-serif;}
+        .console-output { color: #bdc3c7; white-space: pre-wrap; line-height: 1.5; }
+        .highlight { color: #f1c40f; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <div class="panel left-panel">
+        <a href="../index.html" class="back-to-home">← Начало</a>
+        
+        <h1>Задача 7: Последният оцелял</h1>
+        <h2>Параметрични методи</h2>
+        
+        <p>Фирма е тежко засегната от икономическата криза. Наложили се съкращения.</p>
+        <p>В един отдел от трима служители трябва да се съкратят двама: този, който получава най-висока заплата и този, който получава най-ниска.</p>
+        <p>Да се напише програма, която прочита заплатите на трима служители в даден отдел. След това извежда заплатата на този служител, който „оцелява" от съкращенията.</p>
+        
+        <p>Да се декларира клас <code>Survival</code> със следните полета:</p>
+        <table>
+            <tr><th>Поле</th><th>Тип</th><th>Описание</th></tr>
+            <tr><td>first</td><td>цяло число</td><td>заплата на първия служител</td></tr>
+            <tr><td>second</td><td>цяло число</td><td>заплата на втория служител</td></tr>
+            <tr><td>third</td><td>цяло число</td><td>заплата на третия служител</td></tr>
+        </table>
+
+        <h3>В класа да се дефинират следните три публични метода:</h3>
+        <ol>
+            <li>Метод от тип <code>void</code> с име <code>TestApp(f, s, t)</code> - тестов метод за директно въвеждане на стойности. Копира стойностите на параметрите си в полетата first, second и third.</li>
+            <li>Метод от тип <code>void</code> с име <code>PrintRandomSalary()</code> - генерира заплатите на трима служители със случайни числа в диапазон [1000, 10000].</li>
+            <li>Метод от тип <code>int</code> с име <code>ReturnAns()</code> - връща стойността на заплатата на служителя, който „оцелява".</li>
+        </ol>
+        
+        <h3>Като се използват методите на този клас, да се напише програма, която извършва следните действия:</h3>
+        <ul>
+            <li>Създава обект от класа;</li>
+            <li>Въвежда директно в метода TestApp (...) стойностите 1000, 2000, 3000 и извежда резултата (средната заплата) на екрана във вида, показан в примерите;</li>
+            <li>Извиква подходящия метод за генериране три случайни заплати и извежда резултата (средната заплата) на екрана във вида, показан в примерите.</li>
+        </ul>
+
+        <h3>Примери:</h3>
+        <div class="examples-grid">
+            <div class="example-box">Test Case Result:
+Salary of the employee who survives: 2000</div>
+            
+            <div class="example-box">Random Case Result:
+Salary of the first employee (1000-10000): 7229
+Salary of the second employee (1000-10000): 2552
+Salary of the third employee (1000-10000): 9206
+Salary of the employee who survives: 7229</div>
+        </div>
+    </div>
+
+    <div class="panel right-panel">
+        
+        <div class="viz-header">
+            ⚡ Интерактивна Визуализация на алгоритъма ⚡
+        </div>
+
+        <div class="interactive-workspace">
+            
+            <!-- Контролери -->
+            <div class="controls-container">
+                <button class="action-btn btn-test" onclick="runTestCase()">
+                    ⚙️ Изпълни TestApp()
+                </button>
+                <button class="action-btn btn-random" onclick="runRandomCase()">
+                    🎲 Изпълни RandomCase()
+                </button>
+            </div>
+
+            <!-- Арена на служителите -->
+            <div class="employees-arena">
+                <!-- Първи служител -->
+                <div class="employee-card" id="emp1">
+                    <div class="status-badge" id="badge1"></div>
+                    <div class="employee-title">Служител 1</div>
+                    <div class="employee-icon">👨‍💼</div>
+                    <div class="employee-salary" id="sal1">0</div>
+                </div>
+
+                <!-- Втори служител -->
+                <div class="employee-card" id="emp2">
+                    <div class="status-badge" id="badge2"></div>
+                    <div class="employee-title">Служител 2</div>
+                    <div class="employee-icon">👩‍💼</div>
+                    <div class="employee-salary" id="sal2">0</div>
+                </div>
+
+                <!-- Трети служител -->
+                <div class="employee-card" id="emp3">
+                    <div class="status-badge" id="badge3"></div>
+                    <div class="employee-title">Служител 3</div>
+                    <div class="employee-icon">👨‍💻</div>
+                    <div class="employee-salary" id="sal3">0</div>
+                </div>
+            </div>
+
+            <!-- Конзола -->
+            <div class="console-box">
+                <div class="console-output" id="consoleOutput">Изчаква се изпълнение на програмата...</div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <script>
+        const cards = [
+            document.getElementById('emp1'),
+            document.getElementById('emp2'),
+            document.getElementById('emp3')
+        ];
+        const salaryDisplays = [
+            document.getElementById('sal1'),
+            document.getElementById('sal2'),
+            document.getElementById('sal3')
+        ];
+        const badges = [
+            document.getElementById('badge1'),
+            document.getElementById('badge2'),
+            document.getElementById('badge3')
+        ];
+        const consoleOut = document.getElementById('consoleOutput');
+
+        function resetCards() {
+            cards.forEach(card => {
+                card.classList.remove('card-fired-max', 'card-fired-min', 'card-survivor');
+            });
+            badges.forEach(badge => {
+                badge.innerHTML = '';
+            });
+        }
+
+        function calculateAndAnimate(s1, s2, s3, mode) {
+            resetCards();
+            
+            // Задаване на стойности
+            salaryDisplays[0].textContent = s1;
+            salaryDisplays[1].textContent = s2;
+            salaryDisplays[2].textContent = s3;
+
+            // Логика за намиране на средния (последния оцелял)
+            const salaries = [
+                { idx: 0, val: s1 },
+                { idx: 1, val: s2 },
+                { idx: 2, val: s3 }
+            ];
+
+            // Сортиране възходящо
+            salaries.sort((a, b) => a.val - b.val);
+
+            const minEmp = salaries[0];
+            const midEmp = salaries[1];
+            const maxEmp = salaries[2];
+
+            // Забавяне за визуално удоволствие
+            setTimeout(() => {
+                // Съкращаване на най-ниско платения
+                cards[minEmp.idx].classList.add('card-fired-min');
+                badges[minEmp.idx].innerHTML = '✂️';
+                
+                // Съкращаване на най-високо платения
+                cards[maxEmp.idx].classList.add('card-fired-max');
+                badges[maxEmp.idx].innerHTML = '✂️';
+                
+                // Оцеляване на средния
+                cards[midEmp.idx].classList.add('card-survivor');
+                badges[midEmp.idx].innerHTML = '🏆';
+                
+                // Изписване в конзолата
+                if (mode === 'test') {
+                    consoleOut.innerHTML = `Test Case Result:\nSalary of the employee who survives: <span class="highlight">${midEmp.val}</span>`;
+                } else {
+                    consoleOut.innerHTML = `Random Case Result:\nSalary of the first employee (1000-10000): ${s1}\nSalary of the second employee (1000-10000): ${s2}\nSalary of the third employee (1000-10000): ${s3}\nSalary of the employee who survives: <span class="highlight">${midEmp.val}</span>`;
+                }
+
+            }, 400);
+        }
+
+        function runTestCase() {
+            consoleOut.textContent = "Изчисляване...";
+            calculateAndAnimate(1000, 2000, 3000, 'test');
+        }
+
+        function runRandomCase() {
+            consoleOut.textContent = "Генериране на случайни заплати...";
+            
+            // Генериране на числа между 1000 и 10000
+            const randomInt = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
+            
+            const r1 = randomInt(1000, 10000);
+            const r2 = randomInt(1000, 10000);
+            const r3 = randomInt(1000, 10000);
+            
+            calculateAndAnimate(r1, r2, r3, 'random');
+        }
+    </script>
+</body>
+</html>
