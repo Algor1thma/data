@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Задача 11: Виртуален телефон - Algorithma</title>
+    <style>
+        body { margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; height: 100vh; background-color: #1e1e24; color: #e0e0e0; overflow: hidden;}
+        
+        /* Панели */
+        .panel { padding: 25px; overflow-y: auto; box-sizing: border-box; display: flex; flex-direction: column; }
+        
+        /* Ляв Панел - Условие */
+        .left-panel { border-right: 2px solid #333; background-color: #2b2b36; flex: 0 0 50%; min-width: 20%; box-shadow: inset -5px 0 15px rgba(0,0,0,0.2);}
+        
+        /* Съдържание на левия панел */
+        .content-wrapper { flex-grow: 1; }
+        
+        /* Десен Панел - Визуализации */
+        .right-panel { display: flex; flex-direction: column; gap: 15px; background-color: #1e1e24; flex: 1; min-width: 20%; position: relative;}
+        
+        /* Сплитер / Разделител */
+        .resizer {
+            width: 6px;
+            background-color: #444;
+            cursor: col-resize; 
+            transition: background-color 0.2s;
+            z-index: 10;
+        }
+        .resizer:hover, .resizer:active {
+            background-color: #3498db;
+        }
+
+        /* Бутон Назад */
+        .back-to-home { display: inline-block; text-decoration: none; color: #3498db; font-weight: bold; font-size: 0.95rem; margin-bottom: 15px; padding: 8px 15px; border: 1px solid #3498db; border-radius: 8px; transition: all 0.3s ease; background: transparent; align-self: flex-start; }
+        .back-to-home:hover { background-color: #3498db; color: #1e1e24; box-shadow: 0 0 10px rgba(52, 152, 219, 0.5); }
+
+        h1 { color: #ffffff; font-size: 1.6rem; margin-bottom: 5px; text-shadow: 0 2px 4px rgba(0,0,0,0.3);}
+        h2 { color: #3498db; font-size: 1.05rem; text-transform: uppercase; margin-top: 0; margin-bottom: 15px; letter-spacing: 1px;}
+        h3 { color: #9b59b6; border-bottom: 1px solid #444; padding-bottom: 5px; margin-top: 20px; font-size: 1.1rem;}
+        p, ul, li, ol { line-height: 1.5; color: #dcdde1; font-size: 0.9rem; margin-bottom: 8px;}
+        
+        /* Таблици */
+        table { width: 100%; border-collapse: collapse; margin-top: 5px; margin-bottom: 15px; font-size: 0.85rem; background-color: #353b48; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.3);}
+        th, td { border: 1px solid #444; padding: 8px; text-align: left; }
+        th { background-color: #2f3640; color: #3498db; font-weight: bold;}
+        
+        /* Примери - Конзолен изглед */
+        .example-box { background-color: #0c0c0c; border: 1px solid #555; border-top: 10px solid #2d3436; border-radius: 6px; padding: 10px; font-family: Consolas, monospace; color: #bdc3c7; font-size: 0.85rem; white-space: pre-wrap;}
+
+        /* Авторски права */
+        .copyright {
+            margin-top: 40px;
+            padding-top: 15px;
+            border-top: 1px solid #444;
+            color: #7f8c8d;
+            font-size: 0.85rem;
+            text-align: center;
+        }
+
+        /* Специален Раздел ВИЗУАЛИЗАЦИИ */
+        .viz-header { background: linear-gradient(90deg, #2980b9, #3498db); color: #fff; padding: 8px 20px; border-radius: 8px; text-align: center; font-weight: bold; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 2px; box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3); flex-shrink: 0;}
+
+        /* Описание на стъпките */
+        .viz-text { text-align: center; font-size: 1.05rem; font-weight: bold; color: #dcdde1; margin: 10px 0; min-height: 45px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;}
+
+        /* Визуална Зона */
+        .visualization-workspace { flex: 1 0 auto; display: flex; flex-direction: column; gap: 20px; min-height: 280px; align-items: center; justify-content: flex-start; padding: 10px;}
+        
+        /* Блокове за Памет */
+        .memory-column { display: flex; flex-direction: column; justify-content: center; align-items: center; flex-shrink: 0; min-width: 250px;}
+        .memory-box { background: #2b2b36; border: 2px solid #3498db; border-radius: 10px; padding: 15px; box-shadow: 0 6px 12px rgba(0,0,0,0.4); opacity: 0.3; transition: opacity 0.4s; width: 100%; box-sizing: border-box;}
+        .memory-box.active { opacity: 1; border-color: #3498db; box-shadow: 0 0 15px rgba(52, 152, 219, 0.4);}
+        .memory-title { font-weight: bold; color: #3498db; border-bottom: 1px solid #444; padding-bottom: 5px; margin-bottom: 10px; font-size: 0.95rem; text-align: center;}
+        .card-image { font-size: 3.5rem; text-align: center; margin-bottom: 10px; filter: drop-shadow(0px 3px 3px rgba(0,0,0,0.2)); }
+        .memory-prop { display: flex; justify-content: space-between; margin: 6px 0; font-family: Consolas, monospace; font-size: 0.9rem; border-bottom: 1px dashed #444; padding-bottom: 4px;}
+        .memory-prop span:nth-child(1) { color: #b2bec3; }
+        .memory-prop span:nth-child(2) { color: #f1c40f; font-weight: bold; }
+        
+        /* Батерия индикатор (специфичен за тази задача) */
+        .battery-prop span:nth-child(2) { color: #2ecc71; }
+        .battery-low span:nth-child(2) { color: #e74c3c; }
+
+        /* Конзола */
+        .console-box { background-color: #0c0c0c; border: 1px solid #333; border-top: 20px solid #2d3436; border-radius: 8px; padding: 15px; font-family: Consolas, 'Courier New', monospace; font-size: 13px; position: relative; box-shadow: 0 8px 15px rgba(0,0,0,0.5); min-height: 250px; width: 90%; max-width: 500px; flex-shrink: 0; margin-top: auto;}
+        .console-box::before { content: "C:\\Windows\\System32\\cmd.exe"; position: absolute; top: -16px; left: 10px; color: #b2bec3; font-size: 10px; font-family: 'Segoe UI', sans-serif;}
+        .console-output { color: #bdc3c7; white-space: pre-wrap; line-height: 1.4; }
+        
+        /* Контроли */
+        .controls { display: flex; gap: 15px; justify-content: center; align-items: center; background: #2b2b36; padding: 10px; border-radius: 8px; border: 1px solid #444; flex-shrink: 0;}
+        button { padding: 8px 15px; border: none; border-radius: 6px; background: linear-gradient(180deg, #2980b9, #2c3e50); color: white; font-size: 13px; font-weight: bold; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.3); text-transform: uppercase;}
+        button:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 10px rgba(41, 128, 185, 0.5); }
+        button:disabled { background: #555; color: #888; cursor: not-allowed; box-shadow: none; transform: none;}
+        .step-indicator { color: #3498db; font-weight: bold; font-family: Consolas, monospace; font-size: 0.95rem; width: 130px; text-align: center;}
+    </style>
+</head>
+<body>
+
+    <div class="panel left-panel" id="leftPanel">
+        <div class="content-wrapper">
+            <a href="../index.html" class="back-to-home">← Начало</a>
+            
+            <h1>Задача 11: Виртуален телефон</h1>
+            <h2>Методи в класовете</h2>
+            
+            <p>Създайте конзолно приложение и в него дефинирайте клас <code>Smartphone</code>. Класът трябва да описва базов смартфон със следните полета:</p>
+            
+            <table>
+                <tr><th>Поле</th><th>Тип</th><th>Описание</th></tr>
+                <tr><td>brand</td><td>текст</td><td>марка</td></tr>
+                <tr><td>model</td><td>текст</td><td>модел</td></tr>
+                <tr><td>batteryLevel</td><td>цяло число</td><td>процент на заряда в батерията (от 0 до 100)</td></tr>
+            </table>
+
+            <h3>В класа да се дефинират следните публични методи:</h3>
+            <ol>
+                <li>Метод от тип <code>void</code> с име <code>GetData()</code> за въвеждане на данни от клавиатурата в полетата на класа за марка и модел (по модела на примерите), както и за записване на случайно число в диапазона [20; 85] за заряда на батерията.</li>
+                <li>Метод от тип <code>void</code> с име <code>PrintInfo()</code> за извеждане на екрана на информация за телефона в следния вид:<br>
+                <code>[Марка] [Модел]</code><br>
+                <code>Батерия: [Ниво]%</code></li>
+                <li>Метод от тип <code>void</code> с име <code>MakeCall(int minutes)</code> за симулация на телефонен разговор. Параметърът minutes показва времетраенето на разговора в минути. За всяка проведена минута от разговора зарядът на батерията пада с 2%. Извежда се съобщение от вида:<br>
+                <code>Проведен разговор: [minutes] минути</code><br>
+                Ако след разговора (или по време на разговора) зарядът на батерията падне до 0%, се извеждат съобщенията:<br>
+                <code>Проведен разговор: [minutes*] минути</code><br>
+                <code>Батерията се изтощи! Телефонът се изключва!</code><br>
+                Вместо minutes* се извежда действителното време на разговора до изключване на телефона.</li>
+                <li>Метод от тип <code>void</code> с име <code>Charge(int minutes)</code> за симулиране на зареждане на телефона. Параметърът minutes показва времетраенето на зареждането в минути. За всяка минута зарядът на батерията се увеличава с 4%. Зарядът не може да надхвърли 100%, дори и зареждането да продължава твърде дълго. Извежда се съобщение от вида:<br>
+                <code>Зареждане: [minutes] минути</code></li>
+            </ol>
+
+            <h3>В стартовия метод на приложението:</h3>
+            <ul>
+                <li>да се създаде обект от класа Smartphone;</li>
+                <li>да се изведе празен ред;</li>
+                <li>да се въведат началните данни за обекта;</li>
+                <li>да се изведе първоначалната информация за телефона;</li>
+                <li>да се „проведе" разговор с времетраене случайно число минути в диапазона [40; 50];</li>
+                <li>да се изведе обновената информация за телефона;</li>
+                <li>да се „зареди" телефона за случайно число минути в диапазона [15; 35];</li>
+                <li>да се изведе обновената информация за телефона;</li>
+                <li>да се „проведе" още един разговор с времетраене случайно число минути в диапазона [10; 59];</li>
+                <li>да се изведе обновената информация за телефона.</li>
+            </ul>
+
+            <h3>Примерен резултат:</h3>
+            <div class="example-box">Въведете марка: Samsung
+Въведете модел: Galaxy S23
+Samsung Galaxy S23
+Батерия: 45%
+Проведен разговор: 23 минути
+Батерията се изтощи! Телефонът се изключва!
+Samsung Galaxy S23
+Батерия: 0%
+Зареждане: 30 минути
+Samsung Galaxy S23
+Батерия: 100%
+Проведен разговор: 36 минути
+Samsung Galaxy S23
+Батерия: 28%</div>
+        </div>
+        
+        <div class="copyright">
+            &copy; 2026 Algorithma. Всички права запазени.
+        </div>
+    </div>
+
+    <!-- Сплитер за преоразмеряване -->
+    <div class="resizer" id="resizer"></div>
+
+    <div class="panel right-panel">
+        
+        <div class="viz-header">
+            ⚡ Интерактивно Изпълнение ⚡
+        </div>
+        
+        <div class="viz-text" id="vizText">Кликнете 'Напред', за да проследите примерно изпълнение.</div>
+
+        <div class="visualization-workspace">
+            
+            <!-- Блокове Памет -->
+            <div class="memory-column">
+                <div class="memory-box" id="memObj">
+                    <div class="memory-title">Обект: phone</div>
+                    <div class="card-image" id="phoneIcon">📱</div>
+                    <div class="memory-prop"><span>brand</span> <span id="vB">null</span></div>
+                    <div class="memory-prop"><span>model</span> <span id="vM">null</span></div>
+                    <div class="memory-prop" id="batProp"><span>batteryLevel</span> <span id="vBat">0%</span></div>
+                </div>
+            </div>
+
+            <!-- Конзола -->
+            <div class="console-box">
+                <div class="console-output" id="consoleOutput"></div>
+            </div>
+
+        </div>
+
+        <div class="controls">
+            <button id="prevBtn" onclick="prevStep()" disabled>⏪ Назад</button>
+            <div class="step-indicator" id="stepIndicator">Стъпка: 0 / 0</div>
+            <button id="nextBtn" onclick="nextStep()">Напред ⏩</button>
+        </div>
+
+    </div>
+
+    <script>
+        const steps = [
+            { text: "Стъпка 1: Декларираме обекта от клас Smartphone. В паметта се заделя място с начални нулеви стойности.", mem: true, vB: "null", vM: "null", vBat: "0", lowBat: false, con: "" },
+            
+            { text: "Стъпка 2: Извикваме GetData(). Въвеждаме марка и модел. Генерира се случаен заряд на батерията (напр. 45%).", mem: true, vB: "\"Samsung\"", vM: "\"Galaxy S23\"", vBat: "45", lowBat: false, con: "\nВъведете марка: Samsung\nВъведете модел: Galaxy S23\n" },
+            
+            { text: "Стъпка 3: Извикваме PrintInfo() за извеждане на първоначалната информация за телефона.", mem: true, vB: "\"Samsung\"", vM: "\"Galaxy S23\"", vBat: "45", lowBat: false, con: "\nВъведете марка: Samsung\nВъведете модел: Galaxy S23\nSamsung Galaxy S23\nБатерия: 45%\n" },
+            
+            { text: "Стъпка 4: Извикваме MakeCall() с произволно времетраене (напр. 45 мин). Батерията (45%) стига само за 23 минути (спад 2% на мин) и пада до 0%.", mem: true, vB: "\"Samsung\"", vM: "\"Galaxy S23\"", vBat: "0", lowBat: true, con: "\nВъведете марка: Samsung\nВъведете модел: Galaxy S23\nSamsung Galaxy S23\nБатерия: 45%\nПроведен разговор: 23 минути\nБатерията се изтощи! Телефонът се изключва!\n" },
+            
+            { text: "Стъпка 5: Отново извикваме PrintInfo(), за да видим обновеното състояние (0% батерия).", mem: true, vB: "\"Samsung\"", vM: "\"Galaxy S23\"", vBat: "0", lowBat: true, con: "\nВъведете марка: Samsung\nВъведете модел: Galaxy S23\nSamsung Galaxy S23\nБатерия: 45%\nПроведен разговор: 23 минути\nБатерията се изтощи! Телефонът се изключва!\nSamsung Galaxy S23\nБатерия: 0%\n" },
+            
+            { text: "Стъпка 6: Извикваме Charge() със случайно време (напр. 30 мин). 30 * 4% = 120%, но зарядът се ограничава до 100%.", mem: true, vB: "\"Samsung\"", vM: "\"Galaxy S23\"", vBat: "100", lowBat: false, con: "\nВъведете марка: Samsung\nВъведете модел: Galaxy S23\nSamsung Galaxy S23\nБатерия: 45%\nПроведен разговор: 23 минути\nБатерията се изтощи! Телефонът се изключва!\nSamsung Galaxy S23\nБатерия: 0%\nЗареждане: 30 минути\n" },
+            
+            { text: "Стъпка 7: Извикваме PrintInfo(), за да потвърдим заряда на батерията.", mem: true, vB: "\"Samsung\"", vM: "\"Galaxy S23\"", vBat: "100", lowBat: false, con: "\nВъведете марка: Samsung\nВъведете модел: Galaxy S23\nSamsung Galaxy S23\nБатерия: 45%\nПроведен разговор: 23 минути\nБатерията се изтощи! Телефонът се изключва!\nSamsung Galaxy S23\nБатерия: 0%\nЗареждане: 30 минути\nSamsung Galaxy S23\nБатерия: 100%\n" },
+            
+            { text: "Стъпка 8: Извикваме MakeCall() за нов разговор (напр. 36 мин). Батерията пада с 36 * 2% = 72%, остават 28%.", mem: true, vB: "\"Samsung\"", vM: "\"Galaxy S23\"", vBat: "28", lowBat: false, con: "\nВъведете марка: Samsung\nВъведете модел: Galaxy S23\nSamsung Galaxy S23\nБатерия: 45%\nПроведен разговор: 23 минути\nБатерията се изтощи! Телефонът се изключва!\nSamsung Galaxy S23\nБатерия: 0%\nЗареждане: 30 минути\nSamsung Galaxy S23\nБатерия: 100%\nПроведен разговор: 36 минути\n" },
+            
+            { text: "Стъпка 9: Извикваме PrintInfo() за финално състояние на смартфона.", mem: true, vB: "\"Samsung\"", vM: "\"Galaxy S23\"", vBat: "28", lowBat: false, con: "\nВъведете марка: Samsung\nВъведете модел: Galaxy S23\nSamsung Galaxy S23\nБатерия: 45%\nПроведен разговор: 23 минути\nБатерията се изтощи! Телефонът се изключва!\nSamsung Galaxy S23\nБатерия: 0%\nЗареждане: 30 минути\nSamsung Galaxy S23\nБатерия: 100%\nПроведен разговор: 36 минути\nSamsung Galaxy S23\nБатерия: 28%" }
+        ];
+
+        let currentStep = 0;
+
+        function updateUI() {
+            const step = steps[currentStep];
+            
+            if (step) {
+                // Текст за стъпката
+                document.getElementById('vizText').innerText = step.text;
+
+                // Памет
+                const memObj = document.getElementById('memObj');
+                const batProp = document.getElementById('batProp');
+                const phoneIcon = document.getElementById('phoneIcon');
+                
+                if (step.mem) memObj.classList.add('active'); else memObj.classList.remove('active');
+                
+                document.getElementById('vB').innerText = step.vB;
+                document.getElementById('vM').innerText = step.vM;
+                
+                if (step.vBat === "0") {
+                    batProp.className = "memory-prop battery-low";
+                    phoneIcon.innerText = "📴";
+                } else if (step.vBat === "100") {
+                    batProp.className = "memory-prop battery-prop";
+                    phoneIcon.innerText = "🔋";
+                } else {
+                    batProp.className = "memory-prop battery-prop";
+                    phoneIcon.innerText = "📱";
+                }
+                
+                document.getElementById('vBat').innerText = step.vBat !== "0" || step.lowBat ? step.vBat + "%" : "0%";
+
+                // Конзола
+                document.getElementById('consoleOutput').innerText = step.con;
+
+                document.getElementById('stepIndicator').innerText = `Стъпка: ${currentStep + 1} / ${steps.length}`;
+            }
+
+            document.getElementById('prevBtn').disabled = currentStep <= 0;
+            document.getElementById('nextBtn').disabled = currentStep >= steps.length - 1;
+        }
+
+        function nextStep() { if (currentStep < steps.length - 1) { currentStep++; updateUI(); } }
+        function prevStep() { if (currentStep > 0) { currentStep--; updateUI(); } }
+
+        window.onload = updateUI;
+
+        // ----------------------------------------------------------------
+        // Логика за преоразмеряване на панелите (Drag-to-resize)
+        // ----------------------------------------------------------------
+        const resizer = document.getElementById('resizer');
+        const leftPanel = document.getElementById('leftPanel');
+        let isResizing = false;
+
+        resizer.addEventListener('mousedown', (e) => {
+            isResizing = true;
+            document.body.style.cursor = 'col-resize';
+            document.body.style.userSelect = 'none';
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (!isResizing) return;
+            
+            let newWidthPercent = (e.clientX / window.innerWidth) * 100;
+            
+            if (newWidthPercent > 20 && newWidthPercent < 80) {
+                leftPanel.style.flex = `0 0 ${newWidthPercent}%`;
+            }
+        });
+
+        document.addEventListener('mouseup', () => {
+            if (isResizing) {
+                isResizing = false;
+                document.body.style.cursor = 'default';
+                document.body.style.userSelect = 'auto'; 
+            }
+        });
+    </script>
+</body>
+</html>
