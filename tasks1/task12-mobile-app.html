@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Задача 12: Мобилно приложение - Algorithma</title>
+    <style>
+        body { margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; height: 100vh; background-color: #1e1e24; color: #e0e0e0; overflow: hidden;}
+        
+        /* Панели */
+        .panel { padding: 25px; overflow-y: auto; box-sizing: border-box; display: flex; flex-direction: column; }
+        
+        /* Ляв Панел - Условие */
+        .left-panel { border-right: 2px solid #333; background-color: #2b2b36; flex: 0 0 50%; min-width: 20%; box-shadow: inset -5px 0 15px rgba(0,0,0,0.2);}
+        
+        /* Съдържание на левия панел */
+        .content-wrapper { flex-grow: 1; }
+        
+        /* Десен Панел - Визуализации */
+        .right-panel { display: flex; flex-direction: column; gap: 15px; background-color: #1e1e24; flex: 1; min-width: 20%; position: relative;}
+        
+        /* Сплитер / Разделител */
+        .resizer {
+            width: 6px;
+            background-color: #444;
+            cursor: col-resize; 
+            transition: background-color 0.2s;
+            z-index: 10;
+        }
+        .resizer:hover, .resizer:active {
+            background-color: #3498db;
+        }
+
+        /* Бутон Назад */
+        .back-to-home { display: inline-block; text-decoration: none; color: #3498db; font-weight: bold; font-size: 0.95rem; margin-bottom: 15px; padding: 8px 15px; border: 1px solid #3498db; border-radius: 8px; transition: all 0.3s ease; background: transparent; align-self: flex-start; }
+        .back-to-home:hover { background-color: #3498db; color: #1e1e24; box-shadow: 0 0 10px rgba(52, 152, 219, 0.5); }
+
+        h1 { color: #ffffff; font-size: 1.6rem; margin-bottom: 5px; text-shadow: 0 2px 4px rgba(0,0,0,0.3);}
+        h2 { color: #3498db; font-size: 1.05rem; text-transform: uppercase; margin-top: 0; margin-bottom: 15px; letter-spacing: 1px;}
+        h3 { color: #9b59b6; border-bottom: 1px solid #444; padding-bottom: 5px; margin-top: 20px; font-size: 1.1rem;}
+        p, ul, li { line-height: 1.5; color: #dcdde1; font-size: 0.9rem; margin-bottom: 8px;}
+        
+        /* Таблици */
+        table { width: 100%; border-collapse: collapse; margin-top: 5px; margin-bottom: 15px; font-size: 0.85rem; background-color: #353b48; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.3);}
+        th, td { border: 1px solid #444; padding: 8px; text-align: left; }
+        th { background-color: #2f3640; color: #3498db; font-weight: bold;}
+
+        /* Условие - Формули */
+        .formula-box { background: #1e1e24; padding: 10px; border-radius: 8px; border: 1px solid #444; text-align: center; margin: 10px 0; color: #f1c40f; font-size: 1.1rem;}
+
+        /* Упътване */
+        .hint-box { background-color: #1e1e24; border-left: 4px solid #f1c40f; padding: 15px; margin-top: 15px; border-radius: 4px; color: #bdc3c7; font-family: Consolas, monospace; font-size: 0.85rem; white-space: pre-wrap; box-shadow: inset 0 0 10px rgba(0,0,0,0.5);}
+
+        /* Примери - Конзолен изглед */
+        .example-box { background-color: #0c0c0c; border: 1px solid #555; border-top: 10px solid #2d3436; border-radius: 6px; padding: 10px; font-family: Consolas, 'Courier New', monospace; color: #bdc3c7; font-size: 0.8rem; white-space: pre-wrap; line-height: 1.3;}
+
+        /* Авторски права */
+        .copyright {
+            margin-top: 40px;
+            padding-top: 15px;
+            border-top: 1px solid #444;
+            color: #7f8c8d;
+            font-size: 0.85rem;
+            text-align: center;
+        }
+
+        /* Специален Раздел ВИЗУАЛИЗАЦИИ */
+        .viz-header { background: linear-gradient(90deg, #2980b9, #3498db); color: #fff; padding: 8px 20px; border-radius: 8px; text-align: center; font-weight: bold; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 2px; box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3); flex-shrink: 0;}
+
+        /* Описание на стъпките */
+        .viz-text { text-align: center; font-size: 1.05rem; font-weight: bold; color: #dcdde1; margin: 10px 0; min-height: 45px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;}
+
+        /* Визуална Зона */
+        .visualization-workspace { flex: 1 0 auto; display: flex; flex-direction: column; gap: 20px; min-height: 280px; align-items: center; justify-content: flex-start; padding: 10px;}
+        
+        /* Блокове за Памет */
+        .memory-column { display: flex; flex-direction: row; justify-content: center; align-items: center; gap: 25px; flex-shrink: 0; width: 100%; flex-wrap: wrap;}
+        .memory-box { background: #2b2b36; border: 2px solid #3498db; border-radius: 10px; padding: 15px; box-shadow: 0 6px 12px rgba(0,0,0,0.4); opacity: 0.3; transition: opacity 0.4s; width: 230px; box-sizing: border-box;}
+        .memory-box.active { opacity: 1; border-color: #3498db; box-shadow: 0 0 15px rgba(52, 152, 219, 0.4);}
+        .memory-title { font-weight: bold; color: #3498db; border-bottom: 1px solid #444; padding-bottom: 5px; margin-bottom: 10px; font-size: 0.95rem; text-align: center;}
+        .card-image { font-size: 3rem; text-align: center; margin-bottom: 10px; filter: drop-shadow(0px 3px 3px rgba(0,0,0,0.2)); }
+        .memory-prop { display: flex; justify-content: space-between; margin: 6px 0; font-family: Consolas, monospace; font-size: 0.85rem; border-bottom: 1px dashed #444; padding-bottom: 4px;}
+        
+        .prop-lbl { color: #b2bec3; }
+        .prop-val-text { color: #3498db; font-weight: bold; }
+        .prop-val-num { color: #f1c40f; font-weight: bold; }
+        .prop-val-pos { color: #2ecc71; font-weight: bold; }
+        .prop-val-neg { color: #e74c3c; font-weight: bold; }
+
+        /* Изчислителен Панел (Math Overlay) */
+        .math-panel-wrapper { flex: 1; display: flex; justify-content: center; align-items: center; position: relative; width: 100%;}
+        .math-overlay { background: rgba(30, 30, 36, 0.95); border: 2px solid #9b59b6; border-radius: 12px; padding: 15px; z-index: 10; display: none; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 10px 30px rgba(0,0,0,0.6); transform: scale(0.9); opacity: 0; transition: all 0.4s ease; width: 100%; max-width: 400px;}
+        .math-overlay.show { display: flex; transform: scale(1); opacity: 1; }
+        .math-title { color: #9b59b6; font-weight: bold; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px; font-size: 0.9rem; text-align: center;}
+        .math-step { font-family: Consolas, monospace; font-size: 1.05rem; color: #fff; margin: 6px 0; text-align: center;}
+        .math-result { color: #f1c40f; font-size: 1.3rem; font-weight: bold; border-top: 1px dashed #555; padding-top: 10px; margin-top: 8px; width: 100%; text-align: center;}
+
+        /* Конзола */
+        .console-box { background-color: #0c0c0c; border: 1px solid #333; border-top: 20px solid #2d3436; border-radius: 8px; padding: 15px; font-family: Consolas, 'Courier New', monospace; font-size: 13px; position: relative; box-shadow: 0 8px 15px rgba(0,0,0,0.5); min-height: 180px; width: 90%; max-width: 550px; flex-shrink: 0; margin-top: auto;}
+        .console-box::before { content: "C:\\Windows\\System32\\cmd.exe"; position: absolute; top: -16px; left: 10px; color: #b2bec3; font-size: 10px; font-family: 'Segoe UI', sans-serif;}
+        .console-output { color: #bdc3c7; white-space: pre-wrap; line-height: 1.4; }
+        
+        /* Контроли */
+        .controls { display: flex; gap: 15px; justify-content: center; align-items: center; background: #2b2b36; padding: 10px; border-radius: 8px; border: 1px solid #444; flex-shrink: 0;}
+        button { padding: 8px 15px; border: none; border-radius: 6px; background: linear-gradient(180deg, #2980b9, #2c3e50); color: white; font-size: 13px; font-weight: bold; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.3); text-transform: uppercase;}
+        button:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 10px rgba(41, 128, 185, 0.5); }
+        button:disabled { background: #555; color: #888; cursor: not-allowed; box-shadow: none; transform: none;}
+        .step-indicator { color: #3498db; font-weight: bold; font-family: Consolas, monospace; font-size: 0.95rem; width: 130px; text-align: center;}
+    </style>
+    <!-- MathJax -->
+    <script>MathJax = { tex: { inlineMath: [['$', '$']] } };</script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+
+    <div class="panel left-panel" id="leftPanel">
+        <div class="content-wrapper">
+            <a href="../index.html" class="back-to-home">← Начало</a>
+            
+            <h1>Задача 12: Мобилно приложение</h1>
+            <h2>Методи в класовете</h2>
+            
+            <p>Създайте конзолно приложение и в него дефинирайте клас <code>MobileApp</code>. Класът трябва да описва кратка статистика за едно мобилно приложение.</p>
+            
+            <p>Класът разполага със следните полета:</p>
+            <table>
+                <tr><th>Поле</th><th>Тип</th><th>Описание</th></tr>
+                <tr><td>appName</td><td>текст</td><td>име на приложението</td></tr>
+                <tr><td>downloads</td><td>цяло число</td><td>брой изтегляния</td></tr>
+                <tr><td>positiveReviews</td><td>цяло число</td><td>брой положителни отзиви</td></tr>
+                <tr><td>negativeReviews</td><td>цяло число</td><td>брой отрицателни отзиви</td></tr>
+            </table>
+
+            <h3>В класа да се дефинират следните публични методи:</h3>
+            <ul>
+                <li>Метод от тип <code>void</code> с име <code>SetInitialData(string name, int dwnlds, int pos, int neg)</code> за първоначално задаване на стойности на полетата чрез копиране съответно на стойностите на параметрите name, dwnlds, pos и neg.</li>
+                <li>Метод от тип <code>void</code> с име <code>UpdateData(int monthsPassed)</code> за увеличаване на стойностите на полетата downloads, positiveReviews и negativeReviews на базата на параметъра monthsPassed по следния начин:
+                    <ul>
+                        <li>downloads се увеличава със случайно число от интервала [50, 1000 * monthsPassed]</li>
+                        <li>positiveReviews се увеличава със случайно число от интервала [30, 800 * monthsPassed]</li>
+                        <li>negativeReviews се увеличава със случайно число от интервала [30, 800 * monthsPassed]</li>
+                    </ul>
+                </li>
+                <li>Метод от тип <code>double</code> с име <code>GetApprovalRate()</code> за изчисляване на коефициента на одобрение чрез формулата:</li>
+            </ul>
+            <div class="formula-box">$Approval = \frac{positiveReviews}{positiveReviews + negativeReviews}$</div>
+            <ul>
+                <li>Метод от тип <code>void</code> с име <code>ShowAppStats()</code> за извеждане на справка за текущите стойности на полетата, както и за коефициента на одобрение (закръглен до третия знак след запетаята). За целта методът трябва да извика GetApprovalRate().</li>
+                <li>Метод от тип <code>void</code> с име <code>CompareWith(MobileApp otherApp)</code> за определяне и отпечатване на информация кое приложение е по-харесвано – текущото (чрез което се извиква методът) или otherApp (това, което се изпраща като параметър). За по-добро се определя приложението с по-висок коефициент на одобрение (чрез метода GetApprovalRate()). Извежда се съобщение от вида:
+                <br><code>С по-високо одобрение: [име_на_приложение]</code><br>или<br><code>[име_текущо_пр] и [име_otherApp] са с еднакво одобрение</code>
+                </li>
+            </ul>
+
+            <div class="hint-box"><strong>Упътване към учениците за последния метод:</strong>
+Използвайте this.GetApprovalRate() за одобрението на текущия обект и otherApp.GetApprovalRate() за одобрението на обекта, подаден като параметър.</div>
+
+            <h3>В стартовия метод на приложението да се:</h3>
+            <ul>
+                <li>създадат два обекта от класа MobileApp;</li>
+                <li>извикат методите за задаване на началните данни за обектите (данните да се изпишат директно в кода);</li>
+                <li>изведе текста „Начална информация“;</li>
+                <li>изведе първоначалната информация за всяко приложение;</li>
+                <li>изведе информация кое е приложението с по-високо одобрение;</li>
+                <li>генерира случайно число в интервала [5; 25] – брой изминали месеци;</li>
+                <li>изведе текста „След х месеца“, като х се замени със случайното число и се остави празен ред преди текста;</li>
+                <li>обновят данните за приложенията чрез извикване на съответния метод за всеки обект;</li>
+                <li>изведе обновената информация за всяко приложение;</li>
+                <li>изведе информация кое е приложението с по-високо одобрение.</li>
+            </ul>
+
+            <h3>Примерен резултат:</h3>
+            <div class="example-box">За създаването на обектите са използвани следните начални данни:
+ChatConnect/2540/85/15
+PhotoFilter/3120/425/75
+
+Начална информация
+Приложение: ChatConnect
+Изтегляния: 2540
+Положителни отзиви: 85
+Отрицателни отзиви: 15
+Одобрение: 0.850
+
+Приложение: PhotoFilter
+Изтегляния: 3120
+Положителни отзиви: 425
+Отрицателни отзиви: 75
+Одобрение: 0.850
+
+ChatConnect и PhotoFilter са с еднакво одобрение
+
+След 10 месеца
+Приложение: ChatConnect
+Изтегляния: 6739
+Положителни отзиви: 2234
+Отрицателни отзиви: 1977
+Одобрение: 0.531
+
+Приложение: PhotoFilter
+Изтегляния: 11365
+Положителни отзиви: 7093
+Отрицателни отзиви: 4328
+Одобрение: 0.621
+
+С по-високо одобрение: PhotoFilter</div>
+        </div>
+        
+        <div class="copyright">
+            &copy; 2026 Algorithma. Всички права запазени.
+        </div>
+    </div>
+
+    <!-- Сплитер за преоразмеряване -->
+    <div class="resizer" id="resizer"></div>
+
+    <div class="panel right-panel">
+        
+        <div class="viz-header">
+            ⚡ Интерактивно Изпълнение ⚡
+        </div>
+        
+        <div class="viz-text" id="vizText">Кликнете 'Напред', за да проследите примерно изпълнение.</div>
+
+        <div class="visualization-workspace">
+            
+            <!-- Блокове Памет -->
+            <div class="memory-column">
+                <div class="memory-box" id="memObj1">
+                    <div class="memory-title">Обект: app1 (this)</div>
+                    <div class="card-image">📱</div>
+                    <div class="memory-prop"><span class="prop-lbl">appName</span> <span class="prop-val-text" id="vN1">null</span></div>
+                    <div class="memory-prop"><span class="prop-lbl">downloads</span> <span class="prop-val-num" id="vD1">0</span></div>
+                    <div class="memory-prop"><span class="prop-lbl">posReviews</span> <span class="prop-val-pos" id="vP1">0</span></div>
+                    <div class="memory-prop"><span class="prop-lbl">negReviews</span> <span class="prop-val-neg" id="vNeg1">0</span></div>
+                </div>
+
+                <div class="memory-box" id="memObj2">
+                    <div class="memory-title">Обект: app2 (otherApp)</div>
+                    <div class="card-image">📈</div>
+                    <div class="memory-prop"><span class="prop-lbl">appName</span> <span class="prop-val-text" id="vN2">null</span></div>
+                    <div class="memory-prop"><span class="prop-lbl">downloads</span> <span class="prop-val-num" id="vD2">0</span></div>
+                    <div class="memory-prop"><span class="prop-lbl">posReviews</span> <span class="prop-val-pos" id="vP2">0</span></div>
+                    <div class="memory-prop"><span class="prop-lbl">negReviews</span> <span class="prop-val-neg" id="vNeg2">0</span></div>
+                </div>
+            </div>
+
+            <!-- Изчислителен Панел -->
+            <div class="math-panel-wrapper">
+                <div class="math-overlay" id="mathOverlay">
+                    <div class="math-title" id="mTitle">Пресмятане на Одобрение (GetApprovalRate)</div>
+                    <div class="math-step" id="mStep1"></div>
+                    <div class="math-step" id="mStep2"></div>
+                    <div class="math-result" id="mResult"></div>
+                </div>
+            </div>
+
+            <!-- Конзола -->
+            <div class="console-box">
+                <div class="console-output" id="consoleOutput"></div>
+            </div>
+
+        </div>
+
+        <div class="controls">
+            <button id="prevBtn" onclick="prevStep()" disabled>⏪ Назад</button>
+            <div class="step-indicator" id="stepIndicator">Стъпка: 0 / 0</div>
+            <button id="nextBtn" onclick="nextStep()">Напред ⏩</button>
+        </div>
+
+    </div>
+
+    <script>
+        const c1 = "Начална информация\n";
+        const c2 = c1 + "Приложение: ChatConnect\nИзтегляния: 2540\nПоложителни отзиви: 85\nОтрицателни отзиви: 15\nОдобрение: 0.850\n\n";
+        const c3 = c2 + "Приложение: PhotoFilter\nИзтегляния: 3120\nПоложителни отзиви: 425\nОтрицателни отзиви: 75\nОдобрение: 0.850\n\n";
+        const c4 = c3 + "ChatConnect и PhotoFilter са с еднакво одобрение\n";
+        const c5 = c4 + "\nСлед 10 месеца\n";
+        const c6 = c5 + "Приложение: ChatConnect\nИзтегляния: 6739\nПоложителни отзиви: 2234\nОтрицателни отзиви: 1977\nОдобрение: 0.531\n\n";
+        const c7 = c6 + "Приложение: PhotoFilter\nИзтегляния: 11365\nПоложителни отзиви: 7093\nОтрицателни отзиви: 4328\nОдобрение: 0.621\n\n";
+        const c8 = c7 + "С по-високо одобрение: PhotoFilter";
+
+        const steps = [
+            { text: "Стъпка 1: Декларираме два обекта от тип MobileApp. В паметта се заделя място с начални нулеви стойности.", mem: true, 
+              vN1:"null", vD1:"0", vP1:"0", vNeg1:"0", 
+              vN2:"null", vD2:"0", vP2:"0", vNeg2:"0", 
+              con: "", math: "" },
+              
+            { text: "Стъпка 2: Извикваме SetInitialData() за двете приложения с първоначалните данни.", mem: true, 
+              vN1:"\"ChatConnect\"", vD1:"2540", vP1:"85", vNeg1:"15", 
+              vN2:"\"PhotoFilter\"", vD2:"3120", vP2:"425", vNeg2:"75", 
+              con: c1, math: "" },
+              
+            { text: "Стъпка 3: Извикваме ShowAppStats() за първото приложение. Пресмята се коефициентът на одобрение.", mem: true, 
+              vN1:"\"ChatConnect\"", vD1:"2540", vP1:"85", vNeg1:"15", 
+              vN2:"\"PhotoFilter\"", vD2:"3120", vP2:"425", vNeg2:"75", 
+              con: c2, math: "A1" },
+              
+            { text: "Стъпка 4: Извикваме ShowAppStats() за второто приложение. Пресмята се коефициентът на одобрение.", mem: true, 
+              vN1:"\"ChatConnect\"", vD1:"2540", vP1:"85", vNeg1:"15", 
+              vN2:"\"PhotoFilter\"", vD2:"3120", vP2:"425", vNeg2:"75", 
+              con: c3, math: "A2" },
+              
+            { text: "Стъпка 5: Извикваме CompareWith(). Одобренията се сравняват: 0.850 == 0.850.", mem: true, 
+              vN1:"\"ChatConnect\"", vD1:"2540", vP1:"85", vNeg1:"15", 
+              vN2:"\"PhotoFilter\"", vD2:"3120", vP2:"425", vNeg2:"75", 
+              con: c4, math: "" },
+              
+            { text: "Стъпка 6: Генерират се 10 изминали месеца. Извиква се UpdateData(10) за двете приложения.", mem: true, 
+              vN1:"\"ChatConnect\"", vD1:"6739", vP1:"2234", vNeg1:"1977", 
+              vN2:"\"PhotoFilter\"", vD2:"11365", vP2:"7093", vNeg2:"4328", 
+              con: c5, math: "" },
+              
+            { text: "Стъпка 7: Извикваме ShowAppStats() за първото обновено приложение. Пресмята се новото одобрение.", mem: true, 
+              vN1:"\"ChatConnect\"", vD1:"6739", vP1:"2234", vNeg1:"1977", 
+              vN2:"\"PhotoFilter\"", vD2:"11365", vP2:"7093", vNeg2:"4328", 
+              con: c6, math: "A3" },
+              
+            { text: "Стъпка 8: Извикваме ShowAppStats() за второто обновено приложение. Пресмята се новото одобрение.", mem: true, 
+              vN1:"\"ChatConnect\"", vD1:"6739", vP1:"2234", vNeg1:"1977", 
+              vN2:"\"PhotoFilter\"", vD2:"11365", vP2:"7093", vNeg2:"4328", 
+              con: c7, math: "A4" },
+              
+            { text: "Стъпка 9: Извикваме CompareWith() отново. 0.621 > 0.531, следователно PhotoFilter е по-харесвано.", mem: true, 
+              vN1:"\"ChatConnect\"", vD1:"6739", vP1:"2234", vNeg1:"1977", 
+              vN2:"\"PhotoFilter\"", vD2:"11365", vP2:"7093", vNeg2:"4328", 
+              con: c8, math: "" }
+        ];
+
+        let currentStep = 0;
+
+        function updateUI() {
+            const step = steps[currentStep];
+            
+            if (step) {
+                // Текст за стъпката
+                document.getElementById('vizText').innerText = step.text;
+
+                // Памет
+                const memObj1 = document.getElementById('memObj1');
+                const memObj2 = document.getElementById('memObj2');
+                if (step.mem) {
+                    memObj1.classList.add('active');
+                    memObj2.classList.add('active');
+                } else {
+                    memObj1.classList.remove('active');
+                    memObj2.classList.remove('active');
+                }
+                
+                document.getElementById('vN1').innerText = step.vN1;
+                document.getElementById('vD1').innerText = step.vD1;
+                document.getElementById('vP1').innerText = step.vP1;
+                document.getElementById('vNeg1').innerText = step.vNeg1;
+
+                document.getElementById('vN2').innerText = step.vN2;
+                document.getElementById('vD2').innerText = step.vD2;
+                document.getElementById('vP2').innerText = step.vP2;
+                document.getElementById('vNeg2').innerText = step.vNeg2;
+
+                // Конзола
+                const consoleOutput = document.getElementById('consoleOutput');
+                consoleOutput.innerText = step.con;
+                // Автоматично скролиране до долу при добавяне на текст
+                consoleOutput.parentElement.scrollTop = consoleOutput.parentElement.scrollHeight;
+
+                // Математически Панел
+                handleMathOverlay(step.math);
+
+                document.getElementById('stepIndicator').innerText = `Стъпка: ${currentStep + 1} / ${steps.length}`;
+            }
+
+            document.getElementById('prevBtn').disabled = currentStep <= 0;
+            document.getElementById('nextBtn').disabled = currentStep >= steps.length - 1;
+        }
+
+        function handleMathOverlay(mathState) {
+            const overlay = document.getElementById('mathOverlay');
+            const mStep1 = document.getElementById('mStep1');
+            const mStep2 = document.getElementById('mStep2');
+            const mResult = document.getElementById('mResult');
+
+            if (!mathState) {
+                overlay.classList.remove('show');
+                return;
+            }
+
+            overlay.classList.add('show');
+            
+            if (mathState === "A1") {
+                mStep1.innerHTML = `<span style="color:#2ecc71">85</span> / (<span style="color:#2ecc71">85</span> + <span style="color:#e74c3c">15</span>)`;
+                mStep2.innerHTML = `85 / 100`;
+                mResult.textContent = `0.850`;
+            } else if (mathState === "A2") {
+                mStep1.innerHTML = `<span style="color:#2ecc71">425</span> / (<span style="color:#2ecc71">425</span> + <span style="color:#e74c3c">75</span>)`;
+                mStep2.innerHTML = `425 / 500`;
+                mResult.textContent = `0.850`;
+            } else if (mathState === "A3") {
+                mStep1.innerHTML = `<span style="color:#2ecc71">2234</span> / (<span style="color:#2ecc71">2234</span> + <span style="color:#e74c3c">1977</span>)`;
+                mStep2.innerHTML = `2234 / 4211`;
+                mResult.textContent = `0.531`;
+            } else if (mathState === "A4") {
+                mStep1.innerHTML = `<span style="color:#2ecc71">7093</span> / (<span style="color:#2ecc71">7093</span> + <span style="color:#e74c3c">4328</span>)`;
+                mStep2.innerHTML = `7093 / 11421`;
+                mResult.textContent = `0.621`;
+            }
+        }
+
+        function nextStep() { if (currentStep < steps.length - 1) { currentStep++; updateUI(); } }
+        function prevStep() { if (currentStep > 0) { currentStep--; updateUI(); } }
+
+        window.onload = updateUI;
+
+        // ----------------------------------------------------------------
+        // Логика за преоразмеряване на панелите (Drag-to-resize)
+        // ----------------------------------------------------------------
+        const resizer = document.getElementById('resizer');
+        const leftPanel = document.getElementById('leftPanel');
+        let isResizing = false;
+
+        resizer.addEventListener('mousedown', (e) => {
+            isResizing = true;
+            document.body.style.cursor = 'col-resize';
+            document.body.style.userSelect = 'none';
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (!isResizing) return;
+            
+            let newWidthPercent = (e.clientX / window.innerWidth) * 100;
+            
+            if (newWidthPercent > 20 && newWidthPercent < 80) {
+                leftPanel.style.flex = `0 0 ${newWidthPercent}%`;
+            }
+        });
+
+        document.addEventListener('mouseup', () => {
+            if (isResizing) {
+                isResizing = false;
+                document.body.style.cursor = 'default';
+                document.body.style.userSelect = 'auto'; 
+            }
+        });
+    </script>
+</body>
+</html>
