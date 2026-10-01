@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Задача 1: Оценяване на задачи - Algorithma</title>
+    <style>
+        body { margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; height: 100vh; background-color: #1e1e24; color: #e0e0e0; overflow: hidden;}
+        
+        /* Панели */
+        .panel { padding: 25px; overflow-y: auto; box-sizing: border-box; display: flex; flex-direction: column; }
+        
+        /* Ляв Панел - Условие */
+        .left-panel { border-right: 2px solid #333; background-color: #2b2b36; flex: 0 0 50%; min-width: 20%; box-shadow: inset -5px 0 15px rgba(0,0,0,0.2);}
+        
+        /* Съдържание на левия панел */
+        .content-wrapper { flex-grow: 1; }
+        
+        /* Десен Панел - Визуализации */
+        .right-panel { display: flex; flex-direction: column; gap: 15px; background-color: #1e1e24; flex: 1; min-width: 20%; position: relative;}
+        
+        /* Сплитер / Разделител */
+        .resizer {
+            width: 6px;
+            background-color: #444;
+            cursor: col-resize; 
+            transition: background-color 0.2s;
+            z-index: 10;
+        }
+        .resizer:hover, .resizer:active {
+            background-color: #00cec9;
+        }
+
+        /* Бутон Назад */
+        .back-to-home { display: inline-block; text-decoration: none; color: #00cec9; font-weight: bold; font-size: 0.95rem; margin-bottom: 15px; padding: 8px 15px; border: 1px solid #00cec9; border-radius: 8px; transition: all 0.3s ease; background: transparent; align-self: flex-start;}
+        .back-to-home:hover { background-color: #00cec9; color: #1e1e24; box-shadow: 0 0 10px rgba(0, 206, 201, 0.5); }
+
+        h1 { color: #ffffff; font-size: 1.7rem; margin-bottom: 5px; text-shadow: 0 2px 4px rgba(0,0,0,0.3);}
+        h2 { color: #00cec9; font-size: 1.1rem; text-transform: uppercase; margin-top: 0; margin-bottom: 15px; letter-spacing: 1px;}
+        h3 { color: #fdcb6e; border-bottom: 1px solid #444; padding-bottom: 5px; margin-top: 20px; font-size: 1.15rem;}
+        p, ul, li { line-height: 1.5; color: #dcdde1; font-size: 0.95rem; margin-bottom: 8px;}
+        ol { margin-top: 5px; margin-bottom: 10px; padding-left: 20px; line-height: 1.6;}
+        
+        /* Таблици */
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; margin-bottom: 15px; font-size: 0.85rem; background-color: #353b48; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.3);}
+        th, td { border: 1px solid #444; padding: 8px; text-align: left; }
+        th { background-color: #2f3640; color: #00cec9; font-weight: bold;}
+        
+        /* Примери - Конзолен изглед */
+        .examples-grid { display: flex; flex-direction: column; gap: 10px; margin-top: 15px;}
+        .example-box { background-color: #0c0c0c; border: 1px solid #555; border-top: 10px solid #2d3436; border-radius: 6px; padding: 10px; font-family: Consolas, monospace; color: #bdc3c7; font-size: 0.85rem; white-space: pre-wrap;}
+
+        /* Условие - Анимирана концепция */
+        .concept-card { background: linear-gradient(135deg, #2d3436 0%, #111 100%); border: 1px solid #555; border-radius: 12px; padding: 20px; text-align: center; margin-top: 15px; margin-bottom: 15px; position: relative; overflow: hidden; box-shadow: 0 8px 20px rgba(0,0,0,0.5);}
+        
+        .rating-scale { display: flex; justify-content: space-between; align-items: center; background: #1e1e24; padding: 15px; border-radius: 50px; border: 1px solid #444; margin: 10px 0; position: relative;}
+        .rating-item { display: flex; flex-direction: column; align-items: center; z-index: 2; width: 60px;}
+        .rating-emoji { font-size: 2rem; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)); transition: transform 0.3s;}
+        .rating-item:hover .rating-emoji { transform: scale(1.3); }
+        .rating-val { font-family: Consolas, monospace; font-weight: bold; color: #fff; margin-top: 5px; font-size: 1.1rem;}
+        
+        /* Линията зад емоджитата */
+        .scale-line { position: absolute; top: 35%; left: 30px; right: 30px; height: 4px; background: linear-gradient(90deg, #d63031, #b2bec3, #00b894); z-index: 1;}
+
+        /* Авторски права */
+        .copyright {
+            margin-top: 40px;
+            padding-top: 15px;
+            border-top: 1px solid #444;
+            color: #7f8c8d;
+            font-size: 0.85rem;
+            text-align: center;
+        }
+
+        /* Специален Раздел ВИЗУАЛИЗАЦИИ */
+        .viz-header { background: linear-gradient(90deg, #0984e3, #00cec9); color: white; padding: 10px 20px; border-radius: 8px; text-align: center; font-weight: bold; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 2px; box-shadow: 0 4px 15px rgba(0, 206, 201, 0.4); flex-shrink: 0;}
+
+        /* Визуална Зона (Съдии + Формули) */
+        .visualization-workspace { display: flex; flex-direction: column; gap: 15px; min-height: 220px; flex-shrink: 0; position: relative;}
+        
+        .judges-panel { background: #2d3436; border: 2px solid #555; border-radius: 12px; padding: 15px; box-shadow: inset 0 0 20px rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; gap: 10px; flex-wrap: wrap; position: relative; min-height: 100px;}
+        
+        /* Съдия Аватар */
+        .judge-card { background: #353b48; border: 2px solid #636e72; border-radius: 8px; padding: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 60px; box-shadow: 0 4px 8px rgba(0,0,0,0.3); transition: all 0.4s ease; opacity: 0; transform: scale(0.5);}
+        .judge-card.visible { opacity: 1; transform: scale(1); }
+        .judge-icon { font-size: 2rem; }
+        .judge-score { font-family: Consolas, monospace; font-weight: bold; font-size: 1.2rem; color: #fff; background: #1e1e24; padding: 2px 8px; border-radius: 4px; border: 1px solid #444; margin-top: 5px; transition: all 0.3s;}
+        .judge-label { font-size: 0.65rem; color: #b2bec3; margin-top: 3px; text-transform: uppercase;}
+        
+        /* Оцветители за оценки */
+        .score-min { background: rgba(214, 48, 49, 0.2); border-color: #d63031; color: #ff7675; }
+        .score-max { background: rgba(0, 184, 148, 0.2); border-color: #00b894; color: #55efc4; }
+        .score-neutral { background: rgba(9, 132, 227, 0.2); border-color: #0984e3; color: #74b9ff; }
+
+        /* Изскачащ Математически Панел */
+        .math-overlay { position: absolute; top: 10%; left: 10%; right: 10%; background: rgba(45, 52, 54, 0.95); border: 2px solid #fdcb6e; border-radius: 12px; padding: 15px; z-index: 10; display: none; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 10px 30px rgba(0,0,0,0.9); backdrop-filter: blur(5px); transform: translateY(-20px); opacity: 0; transition: all 0.4s ease;}
+        .math-overlay.show { display: flex; transform: translateY(0); opacity: 1; }
+        .math-title { color: #fdcb6e; font-weight: bold; margin-bottom: 5px; text-transform: uppercase; font-size: 0.85rem; letter-spacing: 1px;}
+        .math-formula { font-family: Consolas, monospace; font-size: 1.3rem; color: #fff; margin: 10px 0; background: #000; padding: 10px 20px; border-radius: 8px; border: 1px solid #555;}
+        .math-result { color: #00cec9; font-size: 1.5rem; font-weight: bold; text-shadow: 0 0 5px rgba(0, 206, 201, 0.5);}
+
+        /* Конзола */
+        .console-box { background-color: #000; border: 1px solid #333; border-top: 25px solid #2d3436; border-radius: 8px; padding: 10px; font-family: Consolas, 'Courier New', monospace; font-size: 12px; position: relative; box-shadow: 0 8px 15px rgba(0,0,0,0.5); height: 130px; overflow-y: auto; flex-shrink: 0;}
+        .console-box::before { content: "C:\\Windows\\System32\\cmd.exe"; position: absolute; top: -20px; left: 10px; color: #b2bec3; font-size: 11px; font-family: 'Segoe UI', sans-serif;}
+        .console-output { color: #b2bec3; white-space: pre-wrap; line-height: 1.4; }
+
+        /* Зона за код */
+        .code-container { background-color: #282c34; color: #abb2bf; padding: 12px; border-radius: 8px; font-family: Consolas, monospace; font-size: 12px; overflow-y: auto; box-shadow: inset 0 0 10px rgba(0,0,0,0.8); flex: 1; border: 1px solid #444;}
+        .code-line { padding: 2px 8px; margin: 1px 0; border-radius: 4px; transition: background-color 0.3s; white-space: pre; border-left: 3px solid transparent;}
+        .active-line { background-color: #3e4451; border-left: 3px solid #fdcb6e; color: #ffffff; font-weight: bold; }
+
+        /* Контроли */
+        .controls { display: flex; gap: 15px; justify-content: center; align-items: center; background: #2b2b36; padding: 10px; border-radius: 8px; border: 1px solid #444; flex-shrink: 0;}
+        button { padding: 8px 15px; border: none; border-radius: 6px; background: linear-gradient(180deg, #0984e3, #0652dd); color: white; font-size: 13px; font-weight: bold; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.3); text-transform: uppercase;}
+        button:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 10px rgba(9, 132, 227, 0.5); }
+        button:disabled { background: #555; color: #888; cursor: not-allowed; box-shadow: none; transform: none;}
+        .step-indicator { color: #00cec9; font-weight: bold; font-family: Consolas, monospace; font-size: 0.95rem; width: 140px; text-align: center;}
+    </style>
+</head>
+
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-YYBQF66CTS"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-YYBQF66CTS');
+</script>
+
+<body>
+
+    <div class="panel left-panel" id="leftPanel">
+        <div class="content-wrapper">
+            <a href="../index.html" class="back-to-home">← Начало</a>
+            
+            <h1>Задача 1: Оценяване на задачи</h1>
+            <h2>Конструктори в класове</h2>
+            
+            <p>За матурата по информатика се подготвят задачи от различни учители в България. Определен брой съдии дават оценка на всяка задача. Всеки съдия оценява дадена задача с цяло число между -3 и 3:</p>
+            
+            <div class="concept-card">
+                <ul style="text-align: left; list-style-type: none; padding: 0; margin-top: 0; font-size: 0.9rem; color: #dcdde1;">
+                    <li><strong style="color:#55efc4;">Оценка 3</strong> означава: „Тази задача много ми харесва!"</li>
+                    <li><strong style="color:#ff7675;">Оценка -3</strong> означава: „Тази задача изобщо не ми харесва!"</li>
+                    <li><strong style="color:#b2bec3;">Оценка 0</strong> означава: „Не мога да преценя дали да използваме тази задача."</li>
+                </ul>
+                <div class="rating-scale">
+                    <div class="scale-line"></div>
+                    <div class="rating-item">
+                        <div class="rating-emoji">🤬</div>
+                        <div class="rating-val" style="color: #ff7675;">-3</div>
+                    </div>
+                    <div class="rating-item">
+                        <div class="rating-emoji">😐</div>
+                        <div class="rating-val" style="color: #b2bec3;">0</div>
+                    </div>
+                    <div class="rating-item">
+                        <div class="rating-emoji">😍</div>
+                        <div class="rating-val" style="color: #55efc4;">+3</div>
+                    </div>
+                </div>
+            </div>
+
+            <p>Общата оценка на дадена задача се получава като средна стойност от оценките на всички съдии - т.е. сумата от оценките, разделена на броя на съдиите, даващи оценка.</p>
+
+            <p>Задачите се оценяват на два етапа:</p>
+            <ul>
+                <li><strong>I етап</strong> - задачата се оценява само от двама съдии от журито (големи експерти в областта на информатиката).</li>
+                <li><strong>II етап</strong> - задачата се оценява от останалите съдии от журито (по-малки експерти в областта на информатиката).</li>
+            </ul>
+            <p>Вашата задача е да напишете програма, която изчислява минималната и максималната възможна обща оценка на задачата, оценена от всички съдии.</p>
+
+            <p>Да се декларира клас <code>RatingProblem</code> със следните полета:</p>
+            <table>
+                <tr><th>Поле</th><th>Тип</th><th>Описание</th></tr>
+                <tr><td>n</td><td>цяло число</td><td>общ брой на съдиите (n > 2)</td></tr>
+                <tr><td>r1</td><td>цяло число</td><td>оценка на първия съдия (от -3 до 3 вкл.)</td></tr>
+                <tr><td>r2</td><td>цяло число</td><td>оценка на втория съдия (от -3 до 3 вкл.)</td></tr>
+            </table>
+
+            <h3>Класът да съдържа два конструктора:</h3>
+            <ol>
+                <li><code>RatingProblem()</code> записва:
+                    <br>5 в n (най-вероятният общ брой на съдиите);
+                    <br>1 в r1 (най-вероятната оценка, дадена от първия съдия);
+                    <br>2 в r2 (най-вероятната оценка, дадена от втория съдия).
+                </li>
+                <li><code>RatingProblem (int n, int r1, int r2)</code> записва стойностите на параметрите си в полетата n, r1 и r2.</li>
+            </ol>
+
+            <h3>В класа да се дефинират следните методи:</h3>
+            <ol>
+                <li>Метод <code>double GetTotal()</code> изчислява и връща сумата на оценките на двамата съдии.</li>
+                <li>Метод <code>double CalcMinimum()</code> изчислява и връща минималната възможна обща оценка на задачата.</li>
+                <li>Метод <code>double CalcMaximum()</code> изчислява и връща максималната възможна обща оценка на задачата.</li>
+                <li>Метод <code>void PrintMinMax()</code> извежда на екрана резултатите.</li>
+            </ol>
+
+            <h3>Като се използва класът RatingProblem, да се напише програма, която:</h3>
+            <ul>
+                <li>Създава обект от класа RatingProblem чрез подразбиращия се конструктор и показва резултатите чрез подходящия метод.</li>
+                <li>Въвежда от клавиатурата:
+                    <br>- общият брой на съдиите n;
+                    <br>- предварителната оценка на първия съдия r1;
+                    <br>- предварителната оценка на втория съдия r2.
+                </li>
+                <li>Създава обект от класа RatingProblem с параметри като числовите данни са въведените от клавиатурата.</li>
+                <li>Отпечатва на екрана резултатите.</li>
+            </ul>
+
+            <h3>Примери:</h3>
+            <div class="examples-grid">
+                <div class="example-box">Total number of judges: 5
+Ratings of judges that have already rated the problem:
+    R1: 1
+    R2: 2
+Minimum overall rating of the problem: -1,20
+Maximum overall rating of the problem: 2,40
+
+Enter the total number of judges: 4
+Enter rate (R1): -3
+Enter rate (R2): -2
+Total number of judges: 4
+Ratings of judges that have already rated the problem:
+    R1: -3
+    R2: -2
+Minimum overall rating of the problem: -2,75
+Maximum overall rating of the problem: 0,25</div>
+            </div>
+        </div>
+
+        <div class="copyright">
+            &copy; 2026 Algorithma. Всички права запазени.
+        </div>
+    </div>
+
+    <!-- Сплитер за преоразмеряване -->
+    <div class="resizer" id="resizer"></div>
+
+    <div class="panel right-panel">
+        
+        <div class="viz-header">
+            ⚡ Интерактивен Съдийски Панел ⚡
+        </div>
+
+        <div class="visualization-workspace">
+            
+            <div class="judges-panel" id="judgesPanel">
+                <!-- Съдиите ще се генерират динамично тук -->
+            </div>
+
+            <!-- Изскачащ Математически Панел -->
+            <div class="math-overlay" id="mathOverlay">
+                <div class="math-title" id="mTitle">Калкулация</div>
+                <div class="math-formula" id="mFormula">(1 + 2 + X) / N</div>
+                <div class="math-result" id="mResult">Result: 0.00</div>
+            </div>
+
+            <!-- Конзола -->
+            <div class="console-box">
+                <div class="console-output" id="consoleOutput"></div>
+            </div>
+
+        </div>
+
+        <!-- Код -->
+        <div class="code-container">
+<div class="code-line" id="line-0">class RatingProblem {</div>
+<div class="code-line" id="line-1">    int n, r1, r2;</div>
+<div class="code-line" id="line-2">    public RatingProblem() {</div>
+<div class="code-line" id="line-3">        n = 5; r1 = 1; r2 = 2;</div>
+<div class="code-line" id="line-4">    }</div>
+<div class="code-line" id="line-5">    public RatingProblem(int n, int r1, int r2) {</div>
+<div class="code-line" id="line-6">        this.n = n; this.r1 = r1; this.r2 = r2;</div>
+<div class="code-line" id="line-7">    }</div>
+<div class="code-line" id="line-8">    double GetTotal() { return r1 + r2; }</div>
+<div class="code-line" id="line-9">    double CalcMinimum() {</div>
+<div class="code-line" id="line-10">        return (GetTotal() + (n - 2) * -3) / n;</div>
+<div class="code-line" id="line-11">    }</div>
+<div class="code-line" id="line-12">    double CalcMaximum() {</div>
+<div class="code-line" id="line-13">        return (GetTotal() + (n - 2) * 3) / n;</div>
+<div class="code-line" id="line-14">    }</div>
+<div class="code-line" id="line-15">    public void PrintMinMax() {</div>
+<div class="code-line" id="line-16">        Console.WriteLine($"Total number of judges: {n}");</div>
+<div class="code-line" id="line-17">        Console.WriteLine("Ratings of judges that have already rated:");</div>
+<div class="code-line" id="line-18">        Console.WriteLine($"    R1: {r1}");</div>
+<div class="code-line" id="line-19">        Console.WriteLine($"    R2: {r2}");</div>
+<div class="code-line" id="line-20">        Console.WriteLine($"Min overall rating: {CalcMinimum():f2}");</div>
+<div class="code-line" id="line-21">        Console.WriteLine($"Max overall rating: {CalcMaximum():f2}");</div>
+<div class="code-line" id="line-22">    }</div>
+<div class="code-line" id="line-23">}</div>
+<div class="code-line" id="line-24">class Program {</div>
+<div class="code-line" id="line-25">    static void Main() {</div>
+<div class="code-line" id="line-26">        RatingProblem rp1 = new RatingProblem();</div>
+<div class="code-line" id="line-27">        rp1.PrintMinMax();</div>
+<div class="code-line" id="line-28">        </div>
+<div class="code-line" id="line-29">        Console.Write("Enter n, r1, r2: "); // (Въведени: 4, -3, -2)</div>
+<div class="code-line" id="line-30">        int n = 4, r1 = -3, r2 = -2;</div>
+<div class="code-line" id="line-31">        RatingProblem rp2 = new RatingProblem(n, r1, r2);</div>
+<div class="code-line" id="line-32">        rp2.PrintMinMax();</div>
+<div class="code-line" id="line-33">    }</div>
+<div class="code-line" id="line-34">}</div>
+        </div>
+
+        <div class="controls">
+            <button id="prevBtn" onclick="prevStep()" disabled>⏪ Назад</button>
+            <div class="step-indicator" id="stepIndicator">Стъпка: 0 / 0</div>
+            <button id="nextBtn" onclick="nextStep()">Напред ⏩</button>
+        </div>
+
+    </div>
+
+    <script>
+        const steps = [
+            { lines: [25], objMode: "none", con: "", math: "" },
+            
+            // --- Default Constructor ---
+            { lines: [26, 2], objMode: "none", con: "", math: "" },
+            { lines: [3], objMode: "rp1-init", con: "", math: "" },
+            
+            // Print RP1
+            { lines: [27, 15], objMode: "rp1-init", con: "", math: "" },
+            { lines: [16, 17, 18, 19], objMode: "rp1-init", con: "Total number of judges: 5\nRatings of judges that have already rated:\n    R1: 1\n    R2: 2", math: "" },
+            
+            // Calc Min RP1
+            { lines: [20, 9], objMode: "rp1-init", con: "Total number of judges: 5\nRatings of judges that have already rated:\n    R1: 1\n    R2: 2", math: "" },
+            { lines: [10], objMode: "rp1-min", con: "Total number of judges: 5\nRatings of judges that have already rated:\n    R1: 1\n    R2: 2", math: "min1" },
+            { lines: [20], objMode: "rp1-min", con: "Total number of judges: 5\nRatings of judges that have already rated:\n    R1: 1\n    R2: 2\nMin overall rating: -1.20", math: "" },
+            
+            // Calc Max RP1
+            { lines: [21, 12], objMode: "rp1-min", con: "Total number of judges: 5\nRatings of judges that have already rated:\n    R1: 1\n    R2: 2\nMin overall rating: -1.20", math: "" },
+            { lines: [13], objMode: "rp1-max", con: "Total number of judges: 5\nRatings of judges that have already rated:\n    R1: 1\n    R2: 2\nMin overall rating: -1.20", math: "max1" },
+            { lines: [21], objMode: "rp1-max", con: "Total number of judges: 5\nRatings of judges that have already rated:\n    R1: 1\n    R2: 2\nMin overall rating: -1.20\nMax overall rating: 2.40", math: "" },
+            
+            // --- Parametrized Constructor ---
+            { lines: [29, 30], objMode: "none", con: "Total number of judges: 5\nRatings of judges that have already rated:\n    R1: 1\n    R2: 2\nMin overall rating: -1.20\nMax overall rating: 2.40\n\nEnter n, r1, r2: 4 -3 -2", math: "" },
+            { lines: [31, 5], objMode: "none", con: "Total number of judges: 5\nRatings of judges that have already rated:\n    R1: 1\n    R2: 2\nMin overall rating: -1.20\nMax overall rating: 2.40\n\nEnter n, r1, r2: 4 -3 -2", math: "" },
+            { lines: [6], objMode: "rp2-init", con: "Total number of judges: 5\nRatings of judges that have already rated:\n    R1: 1\n    R2: 2\nMin overall rating: -1.20\nMax overall rating: 2.40\n\nEnter n, r1, r2: 4 -3 -2", math: "" },
+            
+            // Print RP2
+            { lines: [32, 15], objMode: "rp2-init", con: "Total number of judges: 5\nRatings of judges that have already rated:\n    R1: 1\n    R2: 2\nMin overall rating: -1.20\nMax overall rating: 2.40\n\nEnter n, r1, r2: 4 -3 -2", math: "" },
+            { lines: [16, 17, 18, 19], objMode: "rp2-init", con: "...\nEnter n, r1, r2: 4 -3 -2\nTotal number of judges: 4\nRatings of judges that have already rated:\n    R1: -3\n    R2: -2", math: "" },
+            
+            // Calc Min RP2
+            { lines: [20, 9], objMode: "rp2-init", con: "...\nEnter n, r1, r2: 4 -3 -2\nTotal number of judges: 4\nRatings of judges that have already rated:\n    R1: -3\n    R2: -2", math: "" },
+            { lines: [10], objMode: "rp2-min", con: "...\nEnter n, r1, r2: 4 -3 -2\nTotal number of judges: 4\nRatings of judges that have already rated:\n    R1: -3\n    R2: -2", math: "min2" },
+            { lines: [20], objMode: "rp2-min", con: "...\nEnter n, r1, r2: 4 -3 -2\nTotal number of judges: 4\nRatings of judges that have already rated:\n    R1: -3\n    R2: -2\nMin overall rating: -2.75", math: "" },
+            
+            // Calc Max RP2
+            { lines: [21, 12], objMode: "rp2-min", con: "...\nEnter n, r1, r2: 4 -3 -2\nTotal number of judges: 4\nRatings of judges that have already rated:\n    R1: -3\n    R2: -2\nMin overall rating: -2.75", math: "" },
+            { lines: [13], objMode: "rp2-max", con: "...\nEnter n, r1, r2: 4 -3 -2\nTotal number of judges: 4\nRatings of judges that have already rated:\n    R1: -3\n    R2: -2\nMin overall rating: -2.75", math: "max2" },
+            { lines: [21], objMode: "rp2-max", con: "...\nEnter n, r1, r2: 4 -3 -2\nTotal number of judges: 4\nRatings of judges that have already rated:\n    R1: -3\n    R2: -2\nMin overall rating: -2.75\nMax overall rating: 0.25", math: "" }
+        ];
+
+        let currentStep = -1;
+
+        function renderJudges(mode) {
+            const panel = document.getElementById('judgesPanel');
+            panel.innerHTML = ''; // Изчистване
+
+            if (mode === "none") return;
+
+            let n = 0, r1 = 0, r2 = 0;
+            let fillType = ""; // "?", "min", "max"
+
+            if (mode.startsWith("rp1")) { n = 5; r1 = 1; r2 = 2; }
+            if (mode.startsWith("rp2")) { n = 4; r1 = -3; r2 = -2; }
+            
+            if (mode.endsWith("init")) fillType = "?";
+            if (mode.endsWith("min")) fillType = "min";
+            if (mode.endsWith("max")) fillType = "max";
+
+            for (let i = 1; i <= n; i++) {
+                let score = "?";
+                let styleClass = "";
+                let label = `R${i}`;
+
+                if (i === 1) { score = r1; styleClass = "score-neutral"; }
+                else if (i === 2) { score = r2; styleClass = "score-neutral"; }
+                else {
+                    label = "Unk";
+                    if (fillType === "?") { score = "?"; styleClass = ""; }
+                    else if (fillType === "min") { score = "-3"; styleClass = "score-min"; }
+                    else if (fillType === "max") { score = "+3"; styleClass = "score-max"; }
+                }
+
+                // Анимация за поява
+                const delay = i * 100;
+                panel.innerHTML += `
+                    <div class="judge-card" style="animation: popIn 0.4s ease forwards ${delay}ms;">
+                        <div class="judge-icon">👩‍⚖️</div>
+                        <div class="judge-score ${styleClass}">${score}</div>
+                        <div class="judge-label">${label}</div>
+                    </div>
+                `;
+            }
+        }
+
+        // Динамични стилове за анимацията
+        const style = document.createElement('style');
+        style.innerHTML = `
+            @keyframes popIn {
+                0% { opacity: 0; transform: scale(0.5); }
+                70% { transform: scale(1.1); }
+                100% { opacity: 1; transform: scale(1); }
+            }
+        `;
+        document.head.appendChild(style);
+
+        function handleMath(mathCode) {
+            const overlay = document.getElementById('mathOverlay');
+            if (!mathCode) { overlay.classList.remove('show'); return; }
+
+            const title = document.getElementById('mTitle');
+            const formula = document.getElementById('mFormula');
+            const result = document.getElementById('mResult');
+
+            overlay.classList.add('show');
+
+            if (mathCode === "min1") {
+                title.innerText = "Минимална оценка (rp1)";
+                formula.innerHTML = "(1 + 2 + (-3)*3) / 5";
+                result.innerText = "=-1.20";
+                result.style.color = "#ff7675";
+            } else if (mathCode === "max1") {
+                title.innerText = "Максимална оценка (rp1)";
+                formula.innerHTML = "(1 + 2 + (3)*3) / 5";
+                result.innerText = "= 2.40";
+                result.style.color = "#55efc4";
+            } else if (mathCode === "min2") {
+                title.innerText = "Минимална оценка (rp2)";
+                formula.innerHTML = "(-3 + (-2) + (-3)*2) / 4";
+                result.innerText = "=-2.75";
+                result.style.color = "#ff7675";
+            } else if (mathCode === "max2") {
+                title.innerText = "Максимална оценка (rp2)";
+                formula.innerHTML = "(-3 + (-2) + (3)*2) / 4";
+                result.innerText = "= 0.25";
+                result.style.color = "#55efc4";
+            }
+        }
+
+        function updateUI() {
+            document.querySelectorAll('.code-line').forEach(el => el.classList.remove('active-line'));
+            
+            if (currentStep >= 0) {
+                const step = steps[currentStep];
+                
+                let firstLine = null;
+                step.lines.forEach(lineNum => {
+                    let el = document.getElementById('line-' + lineNum);
+                    if(el) {
+                        el.classList.add('active-line');
+                        if(!firstLine) firstLine = el;
+                    }
+                });
+                if(firstLine) firstLine.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+                renderJudges(step.objMode);
+                handleMath(step.math);
+                
+                document.getElementById('consoleOutput').innerText = step.con;
+                document.getElementById('stepIndicator').innerText = `Стъпка: ${currentStep + 1} / ${steps.length}`;
+            }
+
+            document.getElementById('prevBtn').disabled = currentStep <= 0;
+            document.getElementById('nextBtn').disabled = currentStep >= steps.length - 1;
+        }
+
+        function nextStep() { if (currentStep < steps.length - 1) { currentStep++; updateUI(); } }
+        function prevStep() { if (currentStep > 0) { currentStep--; updateUI(); } }
+
+        currentStep = 0;
+        window.onload = updateUI;
+
+        // ----------------------------------------------------------------
+        // Логика за преоразмеряване на панелите (Drag-to-resize)
+        // ----------------------------------------------------------------
+        const resizer = document.getElementById('resizer');
+        const leftPanel = document.getElementById('leftPanel');
+        let isResizing = false;
+
+        resizer.addEventListener('mousedown', (e) => {
+            isResizing = true;
+            document.body.style.cursor = 'col-resize';
+            document.body.style.userSelect = 'none';
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (!isResizing) return;
+            
+            let newWidthPercent = (e.clientX / window.innerWidth) * 100;
+            
+            if (newWidthPercent > 20 && newWidthPercent < 80) {
+                leftPanel.style.flex = `0 0 ${newWidthPercent}%`;
+            }
+        });
+
+        document.addEventListener('mouseup', () => {
+            if (isResizing) {
+                isResizing = false;
+                document.body.style.cursor = 'default';
+                document.body.style.userSelect = 'auto'; 
+            }
+        });
+    </script>
+</body>
+</html>
