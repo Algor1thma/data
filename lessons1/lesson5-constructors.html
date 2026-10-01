@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Урок 5: Конструктори - Algorithma</title>
+    <style>
+        body { margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; height: 100vh; background-color: #f4f4f9; overflow: hidden;}
+        
+        /* Панели */
+        .panel { padding: 30px; overflow-y: auto; box-sizing: border-box; display: flex; flex-direction: column;}
+        .left-panel { border-right: 2px solid #ddd; background-color: #ffffff; flex: 0 0 50%; min-width: 20%;}
+        .right-panel { display: flex; flex-direction: column; gap: 20px; background-color: #1e1e24; flex: 1; min-width: 20%; color: #e0e0e0; position: relative;}
+        
+        /* Съдържание на левия панел */
+        .content-wrapper { flex-grow: 1; }
+
+        /* Сплитер / Разделител */
+        .resizer {
+            width: 6px;
+            background-color: #ddd;
+            cursor: col-resize; 
+            transition: background-color 0.2s;
+            z-index: 10;
+        }
+        .resizer:hover, .resizer:active {
+            background-color: #3498db;
+        }
+
+        /* Стил за бутона "Назад" */
+        .back-to-home { display: inline-block; text-decoration: none; color: #7f8c8d; font-weight: bold; font-size: 0.95rem; margin-bottom: 15px; padding: 5px 10px; border: 1px solid #ddd; border-radius: 5px; background-color: #f8f9fa; transition: all 0.2s ease; align-self: flex-start;}
+        .back-to-home:hover { color: #2c3e50; background-color: #ecf0f1; border-color: #bdc3c7; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+
+        h1 { color: #2c3e50; font-size: 1.8rem; margin-bottom: 5px; }
+        h2 { color: #7f8c8d; font-size: 1.1rem; text-transform: uppercase; margin-top: 0; margin-bottom: 15px; }
+        h3 { color: #34495e; border-bottom: 2px solid #3498db; padding-bottom: 5px; margin-top: 25px; font-size: 1.25rem;}
+        p, ul, li { line-height: 1.6; color: #333; font-size: 0.95rem; margin-bottom: 10px;}
+        
+        /* Блокове за код в текста */
+        .inline-code-block { background-color: #f8f9fa; border-left: 4px solid #3498db; padding: 15px; font-family: Consolas, monospace; font-size: 0.9rem; margin: 15px 0; white-space: pre-wrap; color: #2c3e50; border-radius: 0 8px 8px 0; box-shadow: 0 2px 5px rgba(0,0,0,0.05);}
+        .code-comment { color: #27ae60; font-style: italic; }
+        
+        /* Подсказка / Обобщение */
+        .hint-box { background-color: #e8f4fd; border-left: 4px solid #3498db; padding: 15px; margin-top: 15px; border-radius: 4px; color: #2c3e50; font-size: 0.95rem; }
+
+        /* Специален Раздел ВИЗУАЛИЗАЦИИ */
+        .viz-header { background: linear-gradient(90deg, #3498db, #2980b9); color: white; padding: 10px 20px; border-radius: 8px; text-align: center; font-weight: bold; font-size: 1.2rem; text-transform: uppercase; letter-spacing: 2px; box-shadow: 0 4px 15px rgba(52, 152, 219, 0.4); flex-shrink: 0;}
+
+        /* Визуализация - Памет и Конзола */
+        .visualization-workspace { flex: 1 0 auto; display: flex; flex-direction: column; gap: 15px; min-height: 350px; }
+        
+        .memory-container { flex: 1; display: flex; gap: 20px; justify-content: center; align-items: center; background: #2b2b36; border-radius: 12px; border: 2px dashed #444; padding: 20px; position: relative;}
+        
+        /* Обекти в паметта */
+        .memory-box { background-color: #353b48; border: 2px solid #555; border-radius: 12px; padding: 15px; box-shadow: 0 8px 16px rgba(0,0,0,0.5); width: 200px; transform: scale(0.9); opacity: 0.5; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);}
+        .memory-box.active { transform: scale(1); opacity: 1; border-color: #3498db; box-shadow: 0 0 20px rgba(52, 152, 219, 0.4);}
+        .memory-title { font-weight: bold; color: #3498db; border-bottom: 1px solid #555; padding-bottom: 8px; margin-bottom: 12px; font-size: 1rem; text-align: center;}
+        .card-image { font-size: 3rem; line-height: 1; margin-bottom: 15px; text-align: center; filter: drop-shadow(0px 4px 4px rgba(0,0,0,0.3)); }
+        .memory-prop { display: flex; justify-content: space-between; margin: 8px 0; font-family: Consolas, monospace; font-size: 0.85rem;}
+        .memory-prop span:nth-child(1) { color: #b2bec3; }
+        .memory-prop span:nth-child(2) { color: #fdcb6e; font-weight: bold; }
+        .highlight-prop { background: rgba(52, 152, 219, 0.2); border-radius: 4px; padding: 2px 4px; margin: -2px -4px; transition: background 0.3s;}
+
+        /* Конзола */
+        .console-box { background-color: #000; border: 1px solid #333; border-top: 25px solid #2d3436; border-radius: 8px; padding: 15px; font-family: Consolas, 'Courier New', monospace; font-size: 13px; position: relative; box-shadow: 0 8px 15px rgba(0,0,0,0.5); min-height: 40px; flex-shrink: 0;}
+        .console-box::before { content: "C:\\Windows\\System32\\cmd.exe"; position: absolute; top: -20px; left: 10px; color: #b2bec3; font-size: 11px; font-family: 'Segoe UI', sans-serif;}
+        .console-output { color: #ecf0f1; white-space: pre-wrap; line-height: 1.5; }
+        
+        /* Зона за код */
+        .code-container { background-color: #282c34; color: #abb2bf; padding: 15px; border-radius: 8px; font-family: Consolas, monospace; font-size: 13px; overflow-y: auto; box-shadow: inset 0 0 10px rgba(0,0,0,0.8); max-height: 350px; border: 1px solid #444; flex-grow: 1; min-height: 250px;}
+        .code-line { padding: 2px 8px; margin: 1px 0; border-radius: 4px; transition: background-color 0.3s; white-space: pre; border-left: 3px solid transparent;}
+        .active-line { background-color: #3e4451; border-left: 3px solid #3498db; color: #ffffff; font-weight: bold; }
+        
+        /* Контроли */
+        .controls { display: flex; gap: 15px; justify-content: center; align-items: center; background: #2b2b36; padding: 12px; border-radius: 8px; border: 1px solid #444; flex-shrink: 0;}
+        button { padding: 10px 20px; border: none; border-radius: 6px; background: linear-gradient(180deg, #3498db, #2980b9); color: white; font-size: 14px; font-weight: bold; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.3); text-transform: uppercase;}
+        button:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 10px rgba(52, 152, 219, 0.5); }
+        button:disabled { background: #555; color: #888; cursor: not-allowed; box-shadow: none; transform: none;}
+        .step-indicator { color: #3498db; font-weight: bold; font-family: Consolas, monospace; font-size: 1rem; width: 140px; text-align: center;}
+    </style>
+</head>
+<body>
+
+    <div class="panel left-panel" id="leftPanel">
+        <div class="content-wrapper">
+            <a href="../index.html" class="back-to-home">← Начало</a>
+            
+            <h1>Добавяне на конструктори към класове</h1>
+            <h2>Конструктори</h2>
+            
+            <h3>Описание на клас – да допълним ☺</h3>
+            <p>В ООП при създаване на обект от даден клас се извиква специален елемент от този клас, наречен <strong>конструктор</strong>.</p>
+            <p>Ако при описанието на класа не е създаден конструктор, компилаторът автоматично добавя такъв – т.нар. <em>служебен конструктор</em> или <em>подразбиращ се конструктор</em>.</p>
+            <p>По структурата си конструкторът изцяло прилича на метод, но за него <strong>не се посочва &lt;тип&gt;</strong> и <strong>името му винаги съвпада с името на класа</strong>.</p>
+
+            <strong>Пример за автоматично добавяне на конструктор:</strong>
+            <div class="inline-code-block">class Animal
+{
+    public string kindOfAnimal;
+    public string color;
+    public int numberOfLegs;
+    public bool hasTail;
+    public bool isMammal;
+}
+
+class Program
+{
+    public static void Main(string[] args)
+    {
+        <span class="code-comment">// Автоматично добавен конструктор се извиква тук:</span>
+        Animal desertKing = new Animal();
+    }
+}</div>
+
+            <h3>Създаване на собствен конструктор</h3>
+            <ul>
+                <li>Автоматично добавеният конструктор записва във всички полета на класа <strong>неутрални (подразбиращи се) стойности</strong> според техния тип.</li>
+                <li>Включването на собствен конструктор позволява на програмиста да зададе <strong>начални стойности на полетата</strong>, както и да определи <strong>изпълнението на конкретни действия</strong> при създаването на нов обект.</li>
+                <li>Когато в класа има описан конструктор, компилаторът <strong>не добавя</strong> служебен такъв.</li>
+            </ul>
+
+            <strong>Пример за собствен конструктор:</strong>
+            <div class="inline-code-block">class Animal
+{
+    public string kindOfAnimal;
+    public string color;
+    public int numberOfLegs;
+    public bool hasTail;
+    public bool isMammal;
+
+    public Animal()
+    {
+        kindOfAnimal = "undefined";
+        color = "unknown";
+        numberOfLegs = 4;
+        hasTail = isMammal = true;
+        Console.WriteLine("Undefined animal has been just created :)");
+    }
+}
+
+class Program
+{
+    public static void Main(string[] args)
+    {
+        Animal idk = new Animal();
+    }
+}</div>
+
+            <h3>Обща форма на конструктор</h3>
+            <div class="inline-code-block">[&lt;достъп&gt;] &lt;име-на-класа&gt; ([&lt;списък-с-параметри&gt;])
+{
+    &lt;тяло-на-конструктора&gt;
+}</div>
+            <p>Най-често модификаторът за достъп до конструктора е <code>public</code>, макар че това не е задължително.</p>
+            <p>Конструктор, който няма параметри, се нарича <strong>конструктор по подразбиране</strong>. В един клас може да има едновременно конструктор по подразбиране и конструктор с параметри.</p>
+
+            <h3>Конструктори – типична употреба</h3>
+            <ul>
+                <li><strong>Конструктор по подразбиране</strong> се използва най-често за задаване на начални стойности на полетата, когато тези начални стойности са различни от подразбиращите се за съответния тип. Прилага се, когато е възможно да се създаде обект, без да има пълна информация за стойностите на неговите полета в момента на създаването му.</li>
+                <li><strong>Конструктор с параметри</strong> се използва най-често когато по време на създаване на обекта е достъпна информация за стойностите на неговите полета. Тази информация се изпраща под формата на параметри и конструкторът копира техните стойности в съответните полета.</li>
+            </ul>
+
+            <h3>Конструктори – пример 1</h3>
+            <div class="inline-code-block">class Car
+{
+    string brand, model;
+    int yearProd, engineVolume;
+    
+    public Car()
+    {
+        brand = "Undefined";
+        model = "To be specified";
+        yearProd = 1900;
+        engineVolume = 600;
+    }
+    
+    public Car(string br, string mod, int yP, int eV)
+    {
+        brand = br;
+        model = mod;
+        yearProd = yP;
+        engineVolume = eV;
+    }
+    
+    public void PrintData()
+    {
+        Console.WriteLine("This is " + model + " of " + brand);
+        Console.WriteLine("Engine volume: " + engineVolume);
+        Console.WriteLine("Year of Production: " + yearProd);
+    }
+}
+
+class Program
+{
+    public static void Main(string[] args)
+    {
+        Car auto1 = new Car();
+        auto1.PrintData();
+        
+        Car myAuto = new Car("Toyota", "Avensis III", 2231, 2010);
+        myAuto.PrintData();
+    }
+}</div>
+
+            <h3>Конструктори – пример 2</h3>
+            <div class="inline-code-block">class Person
+{
+    string fName, lName;
+    
+    public Person()
+    {
+        Console.Write("Enter first name: ");
+        fName = Console.ReadLine();
+        Console.Write("Enter last name: ");
+        lName = Console.ReadLine();
+    }
+    
+    public Person(string fn, string ln)
+    {
+        fName = fn;
+        lName = ln;
+    }
+    
+    public void PrintFullName()
+    {
+        Console.WriteLine("Regards from " + fName + " " + lName);
+    }
+}
+
+class Program
+{
+    public static void Main(string[] args)
+    {
+        Person p = new Person("Kirk", "Hammett");
+        Person d = new Person();
+        p.PrintFullName();
+        d.PrintFullName();
+    }
+}</div>
+
+            <h3>Два записа за инициализация на полетата на клас в конструктор</h3>
+            <ul>
+                <li>С име на параметър на конструктора различно от името на полето</li>
+                <li>Със съвпадащо име, но със задължително използване на ключовата дума <code>this</code>, когато записваме името на полето</li>
+            </ul>
+            <div class="inline-code-block">class Coefficient
+{
+    double val;
+    
+    <span class="code-comment">// Начин 1 - с име на параметъра различно от името на полето</span>
+    public Coefficient(double initVal)
+    {
+        val = initVal;
+    }
+}
+
+class Coefficient
+{
+    double val;
+    
+    <span class="code-comment">// Начин 2 - с ключовата дума this</span>
+    public Coefficient(double val)
+    {
+        this.val = val;
+    }
+}</div>
+
+            <h3>Конструктори - обобщение</h3>
+            <div class="hint-box">
+                <strong>Описание:</strong> Конструкторът е своеобразен метод без тип и с фиксирано име. Извиква се винаги при създаване на нов обект. Обикновено в даден клас има поне един конструктор, чрез който могат да бъдат зададени начални стойности на полетата на новосъздаващия се обект, както и да бъдат изпълнени определени действия по време на създаването на този обект.
+            </div>
+            <div class="inline-code-block">class Rectangle
+{
+    int width, height;
+    
+    public Rectangle()
+    {
+        width = height = 1;      
+    }
+    
+    public Rectangle(int w, int h)
+    {
+        width = w;
+        height = h;
+    }
+}</div>
+        </div>
+    </div>
+
+    <!-- Сплитер за преоразмеряване -->
+    <div class="resizer" id="resizer"></div>
+
+    <div class="panel right-panel">
+        
+        <div class="viz-header">
+            ⚡ Интерактивна Фабрика за Обекти ⚡
+        </div>
+
+        <div class="visualization-workspace">
+            
+            <div class="memory-container">
+                <!-- Карта Обект 1 (Без параметри) -->
+                <div class="memory-box" id="obj1">
+                    <div class="memory-title">Обект: auto1</div>
+                    <div class="card-image">🚗</div>
+                    <div class="memory-prop"><span>brand</span> <span id="vB1">null</span></div>
+                    <div class="memory-prop"><span>model</span> <span id="vM1">null</span></div>
+                    <div class="memory-prop"><span>yearProd</span> <span id="vY1">0</span></div>
+                    <div class="memory-prop"><span>engineVol</span> <span id="vE1">0</span></div>
+                </div>
+
+                <!-- Карта Обект 2 (С параметри) -->
+                <div class="memory-box" id="obj2">
+                    <div class="memory-title">Обект: myAuto</div>
+                    <div class="card-image">🚙</div>
+                    <div class="memory-prop"><span>brand</span> <span id="vB2">null</span></div>
+                    <div class="memory-prop"><span>model</span> <span id="vM2">null</span></div>
+                    <div class="memory-prop"><span>yearProd</span> <span id="vY2">0</span></div>
+                    <div class="memory-prop"><span>engineVol</span> <span id="vE2">0</span></div>
+                </div>
+            </div>
+
+            <!-- Конзола -->
+            <div class="console-box">
+                <div class="console-output" id="consoleOutput"></div>
+            </div>
+
+        </div>
+
+        <!-- Код -->
+        <div class="code-container">
+<div class="code-line" id="line-0">class Car {</div>
+<div class="code-line" id="line-1">    string brand, model;</div>
+<div class="code-line" id="line-2">    int yearProd, engineVolume;</div>
+<div class="code-line" id="line-3"></div>
+<div class="code-line" id="line-4">    public Car() {</div>
+<div class="code-line" id="line-5">        brand = "Undefined";</div>
+<div class="code-line" id="line-6">        model = "To be specified";</div>
+<div class="code-line" id="line-7">        yearProd = 1900;</div>
+<div class="code-line" id="line-8">        engineVolume = 600;</div>
+<div class="code-line" id="line-9">    }</div>
+<div class="code-line" id="line-10">    public Car(string br, string mod, int yP, int eV) {</div>
+<div class="code-line" id="line-11">        brand = br;</div>
+<div class="code-line" id="line-12">        model = mod;</div>
+<div class="code-line" id="line-13">        yearProd = yP;</div>
+<div class="code-line" id="line-14">        engineVolume = eV;</div>
+<div class="code-line" id="line-15">    }</div>
+<div class="code-line" id="line-16">    public void PrintData() {</div>
+<div class="code-line" id="line-17">        Console.WriteLine("This is " + model + " of " + brand);</div>
+<div class="code-line" id="line-18">        Console.WriteLine("Engine vol of " + engineVolume);</div>
+<div class="code-line" id="line-19">        Console.WriteLine("Year of Prod: " + yearProd);</div>
+<div class="code-line" id="line-20">    }</div>
+<div class="code-line" id="line-21">}</div>
+<div class="code-line" id="line-22">class Program {</div>
+<div class="code-line" id="line-23">    static void Main() {</div>
+<div class="code-line" id="line-24">        Car auto1 = new Car();</div>
+<div class="code-line" id="line-25">        auto1.PrintData();</div>
+<div class="code-line" id="line-26">        </div>
+<div class="code-line" id="line-27">        Car myAuto = new Car("Toyota", "Avensis III", 2231, 2010);</div>
+<div class="code-line" id="line-28">        myAuto.PrintData();</div>
+<div class="code-line" id="line-29">    }</div>
+<div class="code-line" id="line-30">}</div>
+        </div>
+
+        <div class="controls">
+            <button id="prevBtn" onclick="prevStep()" disabled>⏪ Назад</button>
+            <div class="step-indicator" id="stepIndicator">Стъпка: 0 / 0</div>
+            <button id="nextBtn" onclick="nextStep()">Напред ⏩</button>
+        </div>
+
+    </div>
+
+    <script>
+        const steps = [
+            { lines: [23], o1: false, o2: false, vB1:"null", vM1:"null", vY1:"0", vE1:"0", vB2:"null", vM2:"null", vY2:"0", vE2:"0", con: "", hl: "" },
+            
+            // Обект 1 (Без параметри)
+            { lines: [24], o1: true, o2: false, vB1:"null", vM1:"null", vY1:"0", vE1:"0", vB2:"null", vM2:"null", vY2:"0", vE2:"0", con: "", hl: "" },
+            { lines: [4], o1: true, o2: false, vB1:"null", vM1:"null", vY1:"0", vE1:"0", vB2:"null", vM2:"null", vY2:"0", vE2:"0", con: "", hl: "" },
+            { lines: [5], o1: true, o2: false, vB1:"\"Undefined\"", vM1:"null", vY1:"0", vE1:"0", vB2:"null", vM2:"null", vY2:"0", vE2:"0", con: "", hl: "vB1" },
+            { lines: [6], o1: true, o2: false, vB1:"\"Undefined\"", vM1:"\"To be specified\"", vY1:"0", vE1:"0", vB2:"null", vM2:"null", vY2:"0", vE2:"0", con: "", hl: "vM1" },
+            { lines: [7], o1: true, o2: false, vB1:"\"Undefined\"", vM1:"\"To be specified\"", vY1:"1900", vE1:"0", vB2:"null", vM2:"null", vY2:"0", vE2:"0", con: "", hl: "vY1" },
+            { lines: [8], o1: true, o2: false, vB1:"\"Undefined\"", vM1:"\"To be specified\"", vY1:"1900", vE1:"600", vB2:"null", vM2:"null", vY2:"0", vE2:"0", con: "", hl: "vE1" },
+            
+            // Печат Обект 1
+            { lines: [25, 16], o1: true, o2: false, vB1:"\"Undefined\"", vM1:"\"To be specified\"", vY1:"1900", vE1:"600", vB2:"null", vM2:"null", vY2:"0", vE2:"0", con: "", hl: "" },
+            { lines: [17, 18, 19], o1: true, o2: false, vB1:"\"Undefined\"", vM1:"\"To be specified\"", vY1:"1900", vE1:"600", vB2:"null", vM2:"null", vY2:"0", vE2:"0", con: "This is To be specified of Undefined\nEngine vol of 600\nYear of Prod: 1900", hl: "" },
+            
+            // Обект 2 (С параметри)
+            { lines: [27], o1: true, o2: true, vB1:"\"Undefined\"", vM1:"\"To be specified\"", vY1:"1900", vE1:"600", vB2:"null", vM2:"null", vY2:"0", vE2:"0", con: "This is To be specified of Undefined\nEngine vol of 600\nYear of Prod: 1900", hl: "" },
+            { lines: [10], o1: true, o2: true, vB1:"\"Undefined\"", vM1:"\"To be specified\"", vY1:"1900", vE1:"600", vB2:"null", vM2:"null", vY2:"0", vE2:"0", con: "This is To be specified of Undefined\nEngine vol of 600\nYear of Prod: 1900", hl: "" },
+            { lines: [11], o1: true, o2: true, vB1:"\"Undefined\"", vM1:"\"To be specified\"", vY1:"1900", vE1:"600", vB2:"\"Toyota\"", vM2:"null", vY2:"0", vE2:"0", con: "This is To be specified of Undefined\nEngine vol of 600\nYear of Prod: 1900", hl: "vB2" },
+            { lines: [12], o1: true, o2: true, vB1:"\"Undefined\"", vM1:"\"To be specified\"", vY1:"1900", vE1:"600", vB2:"\"Toyota\"", vM2:"\"Avensis III\"", vY2:"0", vE2:"0", con: "This is To be specified of Undefined\nEngine vol of 600\nYear of Prod: 1900", hl: "vM2" },
+            { lines: [13], o1: true, o2: true, vB1:"\"Undefined\"", vM1:"\"To be specified\"", vY1:"1900", vE1:"600", vB2:"\"Toyota\"", vM2:"\"Avensis III\"", vY2:"2010", vE2:"0", con: "This is To be specified of Undefined\nEngine vol of 600\nYear of Prod: 1900", hl: "vY2" },
+            { lines: [14], o1: true, o2: true, vB1:"\"Undefined\"", vM1:"\"To be specified\"", vY1:"1900", vE1:"600", vB2:"\"Toyota\"", vM2:"\"Avensis III\"", vY2:"2010", vE2:"2231", con: "This is To be specified of Undefined\nEngine vol of 600\nYear of Prod: 1900", hl: "vE2" },
+            
+            // Печат Обект 2
+            { lines: [28, 16], o1: true, o2: true, vB1:"\"Undefined\"", vM1:"\"To be specified\"", vY1:"1900", vE1:"600", vB2:"\"Toyota\"", vM2:"\"Avensis III\"", vY2:"2010", vE2:"2231", con: "This is To be specified of Undefined\nEngine vol of 600\nYear of Prod: 1900", hl: "" },
+            { lines: [17, 18, 19], o1: true, o2: true, vB1:"\"Undefined\"", vM1:"\"To be specified\"", vY1:"1900", vE1:"600", vB2:"\"Toyota\"", vM2:"\"Avensis III\"", vY2:"2010", vE2:"2231", con: "This is To be specified of Undefined\nEngine vol of 600\nYear of Prod: 1900\nThis is Avensis III of Toyota\nEngine vol of 2231\nYear of Prod: 2010", hl: "" },
+            { lines: [29], o1: true, o2: true, vB1:"\"Undefined\"", vM1:"\"To be specified\"", vY1:"1900", vE1:"600", vB2:"\"Toyota\"", vM2:"\"Avensis III\"", vY2:"2010", vE2:"2231", con: "This is To be specified of Undefined\nEngine vol of 600\nYear of Prod: 1900\nThis is Avensis III of Toyota\nEngine vol of 2231\nYear of Prod: 2010\nPress any key to continue . . .", hl: "" }
+        ];
+
+        let currentStep = -1;
+
+        function updateUI() {
+            // Highlights reset
+            document.querySelectorAll('.code-line').forEach(el => el.classList.remove('active-line'));
+            document.querySelectorAll('span').forEach(el => el.classList.remove('highlight-prop'));
+            
+            const obj1 = document.getElementById('obj1');
+            const obj2 = document.getElementById('obj2');
+            const conOut = document.getElementById('consoleOutput');
+            
+            if (currentStep >= 0) {
+                const step = steps[currentStep];
+                
+                let firstLine = null;
+                step.lines.forEach(lineNum => {
+                    let el = document.getElementById('line-' + lineNum);
+                    if(el) {
+                        el.classList.add('active-line');
+                        if(!firstLine) firstLine = el;
+                    }
+                });
+                
+                if(firstLine) {
+                    firstLine.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+
+                // Видимост на обектите
+                if (step.o1) obj1.classList.add('active'); else obj1.classList.remove('active');
+                if (step.o2) obj2.classList.add('active'); else obj2.classList.remove('active');
+                
+                // Стойности
+                document.getElementById('vB1').innerText = step.vB1;
+                document.getElementById('vM1').innerText = step.vM1;
+                document.getElementById('vY1').innerText = step.vY1;
+                document.getElementById('vE1').innerText = step.vE1;
+                
+                document.getElementById('vB2').innerText = step.vB2;
+                document.getElementById('vM2').innerText = step.vM2;
+                document.getElementById('vY2').innerText = step.vY2;
+                document.getElementById('vE2').innerText = step.vE2;
+
+                // Подсветка на променена стойност
+                if(step.hl) {
+                    document.getElementById(step.hl).classList.add('highlight-prop');
+                }
+
+                // Конзола
+                conOut.innerText = step.con;
+                
+                document.getElementById('stepIndicator').innerText = `Стъпка: ${currentStep + 1} / ${steps.length}`;
+            } else {
+                obj1.classList.remove('active');
+                obj2.classList.remove('active');
+                conOut.innerText = "";
+                document.getElementById('stepIndicator').innerText = `Стъпка: 0 / ${steps.length}`;
+            }
+
+            document.getElementById('prevBtn').disabled = currentStep <= -1;
+            document.getElementById('nextBtn').disabled = currentStep >= steps.length - 1;
+        }
+
+        function nextStep() { if (currentStep < steps.length - 1) { currentStep++; updateUI(); } }
+        function prevStep() { if (currentStep > -1) { currentStep--; updateUI(); } }
+
+        updateUI();
+
+        // ----------------------------------------------------------------
+        // Логика за преоразмеряване на панелите (Drag-to-resize)
+        // ----------------------------------------------------------------
+        const resizer = document.getElementById('resizer');
+        const leftPanel = document.getElementById('leftPanel');
+        let isResizing = false;
+
+        resizer.addEventListener('mousedown', (e) => {
+            isResizing = true;
+            document.body.style.cursor = 'col-resize';
+            document.body.style.userSelect = 'none';
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (!isResizing) return;
+            
+            let newWidthPercent = (e.clientX / window.innerWidth) * 100;
+            
+            if (newWidthPercent > 20 && newWidthPercent < 80) {
+                leftPanel.style.flex = `0 0 ${newWidthPercent}%`;
+            }
+        });
+
+        document.addEventListener('mouseup', () => {
+            if (isResizing) {
+                isResizing = false;
+                document.body.style.cursor = 'default';
+                document.body.style.userSelect = 'auto'; 
+            }
+        });
+    </script>
+</body>
+</html>
