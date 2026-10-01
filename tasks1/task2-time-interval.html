@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Задача 2: Интервал от време - Algorithma</title>
+    <style>
+        body { margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; height: 100vh; background-color: #1e1e24; color: #e0e0e0; overflow: hidden;}
+        
+        /* Панели */
+        .panel { padding: 25px; overflow-y: auto; box-sizing: border-box; display: flex; flex-direction: column; }
+        
+        /* Ляв Панел - Условие */
+        .left-panel { border-right: 2px solid #333; background-color: #2b2b36; flex: 0 0 50%; min-width: 20%; box-shadow: inset -5px 0 15px rgba(0,0,0,0.2);}
+        
+        /* Съдържание на левия панел */
+        .content-wrapper { flex-grow: 1; }
+        
+        /* Десен Панел - Визуализации */
+        .right-panel { display: flex; flex-direction: column; gap: 15px; background-color: #1e1e24; flex: 1; min-width: 20%; position: relative;}
+        
+        /* Сплитер / Разделител */
+        .resizer {
+            width: 6px;
+            background-color: #444;
+            cursor: col-resize; 
+            transition: background-color 0.2s;
+            z-index: 10;
+        }
+        .resizer:hover, .resizer:active {
+            background-color: #ff9f43;
+        }
+
+        /* Бутон Назад */
+        .back-to-home { display: inline-block; text-decoration: none; color: #ff9f43; font-weight: bold; font-size: 0.95rem; margin-bottom: 15px; padding: 8px 15px; border: 1px solid #ff9f43; border-radius: 8px; transition: all 0.3s ease; background: transparent; align-self: flex-start;}
+        .back-to-home:hover { background-color: #ff9f43; color: #1e1e24; box-shadow: 0 0 10px rgba(255, 159, 67, 0.5); }
+
+        h1 { color: #ffffff; font-size: 1.7rem; margin-bottom: 5px; text-shadow: 0 2px 4px rgba(0,0,0,0.3);}
+        h2 { color: #ff9f43; font-size: 1.1rem; text-transform: uppercase; margin-top: 0; margin-bottom: 15px; letter-spacing: 1px;}
+        h3 { color: #54a0ff; border-bottom: 1px solid #444; padding-bottom: 5px; margin-top: 20px; font-size: 1.15rem;}
+        p, ul, li { line-height: 1.5; color: #dcdde1; font-size: 0.95rem; margin-bottom: 8px;}
+        ol { margin-top: 5px; margin-bottom: 10px; padding-left: 20px; line-height: 1.6;}
+        
+        /* Таблици */
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; margin-bottom: 15px; font-size: 0.85rem; background-color: #353b48; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.3);}
+        th, td { border: 1px solid #444; padding: 8px; text-align: left; }
+        th { background-color: #2f3640; color: #ff9f43; font-weight: bold;}
+        
+        /* Примери - Конзолен изглед */
+        .examples-grid { display: flex; flex-direction: column; gap: 10px; margin-top: 15px;}
+        .example-box { background-color: #0c0c0c; border: 1px solid #555; border-top: 10px solid #2d3436; border-radius: 6px; padding: 10px; font-family: Consolas, monospace; color: #bdc3c7; font-size: 0.85rem; white-space: pre-wrap;}
+
+        /* Условие - Анимирана концепция */
+        .concept-card { background: linear-gradient(135deg, #2d3436 0%, #111 100%); border: 1px solid #555; border-radius: 12px; padding: 20px; text-align: center; margin-top: 15px; margin-bottom: 15px; box-shadow: 0 8px 20px rgba(0,0,0,0.5);}
+        .concept-title { color: #54a0ff; font-weight: bold; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1px; font-size: 0.9rem;}
+        
+        .time-conversion { display: flex; justify-content: center; align-items: center; gap: 20px;}
+        .time-block { background: #1e1e24; border: 2px solid #444; border-radius: 8px; padding: 10px 15px; font-family: Consolas, monospace; font-size: 1.5rem; color: #fff; font-weight: bold; box-shadow: inset 0 0 10px rgba(0,0,0,0.5);}
+        .time-block.bad { border-color: #ee5253; color: #ff9f43; }
+        .time-block.good { border-color: #1dd1a1; color: #10ac84; }
+        .arrow-icon { font-size: 2rem; color: #54a0ff; animation: pulseArrow 1.5s infinite;}
+
+        @keyframes pulseArrow {
+            0% { transform: translateX(-5px); opacity: 0.5; }
+            50% { transform: translateX(5px); opacity: 1; }
+            100% { transform: translateX(-5px); opacity: 0.5; }
+        }
+
+        /* Авторски права */
+        .copyright {
+            margin-top: 40px;
+            padding-top: 15px;
+            border-top: 1px solid #444;
+            color: #7f8c8d;
+            font-size: 0.85rem;
+            text-align: center;
+        }
+
+        /* Специален Раздел ВИЗУАЛИЗАЦИИ */
+        .viz-header { background: linear-gradient(90deg, #ff9f43, #feca57); color: #1e1e24; padding: 10px 20px; border-radius: 8px; text-align: center; font-weight: bold; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 2px; box-shadow: 0 4px 15px rgba(255, 159, 67, 0.4); flex-shrink: 0;}
+
+        /* Описание на стъпките */
+        .viz-text { text-align: center; font-size: 1.05rem; font-weight: bold; color: #dcdde1; margin: 10px 0; min-height: 45px; display: flex; align-items: center; justify-content: center;}
+
+        /* Визуална Зона (Часовник) */
+        .visualization-workspace { display: flex; flex-direction: column; gap: 15px; min-height: 200px; flex: 1 0 auto;}
+        
+        .clock-panel { background: #2d3436; border: 2px solid #555; border-radius: 12px; padding: 20px; box-shadow: inset 0 0 20px rgba(0,0,0,0.5); display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative;}
+        
+        .active-obj-badge { position: absolute; top: 10px; left: 15px; background: #54a0ff; color: #fff; padding: 3px 10px; border-radius: 15px; font-weight: bold; font-size: 0.8rem; text-transform: uppercase;}
+        
+        .digital-clock { display: flex; align-items: baseline; justify-content: center; gap: 10px; margin-top: 10px;}
+        .clock-segment { background: #0c0c0c; border: 2px solid #444; border-radius: 10px; width: 80px; height: 80px; display: flex; align-items: center; justify-content: center; font-family: 'Courier New', monospace; font-size: 3rem; font-weight: bold; color: #1dd1a1; text-shadow: 0 0 10px rgba(29, 209, 161, 0.5); transition: all 0.3s;}
+        .clock-colon { font-size: 3rem; font-weight: bold; color: #555; animation: blink 1s infinite;}
+        
+        .clock-segment.warning { color: #ff9f43; border-color: #ff9f43; text-shadow: 0 0 10px rgba(255, 159, 67, 0.5);}
+        .clock-label { text-align: center; color: #b2bec3; font-size: 0.75rem; text-transform: uppercase; margin-top: 5px; letter-spacing: 1px;}
+        
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+
+        /* Изскачащ Математически Панел */
+        .math-toast { background: rgba(12, 12, 12, 0.8); border: 1px solid #54a0ff; border-radius: 8px; padding: 10px 20px; font-family: Consolas, monospace; color: #54a0ff; margin-top: 15px; opacity: 0; transform: translateY(-10px); transition: all 0.3s; text-align: center;}
+        .math-toast.show { opacity: 1; transform: translateY(0); }
+
+        /* Конзола */
+        .console-box { background-color: #000; border: 1px solid #333; border-top: 25px solid #2d3436; border-radius: 8px; padding: 15px; font-family: Consolas, 'Courier New', monospace; font-size: 13px; position: relative; box-shadow: 0 8px 15px rgba(0,0,0,0.5); min-height: 150px; flex-shrink: 0; margin-top: auto;}
+        .console-box::before { content: "C:\\Windows\\System32\\cmd.exe"; position: absolute; top: -20px; left: 10px; color: #b2bec3; font-size: 11px; font-family: 'Segoe UI', sans-serif;}
+        .console-output { color: #b2bec3; white-space: pre-wrap; line-height: 1.4; }
+
+        /* Контроли */
+        .controls { display: flex; gap: 15px; justify-content: center; align-items: center; background: #2b2b36; padding: 10px; border-radius: 8px; border: 1px solid #444; flex-shrink: 0;}
+        button { padding: 8px 15px; border: none; border-radius: 6px; background: linear-gradient(180deg, #ff9f43, #ff7f50); color: white; font-size: 13px; font-weight: bold; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.3); text-transform: uppercase;}
+        button:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 10px rgba(255, 159, 67, 0.5); }
+        button:disabled { background: #555; color: #888; cursor: not-allowed; box-shadow: none; transform: none;}
+        .step-indicator { color: #ff9f43; font-weight: bold; font-family: Consolas, monospace; font-size: 0.95rem; width: 140px; text-align: center;}
+    </style>
+</head>
+
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-YYBQF66CTS"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-YYBQF66CTS');
+</script>
+
+<body>
+
+    <div class="panel left-panel" id="leftPanel">
+        <div class="content-wrapper">
+            <a href="../index.html" class="back-to-home">← Начало</a>
+            
+            <h1>Задача 2: Интервал от време</h1>
+            <h2>Конструктори в класове</h2>
+            
+            <p>Да се декларира клас <code>Time</code>, описващ интервал от време с полета за минути и секунди:</p>
+            
+            <table>
+                <tr><th>Поле</th><th>Тип</th><th>Описание</th></tr>
+                <tr><td>minutes</td><td>цяло число</td><td>минути</td></tr>
+                <tr><td>seconds</td><td>цяло число</td><td>секунди</td></tr>
+            </table>
+
+            <h3>Класът да съдържа два конструктора:</h3>
+            <ol>
+                <li><code>Time()</code> - записва 1 и в двете полета;</li>
+                <li><code>Time(int m, int s)</code> - записва m в minutes и s в seconds.</li>
+            </ol>
+
+            <div class="concept-card">
+                <div class="concept-title">Как работи методът Normalize() ?</div>
+                <p style="font-size: 0.85rem; color: #dcdde1; margin-bottom: 15px;">Той преобразува стойностите, така че секундите да са винаги между 0 и 59 вкл.</p>
+                <div class="time-conversion">
+                    <div>
+                        <div class="time-block bad">01:240</div>
+                        <div style="color: #b2bec3; font-size: 0.75rem; margin-top: 5px;">(Ненормализирано)</div>
+                    </div>
+                    <div class="arrow-icon">➔</div>
+                    <div>
+                        <div class="time-block good">05:00</div>
+                        <div style="color: #1dd1a1; font-size: 0.75rem; margin-top: 5px;">(Нормализирано)</div>
+                    </div>
+                </div>
+            </div>
+
+            <h3>В класа да се дефинират следните методи:</h3>
+            <ol>
+                <li>Метод <code>void Normalize()</code> преобразува (при необходимост) стойностите на двете полета, така че в seconds да остане число между 0 и 59 вкл.</li>
+                <li>Метод <code>int GetTimeInSeconds()</code> преобразува и връща записаното време като брой секунди.</li>
+                <li>Метод <code>void AddSeconds(int sec)</code> добавя секундите sec към текущо записаното време и извиква Normalize(). Ако към 12:09 се прибавят 112 секунди, ще се получи 14:01.</li>
+                <li>Метод <code>void PrintTime()</code> извежда времето в два варианта на единия ред във формат &lt;минути&gt;:&lt;секунди&gt;, като секундите са представени с двуцифрено число, а на другия ред само като брой секунди.</li>
+            </ol>
+
+            <h3>Като се използва класа Time, да се напише програма, която:</h3>
+            <ul>
+                <li>създава обект от класа Time чрез подразбиращия се конструктор, добавя към обекта 239 секунди (чрез съответния метод) и показва времето, записано в обекта (чрез съответния метод);</li>
+                <li>създава втори обект от класа Time чрез конструктора с параметри, като числовите данни се въвеждат от клавиатурата, добавя към обекта 239 секунди (чрез съответния метод) и показва времето, записано в обекта.</li>
+            </ul>
+
+            <h3>Пример:</h3>
+            <div class="examples-grid">
+                <div class="example-box">Time interval
+5:00
+In seconds: 300
+Enter minutes: 21
+Enter seconds: 33
+Time interval
+25:32
+In seconds: 1532
+Press any key to continue .</div>
+            </div>
+        </div>
+
+        <div class="copyright">
+            &copy; 2026 Algorithma. Всички права запазени.
+        </div>
+    </div>
+
+    <!-- Сплитер за преоразмеряване -->
+    <div class="resizer" id="resizer"></div>
+
+    <div class="panel right-panel">
+        
+        <div class="viz-header">
+            ⚡ Интерактивен Часовник ⚡
+        </div>
+        
+        <div class="viz-text" id="vizText">Кликнете 'Напред', за да проследите примерно изпълнение.</div>
+
+        <div class="visualization-workspace">
+            
+            <div class="clock-panel">
+                <div class="active-obj-badge" id="objBadge">Няма активен обект</div>
+                
+                <div class="digital-clock">
+                    <div>
+                        <div class="clock-segment" id="segMin">00</div>
+                        <div class="clock-label">Minutes</div>
+                    </div>
+                    <div class="clock-colon">:</div>
+                    <div>
+                        <div class="clock-segment" id="segSec">00</div>
+                        <div class="clock-label">Seconds</div>
+                    </div>
+                </div>
+
+                <div class="math-toast" id="mathToast">
+                    // Изчисления
+                </div>
+            </div>
+
+            <!-- Конзола -->
+            <div class="console-box">
+                <div class="console-output" id="consoleOutput"></div>
+            </div>
+
+        </div>
+
+        <div class="controls">
+            <button id="prevBtn" onclick="prevStep()" disabled>⏪ Назад</button>
+            <div class="step-indicator" id="stepIndicator">Стъпка: 0 / 0</div>
+            <button id="nextBtn" onclick="nextStep()">Напред ⏩</button>
+        </div>
+
+    </div>
+
+    <script>
+        const steps = [
+            { text: "Стъпка 1: Декларираме обекта t1. Извиква се конструкторът по подразбиране.", obj: "Обект: t1", m: "00", s: "00", warn: false, math: "", con: "" },
+            
+            { text: "Стъпка 2: Конструкторът задава стойности 1 и за минутите, и за секундите.", obj: "Обект: t1", m: "1", s: "1", warn: false, math: "Инициализация по подразбиране", con: "" },
+            
+            { text: "Стъпка 3: Извикваме AddSeconds(239) за обекта t1.", obj: "Обект: t1", m: "1", s: "1", warn: false, math: "+ 239 секунди", con: "" },
+            
+            { text: "Стъпка 4: Секундите се увеличават. 1 + 239 = 240.", obj: "Обект: t1", m: "1", s: "240", warn: true, math: "seconds = 1 + 239 = 240", con: "" },
+            
+            { text: "Стъпка 5: Извиква се Normalize(), тъй като секундите са повече от 59.", obj: "Обект: t1", m: "1", s: "240", warn: true, math: "Извикване на Normalize()", con: "" },
+            
+            { text: "Стъпка 6: Към минутите се прибавя цялата част от деленето 240 / 60 (което е 4).", obj: "Обект: t1", m: "5", s: "240", warn: true, math: "minutes += 240 / 60 (+4)", con: "" },
+            
+            { text: "Стъпка 7: Секундите стават остатъка от деленето 240 % 60 (което е 0).", obj: "Обект: t1", m: "5", s: "0", warn: false, math: "seconds = 240 % 60 (=0)", con: "" },
+            
+            { text: "Стъпка 8: Извикваме PrintTime() за t1, което отпечатва форматираното време.", obj: "Обект: t1", m: "5", s: "0", warn: false, math: "", con: "Time interval\n5:00\n" },
+            
+            { text: "Стъпка 9: Методът PrintTime() извиква GetTimeInSeconds().", obj: "Обект: t1", m: "5", s: "0", warn: false, math: "Общо секунди: 0 + (5 * 60) = 300", con: "Time interval\n5:00\n" },
+            
+            { text: "Стъпка 10: Отпечатват се общите секунди.", obj: "Обект: t1", m: "5", s: "0", warn: false, math: "", con: "Time interval\n5:00\nIn seconds: 300\n" },
+            
+            { text: "Стъпка 11: Програмата изисква въвеждане на данни от конзолата. Потребителят въвежда 21 и 33.", obj: "Въвеждане...", m: "21", s: "33", warn: false, math: "Потребителят въвежда 21 и 33", con: "Time interval\n5:00\nIn seconds: 300\nEnter minutes: 21\nEnter seconds: 33\n" },
+            
+            { text: "Стъпка 12: Създава се втори обект t2, използвайки конструктора с параметри.", obj: "Обект: t2", m: "21", s: "33", warn: false, math: "Параметрична инициализация", con: "Time interval\n5:00\nIn seconds: 300\nEnter minutes: 21\nEnter seconds: 33\n" },
+            
+            { text: "Стъпка 13: Извикваме AddSeconds(239) за обекта t2.", obj: "Обект: t2", m: "21", s: "33", warn: false, math: "+ 239 секунди", con: "Time interval\n5:00\nIn seconds: 300\nEnter minutes: 21\nEnter seconds: 33\n" },
+            
+            { text: "Стъпка 14: Секундите се увеличават. 33 + 239 = 272.", obj: "Обект: t2", m: "21", s: "272", warn: true, math: "seconds = 33 + 239 = 272", con: "Time interval\n5:00\nIn seconds: 300\nEnter minutes: 21\nEnter seconds: 33\n" },
+            
+            { text: "Стъпка 15: Извиква се Normalize(), тъй като секундите са повече от 59.", obj: "Обект: t2", m: "21", s: "272", warn: true, math: "Извикване на Normalize()", con: "Time interval\n5:00\nIn seconds: 300\nEnter minutes: 21\nEnter seconds: 33\n" },
+            
+            { text: "Стъпка 16: Към минутите се прибавя цялата част от деленето 272 / 60 (което е 4).", obj: "Обект: t2", m: "25", s: "272", warn: true, math: "minutes += 272 / 60 (+4)", con: "Time interval\n5:00\nIn seconds: 300\nEnter minutes: 21\nEnter seconds: 33\n" },
+            
+            { text: "Стъпка 17: Секундите стават остатъка от деленето 272 % 60 (което е 32).", obj: "Обект: t2", m: "25", s: "32", warn: false, math: "seconds = 272 % 60 (=32)", con: "Time interval\n5:00\nIn seconds: 300\nEnter minutes: 21\nEnter seconds: 33\n" },
+            
+            { text: "Стъпка 18: Извикваме PrintTime() за t2, което отпечатва форматираното време.", obj: "Обект: t2", m: "25", s: "32", warn: false, math: "", con: "Time interval\n5:00\nIn seconds: 300\nEnter minutes: 21\nEnter seconds: 33\nTime interval\n25:32\n" },
+            
+            { text: "Стъпка 19: Методът PrintTime() извиква GetTimeInSeconds().", obj: "Обект: t2", m: "25", s: "32", warn: false, math: "Общо секунди: 32 + (25 * 60) = 1532", con: "Time interval\n5:00\nIn seconds: 300\nEnter minutes: 21\nEnter seconds: 33\nTime interval\n25:32\n" },
+            
+            { text: "Стъпка 20: Отпечатват се общите секунди.", obj: "Обект: t2", m: "25", s: "32", warn: false, math: "", con: "Time interval\n5:00\nIn seconds: 300\nEnter minutes: 21\nEnter seconds: 33\nTime interval\n25:32\nIn seconds: 1532\nPress any key to continue ." }
+        ];
+
+        let currentStep = 0;
+
+        function updateUI() {
+            const step = steps[currentStep];
+            
+            if (step) {
+                // Показване на текста за стъпката
+                document.getElementById('vizText').innerText = step.text;
+
+                // Update Clock UI
+                document.getElementById('objBadge').innerText = step.obj;
+                
+                const segMin = document.getElementById('segMin');
+                const segSec = document.getElementById('segSec');
+                
+                segMin.innerText = step.m;
+                // Падинг с водеща нула за секундите ако е под 10
+                segSec.innerText = step.s.length === 1 && !step.warn ? "0" + step.s : step.s;
+
+                if (step.warn) {
+                    segSec.classList.add('warning');
+                } else {
+                    segSec.classList.remove('warning');
+                }
+
+                // Math Toast
+                const mathToast = document.getElementById('mathToast');
+                if (step.math !== "") {
+                    mathToast.innerText = step.math;
+                    mathToast.classList.add('show');
+                } else {
+                    mathToast.classList.remove('show');
+                }
+                
+                document.getElementById('consoleOutput').innerText = step.con;
+                document.getElementById('stepIndicator').innerText = `Стъпка: ${currentStep + 1} / ${steps.length}`;
+            }
+
+            document.getElementById('prevBtn').disabled = currentStep <= 0;
+            document.getElementById('nextBtn').disabled = currentStep >= steps.length - 1;
+        }
+
+        function nextStep() { if (currentStep < steps.length - 1) { currentStep++; updateUI(); } }
+        function prevStep() { if (currentStep > 0) { currentStep--; updateUI(); } }
+
+        window.onload = updateUI;
+
+        // ----------------------------------------------------------------
+        // Логика за преоразмеряване на панелите (Drag-to-resize)
+        // ----------------------------------------------------------------
+        const resizer = document.getElementById('resizer');
+        const leftPanel = document.getElementById('leftPanel');
+        let isResizing = false;
+
+        resizer.addEventListener('mousedown', (e) => {
+            isResizing = true;
+            document.body.style.cursor = 'col-resize';
+            document.body.style.userSelect = 'none';
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (!isResizing) return;
+            
+            let newWidthPercent = (e.clientX / window.innerWidth) * 100;
+            
+            if (newWidthPercent > 20 && newWidthPercent < 80) {
+                leftPanel.style.flex = `0 0 ${newWidthPercent}%`;
+            }
+        });
+
+        document.addEventListener('mouseup', () => {
+            if (isResizing) {
+                isResizing = false;
+                document.body.style.cursor = 'default';
+                document.body.style.userSelect = 'auto'; 
+            }
+        });
+    </script>
+</body>
+</html>
