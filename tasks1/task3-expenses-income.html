@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Задача 3: Разходи и приходи - Algorithma</title>
+    <style>
+        body { margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; height: 100vh; background-color: #1e1e24; color: #e0e0e0; overflow: hidden;}
+        
+        /* Панели */
+        .panel { flex: 1; padding: 25px; overflow-y: auto; box-sizing: border-box; }
+        .left-panel { border-right: 2px solid #333; background-color: #2b2b36; flex: 0 0 45%; box-shadow: inset -5px 0 15px rgba(0,0,0,0.2);}
+        .right-panel { display: flex; flex-direction: column; gap: 15px; background-color: #1e1e24; flex: 0 0 55%; position: relative;}
+        
+        /* Бутон Назад */
+        .back-to-home { display: inline-block; text-decoration: none; color: #1dd1a1; font-weight: bold; font-size: 0.95rem; margin-bottom: 15px; padding: 8px 15px; border: 1px solid #1dd1a1; border-radius: 8px; transition: all 0.3s ease; background: transparent; }
+        .back-to-home:hover { background-color: #1dd1a1; color: #1e1e24; box-shadow: 0 0 10px rgba(29, 209, 161, 0.5); }
+
+        h1 { color: #ffffff; font-size: 1.7rem; margin-bottom: 5px; text-shadow: 0 2px 4px rgba(0,0,0,0.3);}
+        h2 { color: #1dd1a1; font-size: 1.1rem; text-transform: uppercase; margin-top: 0; margin-bottom: 15px; letter-spacing: 1px;}
+        h3 { color: #5f27cd; border-bottom: 1px solid #444; padding-bottom: 5px; margin-top: 20px; font-size: 1.15rem;}
+        p, ul, li { line-height: 1.5; color: #dcdde1; font-size: 0.95rem; margin-bottom: 8px;}
+        ol { margin-top: 5px; margin-bottom: 10px; padding-left: 20px; line-height: 1.6;}
+        
+        /* Таблици */
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; margin-bottom: 15px; font-size: 0.85rem; background-color: #353b48; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.3);}
+        th, td { border: 1px solid #444; padding: 8px; text-align: left; }
+        th { background-color: #2f3640; color: #1dd1a1; font-weight: bold;}
+        
+        /* Примери - Конзолен изглед */
+        .examples-grid { display: flex; flex-direction: column; gap: 10px; margin-top: 15px;}
+        .example-box { background-color: #0c0c0c; border: 1px solid #555; border-top: 10px solid #2d3436; border-radius: 6px; padding: 10px; font-family: Consolas, monospace; color: #bdc3c7; font-size: 0.85rem; white-space: pre-wrap;}
+
+        /* Специален Раздел ВИЗУАЛИЗАЦИИ */
+        .viz-header { background: linear-gradient(90deg, #10ac84, #1dd1a1); color: #1e1e24; padding: 10px 20px; border-radius: 8px; text-align: center; font-weight: bold; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 2px; box-shadow: 0 4px 15px rgba(29, 209, 161, 0.4); flex-shrink: 0;}
+
+        /* Визуална Зона (Регистър) */
+        .visualization-workspace { display: flex; flex-direction: column; gap: 15px; min-height: 240px; }
+        
+        .ledger-panel { background: #2d3436; border: 2px solid #555; border-radius: 12px; padding: 20px; box-shadow: inset 0 0 20px rgba(0,0,0,0.5); position: relative;}
+        
+        .active-obj-badge { position: absolute; top: 10px; left: 15px; background: #5f27cd; color: #fff; padding: 3px 10px; border-radius: 15px; font-weight: bold; font-size: 0.8rem; text-transform: uppercase;}
+        
+        /* Месеци */
+        .months-container { display: flex; justify-content: center; gap: 15px; margin-top: 15px; margin-bottom: 25px;}
+        .month-card { background: #353b48; border: 2px solid #636e72; border-radius: 8px; width: 80px; padding: 10px; text-align: center; box-shadow: 0 4px 8px rgba(0,0,0,0.3); transition: all 0.3s;}
+        .month-label { font-size: 0.7rem; color: #b2bec3; text-transform: uppercase; margin-bottom: 5px; font-weight: bold;}
+        .month-val { font-family: Consolas, monospace; font-weight: bold; font-size: 1.4rem; color: #fff;}
+        
+        /* Оцветители за стойности */
+        .val-profit { color: #1dd1a1; text-shadow: 0 0 8px rgba(29, 209, 161, 0.4); border-color: #1dd1a1; }
+        .val-expense { color: #ff6b6b; text-shadow: 0 0 8px rgba(255, 107, 107, 0.4); border-color: #ff6b6b; }
+        .val-neutral { color: #b2bec3; }
+
+        /* Тотали */
+        .totals-container { display: flex; justify-content: center; gap: 30px;}
+        .total-box { flex: 1; max-width: 150px; background: #0c0c0c; border: 2px dashed #636e72; border-radius: 8px; padding: 15px; text-align: center;}
+        .total-box.expense-box { border-color: rgba(255, 107, 107, 0.5); background: rgba(255, 107, 107, 0.05); }
+        .total-box.profit-box { border-color: rgba(29, 209, 161, 0.5); background: rgba(29, 209, 161, 0.05); }
+        .total-label { font-size: 0.8rem; text-transform: uppercase; margin-bottom: 5px; font-weight: bold;}
+        .total-val { font-family: Consolas, monospace; font-weight: bold; font-size: 1.8rem;}
+        .expense-box .total-label { color: #ff6b6b; }
+        .expense-box .total-val { color: #ff6b6b; }
+        .profit-box .total-label { color: #1dd1a1; }
+        .profit-box .total-val { color: #1dd1a1; }
+
+        /* Конзола */
+        .console-box { background-color: #000; border: 1px solid #333; border-top: 25px solid #2d3436; border-radius: 8px; padding: 10px; font-family: Consolas, 'Courier New', monospace; font-size: 12px; position: relative; box-shadow: 0 8px 15px rgba(0,0,0,0.5); height: 140px; overflow-y: auto; flex-shrink: 0;}
+        .console-box::before { content: "C:\\Windows\\System32\\cmd.exe"; position: absolute; top: -20px; left: 10px; color: #b2bec3; font-size: 11px; font-family: 'Segoe UI', sans-serif;}
+        .console-output { color: #b2bec3; white-space: pre-wrap; line-height: 1.4; }
+
+        /* Зона за код */
+        .code-container { background-color: #282c34; color: #abb2bf; padding: 12px; border-radius: 8px; font-family: Consolas, monospace; font-size: 12px; overflow-y: auto; box-shadow: inset 0 0 10px rgba(0,0,0,0.8); flex: 1; border: 1px solid #444;}
+        .code-line { padding: 2px 8px; margin: 1px 0; border-radius: 4px; transition: background-color 0.3s; white-space: pre; border-left: 3px solid transparent;}
+        .active-line { background-color: #3e4451; border-left: 3px solid #1dd1a1; color: #ffffff; font-weight: bold; }
+
+        /* Контроли */
+        .controls { display: flex; gap: 15px; justify-content: center; align-items: center; background: #2b2b36; padding: 10px; border-radius: 8px; border: 1px solid #444; flex-shrink: 0;}
+        button { padding: 8px 15px; border: none; border-radius: 6px; background: linear-gradient(180deg, #10ac84, #01a3a4); color: white; font-size: 13px; font-weight: bold; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.3); text-transform: uppercase;}
+        button:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 10px rgba(16, 172, 132, 0.5); }
+        button:disabled { background: #555; color: #888; cursor: not-allowed; box-shadow: none; transform: none;}
+        .step-indicator { color: #1dd1a1; font-weight: bold; font-family: Consolas, monospace; font-size: 0.95rem; width: 140px; text-align: center;}
+    </style>
+</head>
+<body>
+
+    <div class="panel left-panel">
+        <a href="../index.html" class="back-to-home">← Назад към Модулите</a>
+        
+        <h1>Задача 3: Разходи и приходи</h1>
+        <h2>Конструктори в класове</h2>
+        
+        <p>Да се напише програма, която да изчислява разходите и приходите на фирма за три месеца. Да се дефинира клас <code>Expense</code> със следните полета:</p>
+        
+        <table>
+            <tr><th>Поле</th><th>Тип</th><th>Описание</th></tr>
+            <tr><td>k1</td><td>цяло число</td><td>разход или приход за първия месец (k1 != 0)</td></tr>
+            <tr><td>k2</td><td>цяло число</td><td>разход или приход за втория месец (k2 != 0)</td></tr>
+            <tr><td>k3</td><td>цяло число</td><td>разход или приход за третия месец (k3 != 0)</td></tr>
+        </table>
+
+        <h3>Класът да съдържа два конструктора:</h3>
+        <ol>
+            <li><code>Expense()</code> - записва 1 в полетата на класа.</li>
+            <li><code>Expense(int k1, int k2, int k3)</code> - записва стойностите на параметрите си в полетата на класа.</li>
+        </ol>
+
+        <h3>В класа да се дефинират следните методи:</h3>
+        <ol>
+            <li>Метод <code>int CalcExpense()</code> връща като беззнаково цяло число разходите, направени за трите месеца. Разходът за 1 месец е въведен като отрицателно число.</li>
+            <li>Метод <code>int CalcProfit()</code> връща печалбите, реализирани за трите месеца. Печалбата за 1 месец е въведена като положително число.</li>
+            <li>Метод <code>void PrintDefaultData()</code> отпечатва данните от подразбиращия се конструктор във формат, показан в примерите.</li>
+            <li>Метод <code>void PrintExpenseProfit()</code> отпечатва общите разходи и общите приходи.</li>
+        </ol>
+
+        <h3>Като се използва класът Expense, да се напише програма, която:</h3>
+        <ul>
+            <li>Създава обект от класа Expense чрез подразбиращия се конструктор и показва резултатите чрез подходящия метод.</li>
+            <li>Въвежда от клавиатурата:
+                <br>- разход/приход за първия месец k1;
+                <br>- разход/приход за втория месец k2;
+                <br>- разход/приход за третия месец k3.
+            </li>
+            <li>Създава втори обект от класа с параметри като числовите данни са въведените от клавиатурата.</li>
+            <li>Отпечатва на екрана общите разходи и общата печалба.</li>
+        </ul>
+
+        <h3>Примери:</h3>
+        <div class="examples-grid">
+            <div class="example-box">Expense/profit for the first month: 1
+Expense/profit for the second month: 1
+Expense/profit for the third month: 1
+Total expenses for the three months: 0
+Total profit for the three months: 3
+
+Enter expense/profit for the first month: 1
+Enter expense/profit for the second month: -2
+Enter expense/profit for the third month: 3
+Total expenses for the three months: 2
+Total profit for the three months: 4</div>
+        </div>
+    </div>
+
+    <div class="panel right-panel">
+        
+        <div class="viz-header">
+            ⚡ Интерактивен Финансов Регистър ⚡
+        </div>
+
+        <div class="visualization-workspace">
+            
+            <div class="ledger-panel">
+                <div class="active-obj-badge" id="objBadge">Изчакване</div>
+                
+                <div class="months-container">
+                    <div class="month-card" id="cardM1">
+                        <div class="month-label">Month 1</div>
+                        <div class="month-val" id="valM1">-</div>
+                    </div>
+                    <div class="month-card" id="cardM2">
+                        <div class="month-label">Month 2</div>
+                        <div class="month-val" id="valM2">-</div>
+                    </div>
+                    <div class="month-card" id="cardM3">
+                        <div class="month-label">Month 3</div>
+                        <div class="month-val" id="valM3">-</div>
+                    </div>
+                </div>
+
+                <div class="totals-container">
+                    <div class="total-box expense-box">
+                        <div class="total-label">Total Expenses</div>
+                        <div class="total-val" id="valExp">0</div>
+                    </div>
+                    <div class="total-box profit-box">
+                        <div class="total-label">Total Profit</div>
+                        <div class="total-val" id="valProf">0</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Конзола -->
+            <div class="console-box">
+                <div class="console-output" id="consoleOutput"></div>
+            </div>
+
+        </div>
+
+        <!-- Код>
+        <div class="code-container">
+<div class="code-line" id="line-0">class Expense {</div>
+<div class="code-line" id="line-1">    int k1, k2, k3;</div>
+<div class="code-line" id="line-2">    public Expense() {</div>
+<div class="code-line" id="line-3">        k1 = 1; k2 = 1; k3 = 1;</div>
+<div class="code-line" id="line-4">    }</div>
+<div class="code-line" id="line-5">    public Expense(int k1, int k2, int k3) {</div>
+<div class="code-line" id="line-6">        this.k1 = k1; this.k2 = k2; this.k3 = k3;</div>
+<div class="code-line" id="line-7">    }</div>
+<div class="code-line" id="line-8">    public int CalcExpense() {</div>
+<div class="code-line" id="line-9">        int exp = 0;</div>
+<div class="code-line" id="line-10">        if (k1 < 0) exp -= k1;</div>
+<div class="code-line" id="line-11">        if (k2 < 0) exp -= k2;</div>
+<div class="code-line" id="line-12">        if (k3 < 0) exp -= k3;</div>
+<div class="code-line" id="line-13">        return exp;</div>
+<div class="code-line" id="line-14">    }</div>
+<div class="code-line" id="line-15">    public int CalcProfit() {</div>
+<div class="code-line" id="line-16">        int prof = 0;</div>
+<div class="code-line" id="line-17">        if (k1 > 0) prof += k1;</div>
+<div class="code-line" id="line-18">        if (k2 > 0) prof += k2;</div>
+<div class="code-line" id="line-19">        if (k3 > 0) prof += k3;</div>
+<div class="code-line" id="line-20">        return prof;</div>
+<div class="code-line" id="line-21">    }</div>
+<div class="code-line" id="line-22">    public void PrintDefaultData() {</div>
+<div class="code-line" id="line-23">        Console.WriteLine($"Expense/profit for the first month: {k1}");</div>
+<div class="code-line" id="line-24">        Console.WriteLine($"Expense/profit for the second month: {k2}");</div>
+<div class="code-line" id="line-25">        Console.WriteLine($"Expense/profit for the third month: {k3}");</div>
+<div class="code-line" id="line-26">        PrintExpenseProfit();</div>
+<div class="code-line" id="line-27">    }</div>
+<div class="code-line" id="line-28">    public void PrintExpenseProfit() {</div>
+<div class="code-line" id="line-29">        Console.WriteLine($"Total expenses for the three months: {CalcExpense()}");</div>
+<div class="code-line" id="line-30">        Console.WriteLine($"Total profit for the three months: {CalcProfit()}");</div>
+<div class="code-line" id="line-31">    }</div>
+<div class="code-line" id="line-32">}</div>
+<div class="code-line" id="line-33">class Program {</div>
+<div class="code-line" id="line-34">    static void Main() {</div>
+<div class="code-line" id="line-35">        Expense ex1 = new Expense();</div>
+<div class="code-line" id="line-36">        ex1.PrintDefaultData();</div>
+<div class="code-line" id="line-37">        </div>
+<div class="code-line" id="line-38">        // Въвеждане: 1, -2, 3</div>
+<div class="code-line" id="line-39">        Expense ex2 = new Expense(1, -2, 3);</div>
+<div class="code-line" id="line-40">        ex2.PrintExpenseProfit();</div>
+<div class="code-line" id="line-41">    }</div>
+<div class="code-line" id="line-42">}</div>
+        </div-->
+
+        <div class="controls">
+            <button id="prevBtn" onclick="prevStep()" disabled>⏪ Назад</button>
+            <div class="step-indicator" id="stepIndicator">Стъпка: 0 / 0</div>
+            <button id="nextBtn" onclick="nextStep()">Напред ⏩</button>
+        </div>
+
+    </div>
+
+    <script>
+        const steps = [
+            { lines: [34], obj: "Изчакване", k1: "-", k2: "-", k3: "-", exp: "0", prof: "0", con: "" },
+            
+            // --- Default Constructor ---
+            { lines: [35, 2], obj: "Обект 1 (ex1)", k1: "-", k2: "-", k3: "-", exp: "0", prof: "0", con: "" },
+            { lines: [3], obj: "Обект 1 (ex1)", k1: "1", k2: "1", k3: "1", exp: "0", prof: "0", con: "" },
+            
+            // PrintDefaultData
+            //{ lines: [36, 22], obj: "Обект 1 (ex1)", k1: "1", k2: "1", k3: "1", exp: "0", prof: "0", con: "" },
+            { lines: [23, 24, 25], obj: "Обект 1 (ex1)", k1: "1", k2: "1", k3: "1", exp: "0", prof: "0", con: "Expense/profit for the first month: 1\nExpense/profit for the second month: 1\nExpense/profit for the third month: 1\n" },
+            //{ lines: [26, 28], obj: "Обект 1 (ex1)", k1: "1", k2: "1", k3: "1", exp: "0", prof: "0", con: "Expense/profit for the first month: 1\nExpense/profit for the second month: 1\nExpense/profit for the third month: 1\n" },
+            
+            // Calc Expense
+            //{ lines: [29, 8], obj: "Обект 1 (ex1)", k1: "1", k2: "1", k3: "1", exp: "0", prof: "0", con: "Expense/profit for the first month: 1\nExpense/profit for the second month: 1\nExpense/profit for the third month: 1\n" },
+            { lines: [9, 10, 11, 12, 13], obj: "Обект 1 (ex1)", k1: "1", k2: "1", k3: "1", exp: "0", prof: "0", con: "Expense/profit for the first month: 1\nExpense/profit for the second month: 1\nExpense/profit for the third month: 1\nTotal expenses for the three months: 0\n" },
+            
+            // Calc Profit
+            //{ lines: [30, 15], obj: "Обект 1 (ex1)", k1: "1", k2: "1", k3: "1", exp: "0", prof: "0", con: "Expense/profit for the first month: 1\nExpense/profit for the second month: 1\nExpense/profit for the third month: 1\nTotal expenses for the three months: 0\n" },
+            { lines: [16, 17, 18, 19, 20], obj: "Обект 1 (ex1)", k1: "1", k2: "1", k3: "1", exp: "0", prof: "3", con: "Expense/profit for the first month: 1\nExpense/profit for the second month: 1\nExpense/profit for the third month: 1\nTotal expenses for the three months: 0\nTotal profit for the three months: 3\n" },
+            
+            // --- Parametrized Constructor ---
+            { lines: [38], obj: "Въвеждане...", k1: "-", k2: "-", k3: "-", exp: "0", prof: "0", con: "...\nTotal profit for the three months: 3\n\nEnter expense/profit for the first month: 1\nEnter expense/profit for the second month: -2\nEnter expense/profit for the third month: 3\n" },
+            { lines: [39, 5], obj: "Обект 2 (ex2)", k1: "-", k2: "-", k3: "-", exp: "0", prof: "0", con: "...\nTotal profit for the three months: 3\n\nEnter expense/profit for the first month: 1\nEnter expense/profit for the second month: -2\nEnter expense/profit for the third month: 3\n" },
+            { lines: [6], obj: "Обект 2 (ex2)", k1: "1", k2: "-2", k3: "3", exp: "0", prof: "0", con: "...\nTotal profit for the three months: 3\n\nEnter expense/profit for the first month: 1\nEnter expense/profit for the second month: -2\nEnter expense/profit for the third month: 3\n" },
+            
+            // PrintExpenseProfit ex2
+            //{ lines: [40, 28], obj: "Обект 2 (ex2)", k1: "1", k2: "-2", k3: "3", exp: "0", prof: "0", con: "...\nTotal profit for the three months: 3\n\nEnter expense/profit for the first month: 1\nEnter expense/profit for the second month: -2\nEnter expense/profit for the third month: 3\n" },
+            
+            // Calc Expense ex2
+            //{ lines: [29, 8], obj: "Обект 2 (ex2)", k1: "1", k2: "-2", k3: "3", exp: "0", prof: "0", con: "...\nTotal profit for the three months: 3\n\nEnter expense/profit for the first month: 1\nEnter expense/profit for the second month: -2\nEnter expense/profit for the third month: 3\n" },
+            //{ lines: [9, 10], obj: "Обект 2 (ex2)", k1: "1", k2: "-2", k3: "3", exp: "0", prof: "0", con: "...\nTotal profit for the three months: 3\n\nEnter expense/profit for the first month: 1\nEnter expense/profit for the second month: -2\nEnter expense/profit for the third month: 3\n" },
+            { lines: [11], obj: "Обект 2 (ex2)", k1: "1", k2: "-2", k3: "3", exp: "2", prof: "0", con: "...\nTotal profit for the three months: 3\n\nEnter expense/profit for the first month: 1\nEnter expense/profit for the second month: -2\nEnter expense/profit for the third month: 3\n" },
+            { lines: [12, 13], obj: "Обект 2 (ex2)", k1: "1", k2: "-2", k3: "3", exp: "2", prof: "0", con: "...\nTotal profit for the three months: 3\n\nEnter expense/profit for the first month: 1\nEnter expense/profit for the second month: -2\nEnter expense/profit for the third month: 3\nTotal expenses for the three months: 2\n" },
+
+            // Calc Profit ex2
+            //{ lines: [30, 15], obj: "Обект 2 (ex2)", k1: "1", k2: "-2", k3: "3", exp: "2", prof: "0", con: "...\nTotal profit for the three months: 3\n\nEnter expense/profit for the first month: 1\nEnter expense/profit for the second month: -2\nEnter expense/profit for the third month: 3\nTotal expenses for the three months: 2\n" },
+            { lines: [16, 17], obj: "Обект 2 (ex2)", k1: "1", k2: "-2", k3: "3", exp: "2", prof: "1", con: "...\nTotal profit for the three months: 3\n\nEnter expense/profit for the first month: 1\nEnter expense/profit for the second month: -2\nEnter expense/profit for the third month: 3\nTotal expenses for the three months: 2\n" },
+            { lines: [18, 19, 20], obj: "Обект 2 (ex2)", k1: "1", k2: "-2", k3: "3", exp: "2", prof: "4", con: "...\nTotal profit for the three months: 3\n\nEnter expense/profit for the first month: 1\nEnter expense/profit for the second month: -2\nEnter expense/profit for the third month: 3\nTotal expenses for the three months: 2\nTotal profit for the three months: 4" }
+        ];
+
+        let currentStep = -1;
+
+        function applyColoring(element, valStr) {
+            element.classList.remove('val-profit', 'val-expense', 'val-neutral');
+            if (valStr === "-") {
+                element.classList.add('val-neutral');
+            } else {
+                let val = parseInt(valStr);
+                if (val > 0) {
+                    element.classList.add('val-profit');
+                    element.parentElement.style.borderColor = "#1dd1a1";
+                } else if (val < 0) {
+                    element.classList.add('val-expense');
+                    element.parentElement.style.borderColor = "#ff6b6b";
+                } else {
+                    element.classList.add('val-neutral');
+                    element.parentElement.style.borderColor = "#636e72";
+                }
+            }
+        }
+
+        function updateUI() {
+            document.querySelectorAll('.code-line').forEach(el => el.classList.remove('active-line'));
+            
+            if (currentStep >= 0) {
+                const step = steps[currentStep];
+                
+                let firstLine = null;
+                step.lines.forEach(lineNum => {
+                    let el = document.getElementById('line-' + lineNum);
+                    if(el) {
+                        el.classList.add('active-line');
+                        if(!firstLine) firstLine = el;
+                    }
+                });
+                if(firstLine) firstLine.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+                // Update UI elements
+                document.getElementById('objBadge').innerText = step.obj;
+                
+                const v1 = document.getElementById('valM1');
+                const v2 = document.getElementById('valM2');
+                const v3 = document.getElementById('valM3');
+                
+                v1.innerText = step.k1;
+                v2.innerText = step.k2;
+                v3.innerText = step.k3;
+                
+                applyColoring(v1, step.k1);
+                applyColoring(v2, step.k2);
+                applyColoring(v3, step.k3);
+
+                document.getElementById('valExp').innerText = step.exp;
+                document.getElementById('valProf').innerText = step.prof;
+                
+                document.getElementById('consoleOutput').innerText = step.con;
+                document.getElementById('stepIndicator').innerText = `Стъпка: ${currentStep + 1} / ${steps.length}`;
+            }
+
+            document.getElementById('prevBtn').disabled = currentStep <= 0;
+            document.getElementById('nextBtn').disabled = currentStep >= steps.length - 1;
+        }
+
+        function nextStep() { if (currentStep < steps.length - 1) { currentStep++; updateUI(); } }
+        function prevStep() { if (currentStep > 0) { currentStep--; updateUI(); } }
+
+        currentStep = 0;
+        window.onload = updateUI;
+    </script>
+</body>
+</html>

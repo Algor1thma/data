@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Задача 4: Автобусен билет - Algorithma</title>
+    <style>
+        body { margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; height: 100vh; background-color: #1e1e24; color: #e0e0e0; overflow: hidden;}
+        
+        /* Панели */
+        .panel { flex: 1; padding: 25px; overflow-y: auto; box-sizing: border-box; }
+        .left-panel { border-right: 2px solid #333; background-color: #2b2b36; flex: 0 0 45%; box-shadow: inset -5px 0 15px rgba(0,0,0,0.2);}
+        .right-panel { display: flex; flex-direction: column; gap: 15px; background-color: #1e1e24; flex: 0 0 55%; position: relative;}
+        
+        /* Бутон Назад */
+        .back-to-home { display: inline-block; text-decoration: none; color: #e84393; font-weight: bold; font-size: 0.95rem; margin-bottom: 15px; padding: 8px 15px; border: 1px solid #e84393; border-radius: 8px; transition: all 0.3s ease; background: transparent; }
+        .back-to-home:hover { background-color: #e84393; color: #fff; box-shadow: 0 0 10px rgba(232, 67, 147, 0.5); }
+
+        h1 { color: #ffffff; font-size: 1.7rem; margin-bottom: 5px; text-shadow: 0 2px 4px rgba(0,0,0,0.3);}
+        h2 { color: #e84393; font-size: 1.1rem; text-transform: uppercase; margin-top: 0; margin-bottom: 15px; letter-spacing: 1px;}
+        h3 { color: #0984e3; border-bottom: 1px solid #444; padding-bottom: 5px; margin-top: 20px; font-size: 1.15rem;}
+        p, ul, li { line-height: 1.5; color: #dcdde1; font-size: 0.95rem; margin-bottom: 8px;}
+        ol { margin-top: 5px; margin-bottom: 10px; padding-left: 20px; line-height: 1.6;}
+        
+        /* Таблици */
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; margin-bottom: 15px; font-size: 0.85rem; background-color: #353b48; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.3);}
+        th, td { border: 1px solid #444; padding: 8px; text-align: left; }
+        th { background-color: #2f3640; color: #e84393; font-weight: bold;}
+        
+        /* Примери - Конзолен изглед */
+        .examples-grid { display: flex; flex-direction: column; gap: 10px; margin-top: 15px;}
+        .example-box { background-color: #0c0c0c; border: 1px solid #555; border-top: 10px solid #2d3436; border-radius: 6px; padding: 10px; font-family: Consolas, monospace; color: #bdc3c7; font-size: 0.85rem; white-space: pre-wrap;}
+
+        /* Условие - Анимирана концепция */
+        .concept-card { background: linear-gradient(135deg, #0984e3 0%, #00cec9 100%); color: #fff; border-radius: 12px; padding: 15px; text-align: center; margin-top: 15px; margin-bottom: 15px; box-shadow: 0 8px 20px rgba(0,0,0,0.4);}
+        .concept-title { font-weight: bold; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px; font-size: 1rem; text-shadow: 0 2px 4px rgba(0,0,0,0.3);}
+        .concept-text { font-size: 0.9rem; margin-bottom: 0; text-shadow: 0 1px 2px rgba(0,0,0,0.2);}
+
+        /* Специален Раздел ВИЗУАЛИЗАЦИИ */
+        .viz-header { background: linear-gradient(90deg, #e84393, #fd79a8); color: #fff; padding: 10px 20px; border-radius: 8px; text-align: center; font-weight: bold; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 2px; box-shadow: 0 4px 15px rgba(232, 67, 147, 0.4); flex-shrink: 0;}
+
+        /* Визуална Зона (Валидатор) */
+        .visualization-workspace { display: flex; flex-direction: column; gap: 15px; min-height: 250px; }
+        
+        .validator-panel { background: #2d3436; border: 2px solid #555; border-radius: 12px; padding: 20px; box-shadow: inset 0 0 20px rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; gap: 30px; position: relative;}
+        
+        /* Електронен Билет */
+        .smart-ticket { background: #fff; color: #2d3436; width: 180px; border-radius: 10px; position: relative; box-shadow: 0 10px 25px rgba(0,0,0,0.5); display: flex; flex-direction: column; overflow: hidden; transform: translateY(0); transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);}
+        .smart-ticket.hidden { transform: translateY(50px); opacity: 0; }
+        .ticket-header { background: #0984e3; color: #fff; padding: 10px; text-align: center; font-weight: bold; text-transform: uppercase; font-size: 0.85rem; letter-spacing: 1px;}
+        .ticket-body { padding: 15px; display: flex; flex-direction: column; gap: 10px;}
+        .ticket-row { display: flex; justify-content: space-between; font-size: 0.85rem;}
+        .ticket-label { color: #636e72; font-weight: bold;}
+        .ticket-val { font-family: Consolas, monospace; font-weight: bold; color: #2d3436;}
+        .ticket-qr { align-self: center; font-size: 3rem; line-height: 1; color: #2d3436; margin-top: 5px;}
+        
+        /* Назъбен ръб на билета */
+        .ticket-edge { height: 10px; background-image: radial-gradient(circle at 5px 0, transparent 6px, #fff 7px); background-size: 15px 10px; background-position: bottom; width: 100%; transform: rotate(180deg);}
+
+        /* Скенер / Резултат */
+        .scanner-device { background: #1e1e24; border: 4px solid #444; border-radius: 15px; width: 220px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 8px 15px rgba(0,0,0,0.6); position: relative;}
+        .scanner-screen { background: #0c0c0c; height: 100px; display: flex; flex-direction: column; align-items: center; justify-content: center; border-bottom: 2px solid #444; transition: background-color 0.3s;}
+        .screen-status { font-weight: bold; text-transform: uppercase; font-size: 1.1rem; letter-spacing: 1px;}
+        .screen-time { font-family: Consolas, monospace; font-size: 2rem; color: #fff; text-shadow: 0 0 10px rgba(255,255,255,0.5);}
+        .scanner-label { text-align: center; color: #b2bec3; font-size: 0.75rem; padding: 10px; text-transform: uppercase; font-weight: bold; letter-spacing: 1px;}
+        
+        /* Статуси на екрана */
+        .scanner-screen.valid { background: rgba(0, 184, 148, 0.2); box-shadow: inset 0 0 20px rgba(0, 184, 148, 0.4);}
+        .scanner-screen.valid .screen-status { color: #00b894; text-shadow: 0 0 8px rgba(0, 184, 148, 0.6);}
+        .scanner-screen.invalid { background: rgba(214, 48, 49, 0.2); box-shadow: inset 0 0 20px rgba(214, 48, 49, 0.4);}
+        .scanner-screen.invalid .screen-status { color: #d63031; text-shadow: 0 0 8px rgba(214, 48, 49, 0.6);}
+        .scanner-screen.idle { background: #0c0c0c; }
+        .scanner-screen.idle .screen-status { color: #b2bec3; }
+
+        /* Изскачащ Математически Панел */
+        .math-toast { background: rgba(12, 12, 12, 0.9); border: 1px solid #e84393; border-radius: 8px; padding: 10px 20px; font-family: Consolas, monospace; color: #fd79a8; position: absolute; top: -10px; left: 50%; transform: translateX(-50%) translateY(-20px); opacity: 0; transition: all 0.3s; text-align: center; z-index: 10; font-size: 0.85rem;}
+        .math-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+        /* Конзола */
+        .console-box { background-color: #000; border: 1px solid #333; border-top: 25px solid #2d3436; border-radius: 8px; padding: 10px; font-family: Consolas, 'Courier New', monospace; font-size: 12px; position: relative; box-shadow: 0 8px 15px rgba(0,0,0,0.5); height: 130px; overflow-y: auto; flex-shrink: 0;}
+        .console-box::before { content: "C:\\Windows\\System32\\cmd.exe"; position: absolute; top: -20px; left: 10px; color: #b2bec3; font-size: 11px; font-family: 'Segoe UI', sans-serif;}
+        .console-output { color: #b2bec3; white-space: pre-wrap; line-height: 1.4; }
+
+        /* Зона за код */
+        .code-container { background-color: #282c34; color: #abb2bf; padding: 12px; border-radius: 8px; font-family: Consolas, monospace; font-size: 12px; overflow-y: auto; box-shadow: inset 0 0 10px rgba(0,0,0,0.8); flex: 1; border: 1px solid #444;}
+        .code-line { padding: 2px 8px; margin: 1px 0; border-radius: 4px; transition: background-color 0.3s; white-space: pre; border-left: 3px solid transparent;}
+        .active-line { background-color: #3e4451; border-left: 3px solid #e84393; color: #ffffff; font-weight: bold; }
+
+        /* Контроли */
+        .controls { display: flex; gap: 15px; justify-content: center; align-items: center; background: #2b2b36; padding: 10px; border-radius: 8px; border: 1px solid #444; flex-shrink: 0;}
+        button { padding: 8px 15px; border: none; border-radius: 6px; background: linear-gradient(180deg, #e84393, #d63031); color: white; font-size: 13px; font-weight: bold; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.3); text-transform: uppercase;}
+        button:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 10px rgba(232, 67, 147, 0.5); }
+        button:disabled { background: #555; color: #888; cursor: not-allowed; box-shadow: none; transform: none;}
+        .step-indicator { color: #e84393; font-weight: bold; font-family: Consolas, monospace; font-size: 0.95rem; width: 140px; text-align: center;}
+    </style>
+</head>
+<body>
+
+    <div class="panel left-panel">
+        <a href="../index.html" class="back-to-home">← Назад към Модулите</a>
+        
+        <h1>Задача 4: Автобусен билет</h1>
+        <h2>Конструктори в класове</h2>
+        
+        <p>При пътуване с градския транспорт в един град пътниците имат право да избират между 3 вида билети с различна продължителност: 1 час, 3 часа и 8 часа. При закупуването на билет (без значение дали е хартиен или електронен) се отбелязва часа на закупуване и времетраенето му.</p>
+        
+        <div class="concept-card">
+            <div class="concept-title">Валидност на транспортната мрежа</div>
+            <p class="concept-text">Билет с времетраене 3 часа, закупен в 10:45, е валиден до 13:45. Билет с времетраене 8 часа, закупен в 19:20, е валиден до 03:20 на следващото денонощие.</p>
+        </div>
+
+        <p>Да се създаде клас <code>BusTicket</code>, описващ характеристиките на един автобусен билет:</p>
+        
+        <table>
+            <tr><th>Поле</th><th>Тип</th><th>Описание</th></tr>
+            <tr><td>validity</td><td>цяло число</td><td>часове, в които е валиден билетът (1, 3 или 8)</td></tr>
+            <tr><td>h</td><td>цяло число</td><td>час на издаване на билета (0-23)</td></tr>
+            <tr><td>m</td><td>цяло число</td><td>минути на издаване на билета (0-59)</td></tr>
+        </table>
+
+        <h3>В класа да се дефинират следните конструктори:</h3>
+        <ol>
+            <li><code>BusTicket()</code> - записва в полетата на класа съответно 8 във validity, 20 в h и 25 в m;</li>
+            <li><code>BusTicket(val, hr, mn)</code> - получава като параметри три цели числа и ги записва в полетата на класа.</li>
+        </ol>
+        <p><em>Приемаме, че ще се използват само коректни данни и конструкторът не прави проверки.</em></p>
+
+        <h3>В класа да се дефинират и следните методи:</h3>
+        <ol>
+            <li>Метод от тип <code>int</code> с име <code>GetValidity(hr, m)</code> - получава два целочислени параметъра, които описват момент от денонощието и връща оставащата валидност на билета към този момент в минути. Ако билетът вече не е валиден, методът връща -1.</li>
+            <li>Метод от тип <code>void</code> с име <code>ShowCheckInformationAt(hr, mn)</code> - получава момент от денонощието. Извежда на екрана информация за билета (момент на закупуване, период на валидност), за момента на проверка, както и за валидността на билета към този момент.</li>
+        </ol>
+
+        <h3>Като се използва създадения клас BusTicket, да се напише програма, която:</h3>
+        <ul>
+            <li>създава билет обект от класа BusTicket с конструктора без параметри;</li>
+            <li>извежда на екрана информация за проверка на билета в 23:55;</li>
+            <li>извежда на екрана информация за проверка на билета в 6:30;</li>
+            <li>създава нов билет обект с параметричния конструктор, като записва стойности, които се получават от клавиатурата;</li>
+            <li>извежда на екрана информация за проверка на този билет в случайно избран момент.</li>
+        </ul>
+
+        <h3>Примерни резултати:</h3>
+        <div class="examples-grid">
+            <div class="example-box">Initial ticket information
+Created at 20:25
+Validity: 8 hour(s)
+Checked at 23:55
+Validity left: 270 minutes
+
+Initial ticket information
+Created at 20:25
+Validity: 8 hour(s)
+Checked at 06:30
+No longer valid
+
+Enter validity (1, 3 or 8): 3
+Enter hour (0-23): 11
+Enter minutes (0-59): 45
+Initial ticket information
+Created at 11:45
+Validity: 3 hour(s)
+Checked at 20:42
+No longer valid</div>
+        </div>
+    </div>
+
+    <div class="panel right-panel">
+        
+        <div class="viz-header">
+            ⚡ Интерактивен Смарт-Валидатор ⚡
+        </div>
+
+        <div class="visualization-workspace">
+            
+            <div class="validator-panel">
+                
+                <div class="math-toast" id="mathToast">
+                    <!-- Изчисления -->
+                </div>
+
+                <!-- Електронен Билет -->
+                <div class="smart-ticket hidden" id="ticketUI">
+                    <div class="ticket-header">City Transport</div>
+                    <div class="ticket-body">
+                        <div class="ticket-row">
+                            <span class="ticket-label">Issued:</span>
+                            <span class="ticket-val" id="tIssued">--:--</span>
+                        </div>
+                        <div class="ticket-row">
+                            <span class="ticket-label">Valid for:</span>
+                            <span class="ticket-val" id="tVal">-- h</span>
+                        </div>
+                        <div class="ticket-qr">📱</div>
+                    </div>
+                    <div class="ticket-edge"></div>
+                </div>
+
+                <!-- Скенер -->
+                <div class="scanner-device">
+                    <div class="scanner-screen idle" id="scannerScreen">
+                        <div class="screen-status" id="sStatus">AWAITING</div>
+                        <div class="screen-time" id="sTime">--:--</div>
+                        <div style="font-size: 0.7rem; color: #fff; font-family: Consolas;" id="sDetails"></div>
+                    </div>
+                    <div class="scanner-label">Ticket Validator</div>
+                </div>
+
+            </div>
+
+            <!-- Конзола -->
+            <div class="console-box">
+                <div class="console-output" id="consoleOutput"></div>
+            </div>
+
+        </div>
+
+        <!-- Код>
+        <div class="code-container">
+<div class="code-line" id="line-0">class BusTicket {</div>
+<div class="code-line" id="line-1">    int validity, h, m;</div>
+<div class="code-line" id="line-2">    public BusTicket() {</div>
+<div class="code-line" id="line-3">        validity = 8; h = 20; m = 25;</div>
+<div class="code-line" id="line-4">    }</div>
+<div class="code-line" id="line-5">    public BusTicket(int val, int hr, int mn) {</div>
+<div class="code-line" id="line-6">        validity = val; h = hr; m = mn;</div>
+<div class="code-line" id="line-7">    }</div>
+<div class="code-line" id="line-8">    int GetValidity(int hr, int mn) {</div>
+<div class="code-line" id="line-9">        int tM = h * 60 + m;</div>
+<div class="code-line" id="line-10">        int cM = hr * 60 + mn;</div>
+<div class="code-line" id="line-11">        if (cM < tM) cM += 24 * 60; // Следващо денонощие</div>
+<div class="code-line" id="line-12">        tM += validity * 60;</div>
+<div class="code-line" id="line-13">        return tM >= cM ? tM - cM : -1;</div>
+<div class="code-line" id="line-14">    }</div>
+<div class="code-line" id="line-15">    public void ShowCheckInformationAt(int hr, int mn) {</div>
+<div class="code-line" id="line-16">        Console.WriteLine("Initial ticket information");</div>
+<div class="code-line" id="line-17">        Console.WriteLine($"Created at {h:d2}:{m:d2}");</div>
+<div class="code-line" id="line-18">        Console.WriteLine($"Validity: {validity} hour(s)");</div>
+<div class="code-line" id="line-19">        Console.WriteLine($"Checked at {hr:d2}:{mn:d2}");</div>
+<div class="code-line" id="line-20">        int vLeft = GetValidity(hr, mn);</div>
+<div class="code-line" id="line-21">        Console.WriteLine(vLeft < 0 ? "No longer valid" : $"Validity left: {vLeft} minutes\n");</div>
+<div class="code-line" id="line-22">    }</div>
+<div class="code-line" id="line-23">}</div>
+<div class="code-line" id="line-24">class Program {</div>
+<div class="code-line" id="line-25">    static void Main() {</div>
+<div class="code-line" id="line-26">        BusTicket b1 = new BusTicket();</div>
+<div class="code-line" id="line-27">        b1.ShowCheckInformationAt(23, 55);</div>
+<div class="code-line" id="line-28">        b1.ShowCheckInformationAt(6, 30);</div>
+<div class="code-line" id="line-29">        </div>
+<div class="code-line" id="line-30">        // Console.ReadLine() -> 3, 11, 45</div>
+<div class="code-line" id="line-31">        BusTicket b2 = new BusTicket(3, 11, 45);</div>
+<div class="code-line" id="line-32">        b2.ShowCheckInformationAt(20, 42); // Случайно време</div>
+<div class="code-line" id="line-33">    }</div>
+<div class="code-line" id="line-34">}</div>
+        </div-->
+
+        <div class="controls">
+            <button id="prevBtn" onclick="prevStep()" disabled>⏪ Назад</button>
+            <div class="step-indicator" id="stepIndicator">Стъпка: 0 / 0</div>
+            <button id="nextBtn" onclick="nextStep()">Напред ⏩</button>
+        </div>
+
+    </div>
+
+    <script>
+        const steps = [
+            //{ lines: [25], tickVis: false, iss: "--:--", val: "--", chk: "--:--", stat: "idle", stTxt: "AWAITING", sDet: "", math: "", con: "" },
+            
+            // --- Ticket 1 ---
+            { lines: [26, 2], tickVis: false, iss: "--:--", val: "--", chk: "--:--", stat: "idle", stTxt: "AWAITING", sDet: "", math: "", con: "" },
+            { lines: [3, 4], tickVis: true, iss: "20:25", val: "8", chk: "--:--", stat: "idle", stTxt: "AWAITING", sDet: "", math: "", con: "" },
+            
+            // Check 1: 23:55
+            { lines: [27, 15], tickVis: true, iss: "20:25", val: "8", chk: "23:55", stat: "idle", stTxt: "SCANNING...", sDet: "", math: "", con: "Initial ticket information\nCreated at 20:25\nValidity: 8 hour(s)\nChecked at 23:55\n" },
+            { lines: [20, 8, 9, 10], tickVis: true, iss: "20:25", val: "8", chk: "23:55", stat: "idle", stTxt: "SCANNING...", sDet: "", math: "tM = 20*60+25 = 1225\ncM = 23*60+55 = 1435", con: "Initial ticket information\nCreated at 20:25\nValidity: 8 hour(s)\nChecked at 23:55\n" },
+            { lines: [11], tickVis: true, iss: "20:25", val: "8", chk: "23:55", stat: "idle", stTxt: "SCANNING...", sDet: "", math: "cM (1435) < tM (1225)? FALSE", con: "Initial ticket information\nCreated at 20:25\nValidity: 8 hour(s)\nChecked at 23:55\n" },
+            { lines: [12], tickVis: true, iss: "20:25", val: "8", chk: "23:55", stat: "idle", stTxt: "SCANNING...", sDet: "", math: "tM = 1225 + 8*60 = 1705", con: "Initial ticket information\nCreated at 20:25\nValidity: 8 hour(s)\nChecked at 23:55\n" },
+            { lines: [13], tickVis: true, iss: "20:25", val: "8", chk: "23:55", stat: "valid", stTxt: "VALID", sDet: "270 mins left", math: "1705 - 1435 = 270", con: "Initial ticket information\nCreated at 20:25\nValidity: 8 hour(s)\nChecked at 23:55\n" },
+            { lines: [21, 22], tickVis: true, iss: "20:25", val: "8", chk: "23:55", stat: "valid", stTxt: "VALID", sDet: "270 mins left", math: "", con: "Initial ticket information\nCreated at 20:25\nValidity: 8 hour(s)\nChecked at 23:55\nValidity left: 270 minutes\n\n" },
+
+            // Check 2: 06:30
+            { lines: [28, 15], tickVis: true, iss: "20:25", val: "8", chk: "06:30", stat: "idle", stTxt: "SCANNING...", sDet: "", math: "", con: "...\nInitial ticket information\nCreated at 20:25\nValidity: 8 hour(s)\nChecked at 06:30\n" },
+            { lines: [20, 8, 9, 10], tickVis: true, iss: "20:25", val: "8", chk: "06:30", stat: "idle", stTxt: "SCANNING...", sDet: "", math: "tM = 20*60+25 = 1225\ncM = 6*60+30 = 390", con: "...\nInitial ticket information\nCreated at 20:25\nValidity: 8 hour(s)\nChecked at 06:30\n" },
+            { lines: [11], tickVis: true, iss: "20:25", val: "8", chk: "06:30", stat: "idle", stTxt: "SCANNING...", sDet: "", math: "cM (390) < tM (1225)? TRUE\ncM += 1440 = 1830", con: "...\nInitial ticket information\nCreated at 20:25\nValidity: 8 hour(s)\nChecked at 06:30\n" },
+            { lines: [12], tickVis: true, iss: "20:25", val: "8", chk: "06:30", stat: "idle", stTxt: "SCANNING...", sDet: "", math: "tM = 1225 + 8*60 = 1705", con: "...\nInitial ticket information\nCreated at 20:25\nValidity: 8 hour(s)\nChecked at 06:30\n" },
+            { lines: [13], tickVis: true, iss: "20:25", val: "8", chk: "06:30", stat: "invalid", stTxt: "EXPIRED", sDet: "No longer valid", math: "1705 >= 1830? FALSE -> -1", con: "...\nInitial ticket information\nCreated at 20:25\nValidity: 8 hour(s)\nChecked at 06:30\n" },
+            { lines: [21, 22], tickVis: true, iss: "20:25", val: "8", chk: "06:30", stat: "invalid", stTxt: "EXPIRED", sDet: "No longer valid", math: "", con: "...\nInitial ticket information\nCreated at 20:25\nValidity: 8 hour(s)\nChecked at 06:30\nNo longer valid\n\n" },
+
+            // --- Ticket 2 ---
+            { lines: [30], tickVis: false, iss: "--:--", val: "--", chk: "--:--", stat: "idle", stTxt: "AWAITING", sDet: "", math: "", con: "...\nEnter validity (1, 3 or 8): 3\nEnter hour (0-23): 11\nEnter minutes (0-59): 45\n" },
+            //{ lines: [31, 5], tickVis: false, iss: "--:--", val: "--", chk: "--:--", stat: "idle", stTxt: "AWAITING", sDet: "", math: "", con: "...\nEnter validity (1, 3 or 8): 3\nEnter hour (0-23): 11\nEnter minutes (0-59): 45\n" },
+            { lines: [6, 7], tickVis: true, iss: "11:45", val: "3", chk: "--:--", stat: "idle", stTxt: "AWAITING", sDet: "", math: "", con: "...\nEnter validity (1, 3 or 8): 3\nEnter hour (0-23): 11\nEnter minutes (0-59): 45\n" },
+
+            // Check 3: 20:42
+            { lines: [32, 15], tickVis: true, iss: "11:45", val: "3", chk: "20:42", stat: "idle", stTxt: "SCANNING...", sDet: "", math: "", con: "...\nInitial ticket information\nCreated at 11:45\nValidity: 3 hour(s)\nChecked at 20:42\n" },
+            { lines: [20, 8, 9, 10], tickVis: true, iss: "11:45", val: "3", chk: "20:42", stat: "idle", stTxt: "SCANNING...", sDet: "", math: "tM = 11*60+45 = 705\ncM = 20*60+42 = 1242", con: "...\nInitial ticket information\nCreated at 11:45\nValidity: 3 hour(s)\nChecked at 20:42\n" },
+            { lines: [11], tickVis: true, iss: "11:45", val: "3", chk: "20:42", stat: "idle", stTxt: "SCANNING...", sDet: "", math: "cM (1242) < tM (705)? FALSE", con: "...\nInitial ticket information\nCreated at 11:45\nValidity: 3 hour(s)\nChecked at 20:42\n" },
+            { lines: [12], tickVis: true, iss: "11:45", val: "3", chk: "20:42", stat: "idle", stTxt: "SCANNING...", sDet: "", math: "tM = 705 + 3*60 = 885", con: "...\nInitial ticket information\nCreated at 11:45\nValidity: 3 hour(s)\nChecked at 20:42\n" },
+            { lines: [13], tickVis: true, iss: "11:45", val: "3", chk: "20:42", stat: "invalid", stTxt: "EXPIRED", sDet: "No longer valid", math: "885 >= 1242? FALSE -> -1", con: "...\nInitial ticket information\nCreated at 11:45\nValidity: 3 hour(s)\nChecked at 20:42\n" },
+            { lines: [21, 22], tickVis: true, iss: "11:45", val: "3", chk: "20:42", stat: "invalid", stTxt: "EXPIRED", sDet: "No longer valid", math: "", con: "...\nInitial ticket information\nCreated at 11:45\nValidity: 3 hour(s)\nChecked at 20:42\nNo longer valid\n" }
+        ];
+
+        let currentStep = -1;
+
+        function updateUI() {
+            document.querySelectorAll('.code-line').forEach(el => el.classList.remove('active-line'));
+            
+            if (currentStep >= 0) {
+                const step = steps[currentStep];
+                
+                let firstLine = null;
+                step.lines.forEach(lineNum => {
+                    let el = document.getElementById('line-' + lineNum);
+                    if(el) {
+                        el.classList.add('active-line');
+                        if(!firstLine) firstLine = el;
+                    }
+                });
+                if(firstLine) firstLine.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+                // Update Ticket
+                const ticket = document.getElementById('ticketUI');
+                if (step.tickVis) {
+                    ticket.classList.remove('hidden');
+                    document.getElementById('tIssued').innerText = step.iss;
+                    document.getElementById('tVal').innerText = step.val + " h";
+                } else {
+                    ticket.classList.add('hidden');
+                }
+
+                // Update Scanner
+                const scanner = document.getElementById('scannerScreen');
+                scanner.className = "scanner-screen " + step.stat;
+                document.getElementById('sStatus').innerText = step.stTxt;
+                document.getElementById('sTime').innerText = step.chk;
+                document.getElementById('sDetails').innerText = step.sDet;
+
+                // Math Toast
+                const mathToast = document.getElementById('mathToast');
+                if (step.math !== "") {
+                    mathToast.innerText = step.math;
+                    mathToast.classList.add('show');
+                } else {
+                    mathToast.classList.remove('show');
+                }
+                
+                document.getElementById('consoleOutput').innerText = step.con;
+                document.getElementById('stepIndicator').innerText = `Стъпка: ${currentStep + 1} / ${steps.length}`;
+            }
+
+            document.getElementById('prevBtn').disabled = currentStep <= 0;
+            document.getElementById('nextBtn').disabled = currentStep >= steps.length - 1;
+        }
+
+        function nextStep() { if (currentStep < steps.length - 1) { currentStep++; updateUI(); } }
+        function prevStep() { if (currentStep > 0) { currentStep--; updateUI(); } }
+
+        currentStep = 0;
+        window.onload = updateUI;
+    </script>
+</body>
+</html>
