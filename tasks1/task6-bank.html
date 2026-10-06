@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Задача 6: Банкова сметка - Algorithma</title>
+    <style>
+        body { margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; height: 100vh; background-color: #1e1e24; color: #e0e0e0; overflow: hidden;}
+        
+        /* Панели */
+        .panel { padding: 25px; overflow-y: auto; box-sizing: border-box; display: flex; flex-direction: column; }
+        
+        /* Ляв Панел - Условие */
+        .left-panel { border-right: 2px solid #333; background-color: #2b2b36; flex: 0 0 50%; min-width: 20%; box-shadow: inset -5px 0 15px rgba(0,0,0,0.2);}
+        
+        /* Съдържание на левия панел */
+        .content-wrapper { flex-grow: 1; }
+        
+        /* Десен Панел - Визуализации */
+        .right-panel { display: flex; flex-direction: column; gap: 15px; background-color: #1e1e24; flex: 1; min-width: 20%; position: relative;}
+        
+        /* Сплитер / Разделител */
+        .resizer {
+            width: 6px;
+            background-color: #444;
+            cursor: col-resize; 
+            transition: background-color 0.2s;
+            z-index: 10;
+        }
+        .resizer:hover, .resizer:active {
+            background-color: #27ae60;
+        }
+
+        /* Бутон Назад */
+        .back-to-home { display: inline-block; text-decoration: none; color: #27ae60; font-weight: bold; font-size: 0.95rem; margin-bottom: 15px; padding: 8px 15px; border: 1px solid #27ae60; border-radius: 8px; transition: all 0.3s ease; background: transparent; align-self: flex-start; }
+        .back-to-home:hover { background-color: #27ae60; color: #1e1e24; box-shadow: 0 0 10px rgba(39, 174, 96, 0.5); }
+
+        h1 { color: #ffffff; font-size: 1.6rem; margin-bottom: 5px; text-shadow: 0 2px 4px rgba(0,0,0,0.3);}
+        h2 { color: #27ae60; font-size: 1.05rem; text-transform: uppercase; margin-top: 0; margin-bottom: 15px; letter-spacing: 1px;}
+        h3 { color: #f1c40f; border-bottom: 1px solid #444; padding-bottom: 5px; margin-top: 20px; font-size: 1.1rem;}
+        p, ul, li { line-height: 1.5; color: #dcdde1; font-size: 0.9rem; margin-bottom: 8px;}
+        
+        /* Таблици */
+        table { width: 100%; border-collapse: collapse; margin-top: 5px; margin-bottom: 15px; font-size: 0.85rem; background-color: #353b48; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.3);}
+        th, td { border: 1px solid #444; padding: 8px; text-align: left; }
+        th { background-color: #2f3640; color: #27ae60; font-weight: bold;}
+
+        /* Табове за примерите */
+        .tabs { display: flex; gap: 5px; margin-top: 20px; border-bottom: 2px solid #444; }
+        .tab-btn { background: #2d3436; color: #b2bec3; border: 1px solid #444; border-bottom: none; padding: 8px 15px; border-radius: 6px 6px 0 0; cursor: pointer; font-weight: bold; transition: all 0.2s; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;}
+        .tab-btn:hover { background: #353b48; color: #fff;}
+        .tab-btn.active { background: #0c0c0c; color: #27ae60; border-color: #27ae60; border-bottom-color: #0c0c0c; margin-bottom: -2px;}
+        
+        .tab-content { display: none; padding: 15px; border: 1px solid #444; border-top: none; background: #0c0c0c; border-radius: 0 0 6px 6px; font-family: Consolas, monospace; font-size: 0.85rem; color: #bdc3c7; white-space: pre-wrap; line-height: 1.4; box-shadow: 0 4px 10px rgba(0,0,0,0.3);}
+        .tab-content.active { display: block; border-color: #27ae60; }
+
+        /* Авторски права */
+        .copyright {
+            margin-top: 40px;
+            padding-top: 15px;
+            border-top: 1px solid #444;
+            color: #7f8c8d;
+            font-size: 0.85rem;
+            text-align: center;
+        }
+
+        /* Специален Раздел ВИЗУАЛИЗАЦИИ */
+        .viz-header { background: linear-gradient(90deg, #27ae60, #2ecc71); color: #1e1e24; padding: 8px 20px; border-radius: 8px; text-align: center; font-weight: bold; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 2px; box-shadow: 0 4px 15px rgba(46, 204, 113, 0.3); flex-shrink: 0;}
+
+        /* Описание на стъпките */
+        .viz-text { text-align: center; font-size: 1.05rem; font-weight: bold; color: #dcdde1; margin: 10px 0; min-height: 45px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;}
+
+        /* Визуална Зона */
+        .visualization-workspace { flex: 1 0 auto; display: flex; flex-direction: column; gap: 20px; min-height: 280px; align-items: center; justify-content: flex-start; padding: 10px;}
+        
+        /* Блокове за Памет */
+        .memory-column { display: flex; flex-direction: column; justify-content: center; align-items: center; flex-shrink: 0; min-width: 250px;}
+        .memory-box { background: #2b2b36; border: 2px solid #27ae60; border-radius: 10px; padding: 15px; box-shadow: 0 6px 12px rgba(0,0,0,0.4); opacity: 0.3; transition: opacity 0.4s; width: 100%; box-sizing: border-box;}
+        .memory-box.active { opacity: 1; border-color: #2ecc71; box-shadow: 0 0 15px rgba(46, 204, 113, 0.4);}
+        .memory-title { font-weight: bold; color: #2ecc71; border-bottom: 1px solid #444; padding-bottom: 5px; margin-bottom: 10px; font-size: 0.95rem; text-align: center;}
+        .card-image { font-size: 3.5rem; text-align: center; margin-bottom: 10px; filter: drop-shadow(0px 3px 3px rgba(0,0,0,0.2)); }
+        .memory-prop { display: flex; justify-content: space-between; margin: 6px 0; font-family: Consolas, monospace; font-size: 0.9rem; border-bottom: 1px dashed #444; padding-bottom: 4px;}
+        .memory-prop span:nth-child(1) { color: #b2bec3; }
+        .memory-prop span:nth-child(2) { color: #f1c40f; font-weight: bold; }
+        .val-highlight { color: #2ecc71 !important; transition: color 0.3s; }
+        .val-error { color: #e74c3c !important; transition: color 0.3s; }
+
+        /* Конзола */
+        .console-box { background-color: #0c0c0c; border: 1px solid #333; border-top: 20px solid #2d3436; border-radius: 8px; padding: 15px; font-family: Consolas, 'Courier New', monospace; font-size: 13px; position: relative; box-shadow: 0 8px 15px rgba(0,0,0,0.5); min-height: 250px; width: 90%; max-width: 500px; flex-shrink: 0; margin-top: auto;}
+        .console-box::before { content: "C:\\Windows\\System32\\cmd.exe"; position: absolute; top: -16px; left: 10px; color: #b2bec3; font-size: 10px; font-family: 'Segoe UI', sans-serif;}
+        .console-output { color: #bdc3c7; white-space: pre-wrap; line-height: 1.4; }
+        
+        /* Контроли */
+        .controls { display: flex; gap: 15px; justify-content: center; align-items: center; background: #2b2b36; padding: 10px; border-radius: 8px; border: 1px solid #444; flex-shrink: 0;}
+        button { padding: 8px 15px; border: none; border-radius: 6px; background: linear-gradient(180deg, #27ae60, #2c3e50); color: white; font-size: 13px; font-weight: bold; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.3); text-transform: uppercase;}
+        button:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 10px rgba(39, 174, 96, 0.5); }
+        button:disabled { background: #555; color: #888; cursor: not-allowed; box-shadow: none; transform: none;}
+        .step-indicator { color: #27ae60; font-weight: bold; font-family: Consolas, monospace; font-size: 0.95rem; width: 130px; text-align: center;}
+    </style>
+</head>
+<body>
+
+    <div class="panel left-panel" id="leftPanel">
+        <div class="content-wrapper">
+            <a href="../index.html" class="back-to-home">← Начало</a>
+            
+            <h1>Задача 6: Банкова сметка</h1>
+            <h2>Конструктори в класове</h2>
+            
+            <p>Да се дефинира клас <code>BankAccount</code>, описващ банкова сметка на клиент. Класът съдържа следните полета:</p>
+            
+            <table>
+                <tr><th>Поле</th><th>Тип</th><th>Описание</th></tr>
+                <tr><td>name</td><td>текст</td><td>име на клиент</td></tr>
+                <tr><td>accountName</td><td>текст</td><td>потребителско име</td></tr>
+                <tr><td>balance</td><td>реално число</td><td>баланс по сметката</td></tr>
+            </table>
+
+            <h3>Класът да съдържа един публичен конструктор:</h3>
+            <p><code>BankAccount(string nm, string aName, double bal)</code> копира параметрите <code>nm</code> в <code>name</code>, <code>aName</code> в <code>accountName</code> и <code>bal</code> в <code>balance</code>.</p>
+
+            <h3>В класа да се дефинират следните публични методи:</h3>
+            <ol>
+                <li>Метод <code>void Deposit(double cash)</code> осигурява внасяне на пари в банковата сметка по следния алгоритъм:
+                    <ul>
+                        <li>ако внесената сума е по-голяма от 0 (нула), то тя се прибавя към първоначалния баланс и на екрана се извеждат съобщенията:<br>
+                        <code>Успешно внасяне!</code><br>
+                        <code>Нов баланс: ?? лева</code><br>
+                        като на мястото на ?? се извежда актуализираната стойност на баланса;</li>
+                        <li>в противен случай се извежда съобщението "Некоректен опит за внасяне на пари".</li>
+                    </ul>
+                </li>
+                <li>Метод <code>void Withdraw(double cash)</code> осигурява теглене на пари от банковата сметка като се има предвид следното:
+                    <ul>
+                        <li>ако се направи опит за теглене на неположителна сума (неположително число като параметър), се извежда съобщението "Некоректен опит за теглене на пари";</li>
+                        <li>ако се направи опит за теглене на сума, която е по-голяма от баланса по сметка на потребителя, се извежда съобщението "Сметката не съдържа достатъчно пари";</li>
+                        <li>ако в сметката има достатъчно пари, от баланса на сметката се изважда посочената сума и на екрана се извеждат съобщенията:<br>
+                        <code>Успешно теглене!</code><br>
+                        <code>Нов баланс: ?? лева</code><br>
+                        като на мястото на ?? се извежда актуализираната стойност на баланса.</li>
+                    </ul>
+                </li>
+                <li>Метод <code>void DisplayAccountData()</code> извежда на екрана справка за банковата сметка по следния модел:<br>
+                <code>Собственик на сметката: имената_на_собственика</code><br>
+                <code>Потребителско име: потребителското_име</code><br>
+                <code>Баланс: баланса</code>
+                </li>
+            </ol>
+
+            <h3>Като се използва класът BankAccount, да се напише програма, която:</h3>
+            <ul>
+                <li>Създава банкова сметка с данни по ваш избор, въведени като константи директно в кода;</li>
+                <li>Извежда данните за банковата сметка;</li>
+                <li>Организира опит за внасяне на сума в банковата сметка (сумата се въвежда от клавиатурата) чрез използване на съответния метод;</li>
+                <li>Организира опит за теглене на сума от банковата сметка (сумата се въвежда от клавиатурата) чрез използване на съответния метод.</li>
+            </ul>
+
+            <!-- Табове за Примерите -->
+            <div class="tabs">
+                <button class="tab-btn active" onclick="openTab(event, 'ex1')">Пример 1</button>
+                <button class="tab-btn" onclick="openTab(event, 'ex2')">Пример 2</button>
+                <button class="tab-btn" onclick="openTab(event, 'ex3')">Пример 3</button>
+            </div>
+            
+            <div id="ex1" class="tab-content active">Собственик на сметката: Тошко Малинов
+Потребителско име: super To6e
+Баланс: 23456,72 лева
+Колко лева желаете да внесете? 1200
+Успешно внасяне!
+Нов баланс: 24656,72 лева
+Колко лева желаете да изтеглите? 6899
+Успешно теглене!
+Нов баланс: 31555,72 лева</div>
+            
+            <div id="ex2" class="tab-content">Собственик на сметката: Лили Иванова
+Потребителско име: theBest
+Баланс: 1500000 лева
+Колко лева желаете да внесете? 5300
+Успешно внасяне!
+Нов баланс: 1505300,00 лева
+Колко лева желаете да изтеглите? -23000
+Некоректен опит за теглене на пари</div>
+            
+            <div id="ex3" class="tab-content">Собственик на сметката: Ради Руменов
+Потребителско име: general
+Баланс: 2500 лева
+Колко лева желаете да внесете? 234
+Успешно внасяне!
+Нов баланс: 2734,00 лева
+Колко лева желаете да изтеглите? 2950
+Сметката не съдържа достатъчно пари</div>
+
+        </div>
+        
+        <div class="copyright">
+            &copy; 2026 Algorithma. Всички права запазени.
+        </div>
+    </div>
+
+    <!-- Сплитер за преоразмеряване -->
+    <div class="resizer" id="resizer"></div>
+
+    <div class="panel right-panel">
+        
+        <div class="viz-header">
+            ⚡ Интерактивно Изпълнение (По Пример 3) ⚡
+        </div>
+        
+        <div class="viz-text" id="vizText">Кликнете 'Напред', за да проследите примерно изпълнение.</div>
+
+        <div class="visualization-workspace">
+            
+            <!-- Блокове Памет -->
+            <div class="memory-column">
+                <div class="memory-box" id="memObj">
+                    <div class="memory-title">Обект: account</div>
+                    <div class="card-image">💳</div>
+                    <div class="memory-prop"><span>name</span> <span id="vName">null</span></div>
+                    <div class="memory-prop"><span>accountName</span> <span id="vAcc">null</span></div>
+                    <div class="memory-prop"><span>balance</span> <span id="vBal">0.00</span></div>
+                </div>
+            </div>
+
+            <!-- Конзола -->
+            <div class="console-box">
+                <div class="console-output" id="consoleOutput"></div>
+            </div>
+
+        </div>
+
+        <div class="controls">
+            <button id="prevBtn" onclick="prevStep()" disabled>⏪ Назад</button>
+            <div class="step-indicator" id="stepIndicator">Стъпка: 0 / 0</div>
+            <button id="nextBtn" onclick="nextStep()">Напред ⏩</button>
+        </div>
+
+    </div>
+
+    <script>
+        // Табове логика
+        function openTab(evt, tabId) {
+            document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            evt.currentTarget.classList.add('active');
+        }
+
+        // Интерактивни стъпки базирани на Пример 3
+        const steps = [
+            { text: "Стъпка 1: Декларираме обекта account. Заделя се памет с начални нулеви стойности.", mem: true, vN: "null", vA: "null", vB: "0.00", hl: "", con: "" },
+            
+            { text: "Стъпка 2: Извиква се конструкторът. Полетата се инициализират с подадените константи.", mem: true, vN: "\"Ради Руменов\"", vA: "\"general\"", vB: "2500.00", hl: "all", con: "" },
+            
+            { text: "Стъпка 3: Извикваме DisplayAccountData(). Данните се отпечатват на екрана.", mem: true, vN: "\"Ради Руменов\"", vA: "\"general\"", vB: "2500.00", hl: "", con: "Собственик на сметката: Ради Руменов\nПотребителско име: general\nБаланс: 2500.00 лева\n" },
+            
+            { text: "Стъпка 4: Програмата изисква въвеждане на сума за внасяне. Въвеждаме 234.", mem: true, vN: "\"Ради Руменов\"", vA: "\"general\"", vB: "2500.00", hl: "", con: "Собственик на сметката: Ради Руменов\nПотребителско име: general\nБаланс: 2500.00 лева\nКолко лева желаете да внесете? 234\n" },
+            
+            { text: "Стъпка 5: Извиква се Deposit(234). Сумата е > 0, следователно се добавя към баланса (2500 + 234).", mem: true, vN: "\"Ради Руменов\"", vA: "\"general\"", vB: "2734.00", hl: "bal_up", con: "Собственик на сметката: Ради Руменов\nПотребителско име: general\nБаланс: 2500.00 лева\nКолко лева желаете да внесете? 234\n" },
+            
+            { text: "Стъпка 6: Отпечатва се съобщение за успешно внасяне и новият баланс.", mem: true, vN: "\"Ради Руменов\"", vA: "\"general\"", vB: "2734.00", hl: "", con: "Собственик на сметката: Ради Руменов\nПотребителско име: general\nБаланс: 2500.00 лева\nКолко лева желаете да внесете? 234\nУспешно внасяне!\nНов баланс: 2734.00 лева\n" },
+            
+            { text: "Стъпка 7: Програмата изисква сума за теглене. Въвеждаме 2950.", mem: true, vN: "\"Ради Руменов\"", vA: "\"general\"", vB: "2734.00", hl: "", con: "Собственик на сметката: Ради Руменов\nПотребителско име: general\nБаланс: 2500.00 лева\nКолко лева желаете да внесете? 234\nУспешно внасяне!\nНов баланс: 2734.00 лева\nКолко лева желаете да изтеглите? 2950\n" },
+            
+            { text: "Стъпка 8: Извиква се Withdraw(2950). Проверява се дали има достатъчно наличност.", mem: true, vN: "\"Ради Руменов\"", vA: "\"general\"", vB: "2734.00", hl: "bal_down", con: "Собственик на сметката: Ради Руменов\nПотребителско име: general\nБаланс: 2500.00 лева\nКолко лева желаете да внесете? 234\nУспешно внасяне!\nНов баланс: 2734.00 лева\nКолко лева желаете да изтеглите? 2950\n" },
+
+            { text: "Стъпка 9: Тъй като желаната сума (2950) > баланс (2734), транзакцията се отказва.", mem: true, vN: "\"Ради Руменов\"", vA: "\"general\"", vB: "2734.00", hl: "", con: "Собственик на сметката: Ради Руменов\nПотребителско име: general\nБаланс: 2500.00 лева\nКолко лева желаете да внесете? 234\nУспешно внасяне!\nНов баланс: 2734.00 лева\nКолко лева желаете да изтеглите? 2950\nСметката не съдържа достатъчно пари" }
+        ];
+
+        let currentStep = 0;
+
+        function updateUI() {
+            const step = steps[currentStep];
+            
+            if (step) {
+                // Текст за стъпката
+                document.getElementById('vizText').innerText = step.text;
+
+                // Памет
+                const memObj = document.getElementById('memObj');
+                const vName = document.getElementById('vName');
+                const vAcc = document.getElementById('vAcc');
+                const vBal = document.getElementById('vBal');
+                
+                if (step.mem) memObj.classList.add('active'); else memObj.classList.remove('active');
+                
+                vName.innerText = step.vN;
+                vAcc.innerText = step.vA;
+                vBal.innerText = step.vB;
+                
+                // Премахване на предишни класове за подсветка
+                vName.classList.remove('val-highlight');
+                vAcc.classList.remove('val-highlight');
+                vBal.classList.remove('val-highlight');
+                vBal.classList.remove('val-error');
+
+                if (step.hl === "all") {
+                    vName.classList.add('val-highlight');
+                    vAcc.classList.add('val-highlight');
+                    vBal.classList.add('val-highlight');
+                } else if (step.hl === "bal_up") {
+                    vBal.classList.add('val-highlight');
+                } else if (step.hl === "bal_down") {
+                    vBal.classList.add('val-error');
+                }
+
+                // Конзола
+                const consoleOutput = document.getElementById('consoleOutput');
+                consoleOutput.innerText = step.con;
+                consoleOutput.parentElement.scrollTop = consoleOutput.parentElement.scrollHeight;
+
+                document.getElementById('stepIndicator').innerText = `Стъпка: ${currentStep + 1} / ${steps.length}`;
+            }
+
+            document.getElementById('prevBtn').disabled = currentStep <= 0;
+            document.getElementById('nextBtn').disabled = currentStep >= steps.length - 1;
+        }
+
+        function nextStep() { if (currentStep < steps.length - 1) { currentStep++; updateUI(); } }
+        function prevStep() { if (currentStep > 0) { currentStep--; updateUI(); } }
+
+        window.onload = updateUI;
+
+        // ----------------------------------------------------------------
+        // Логика за преоразмеряване на панелите (Drag-to-resize)
+        // ----------------------------------------------------------------
+        const resizer = document.getElementById('resizer');
+        const leftPanel = document.getElementById('leftPanel');
+        let isResizing = false;
+
+        resizer.addEventListener('mousedown', (e) => {
+            isResizing = true;
+            document.body.style.cursor = 'col-resize';
+            document.body.style.userSelect = 'none';
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (!isResizing) return;
+            
+            let newWidthPercent = (e.clientX / window.innerWidth) * 100;
+            
+            if (newWidthPercent > 20 && newWidthPercent < 80) {
+                leftPanel.style.flex = `0 0 ${newWidthPercent}%`;
+            }
+        });
+
+        document.addEventListener('mouseup', () => {
+            if (isResizing) {
+                isResizing = false;
+                document.body.style.cursor = 'default';
+                document.body.style.userSelect = 'auto'; 
+            }
+        });
+    </script>
+</body>
+</html>
