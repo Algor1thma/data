@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Задача 5: Кратно на първото - Algorithma</title>
+    <style>
+        body { margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; height: 100vh; background-color: #1e1e24; color: #e0e0e0; overflow: hidden;}
+        
+        /* Панели */
+        .panel { padding: 25px; overflow-y: auto; box-sizing: border-box; display: flex; flex-direction: column; }
+        
+        /* Ляв Панел - Условие */
+        .left-panel { border-right: 2px solid #333; background-color: #2b2b36; flex: 0 0 50%; min-width: 20%; box-shadow: inset -5px 0 15px rgba(0,0,0,0.2);}
+        
+        /* Съдържание на левия панел */
+        .content-wrapper { flex-grow: 1; }
+        
+        /* Десен Панел - Визуализации */
+        .right-panel { display: flex; flex-direction: column; gap: 15px; background-color: #1e1e24; flex: 1; min-width: 20%; position: relative;}
+        
+        /* Сплитер / Разделител */
+        .resizer {
+            width: 6px;
+            background-color: #444;
+            cursor: col-resize; 
+            transition: background-color 0.2s;
+            z-index: 10;
+        }
+        .resizer:hover, .resizer:active {
+            background-color: #a29bfe;
+        }
+
+        /* Бутон Назад */
+        .back-to-home { display: inline-block; text-decoration: none; color: #a29bfe; font-weight: bold; font-size: 0.95rem; margin-bottom: 15px; padding: 8px 15px; border: 1px solid #a29bfe; border-radius: 8px; transition: all 0.3s ease; background: transparent; align-self: flex-start; }
+        .back-to-home:hover { background-color: #a29bfe; color: #1e1e24; box-shadow: 0 0 10px rgba(162, 155, 254, 0.5); }
+
+        h1 { color: #ffffff; font-size: 1.7rem; margin-bottom: 5px; text-shadow: 0 2px 4px rgba(0,0,0,0.3);}
+        h2 { color: #a29bfe; font-size: 1.1rem; text-transform: uppercase; margin-top: 0; margin-bottom: 15px; letter-spacing: 1px;}
+        h3 { color: #81ecec; border-bottom: 1px solid #444; padding-bottom: 5px; margin-top: 20px; font-size: 1.15rem;}
+        p, ul, li { line-height: 1.5; color: #dcdde1; font-size: 0.95rem; margin-bottom: 8px;}
+        ol { margin-top: 5px; margin-bottom: 10px; padding-left: 20px; line-height: 1.6;}
+        
+        /* Таблици */
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; margin-bottom: 15px; font-size: 0.85rem; background-color: #353b48; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.3);}
+        th, td { border: 1px solid #444; padding: 8px; text-align: left; }
+        th { background-color: #2f3640; color: #a29bfe; font-weight: bold;}
+        
+        /* Примери - Конзолен изглед */
+        .examples-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px;}
+        .example-box { background-color: #0c0c0c; border: 1px solid #555; border-top: 10px solid #2d3436; border-radius: 6px; padding: 10px; font-family: Consolas, monospace; color: #bdc3c7; font-size: 0.8rem; white-space: pre-wrap;}
+
+        /* Условие - Анимирана концепция */
+        .concept-card { background: linear-gradient(135deg, #2d3436 0%, #111 100%); border: 1px solid #555; border-radius: 12px; padding: 15px; text-align: center; margin-top: 15px; margin-bottom: 15px; box-shadow: 0 8px 20px rgba(0,0,0,0.5);}
+        .concept-title { color: #81ecec; font-weight: bold; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px; font-size: 0.9rem;}
+        
+        .example-array { display: flex; justify-content: center; gap: 8px; margin: 10px 0;}
+        .arr-num { background: #353b48; color: #fff; padding: 5px 12px; border-radius: 6px; font-family: Consolas, monospace; font-weight: bold; font-size: 1.1rem; border: 2px solid #555;}
+        .arr-target { border-color: #fdcb6e; color: #fdcb6e; }
+        .arr-found { border-color: #00b894; color: #00b894; background: rgba(0, 184, 148, 0.2);}
+
+        /* Авторски права */
+        .copyright {
+            margin-top: 40px;
+            padding-top: 15px;
+            border-top: 1px solid #444;
+            color: #7f8c8d;
+            font-size: 0.85rem;
+            text-align: center;
+        }
+
+        /* Специален Раздел ВИЗУАЛИЗАЦИИ */
+        .viz-header { background: linear-gradient(90deg, #6c5ce7, #a29bfe); color: #fff; padding: 10px 20px; border-radius: 8px; text-align: center; font-weight: bold; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 2px; box-shadow: 0 4px 15px rgba(108, 92, 231, 0.4); flex-shrink: 0;}
+
+        /* Описание на стъпките */
+        .viz-text { text-align: center; font-size: 1.05rem; font-weight: bold; color: #dcdde1; margin: 10px 0; min-height: 45px; display: flex; align-items: center; justify-content: center;}
+
+        /* Визуална Зона (Училищна Дъска) */
+        .visualization-workspace { display: flex; flex-direction: column; gap: 15px; min-height: 240px; flex: 1 0 auto; justify-content: center;}
+        
+        .chalkboard-panel { background: #2b3a32; border: 10px solid #8e44ad; border-radius: 12px; padding: 25px; box-shadow: inset 0 0 30px rgba(0,0,0,0.8), 0 8px 15px rgba(0,0,0,0.5); display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; min-height: 150px;}
+        
+        .board-title { color: rgba(255,255,255,0.7); font-family: 'Comic Sans MS', cursive; font-size: 1.2rem; margin-bottom: 20px; letter-spacing: 1px;}
+        
+        .numbers-row { display: flex; gap: 15px; flex-wrap: wrap; justify-content: center;}
+        .num-box { width: 55px; height: 55px; background: rgba(255,255,255,0.1); border: 2px dashed rgba(255,255,255,0.3); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; font-family: 'Comic Sans MS', cursive; color: #fff; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); position: relative;}
+        
+        .num-box.target { border: 3px solid #fdcb6e; color: #fdcb6e; background: rgba(253, 203, 110, 0.2); transform: scale(1.1); border-style: solid; box-shadow: 0 0 15px rgba(253, 203, 110, 0.4);}
+        .num-box.target::after { content: "TARGET"; position: absolute; top: -18px; font-size: 0.6rem; color: #fdcb6e; font-family: 'Segoe UI', sans-serif;}
+        
+        .num-box.scan { border: 3px solid #74b9ff; color: #74b9ff; transform: scale(1.1); border-style: solid; box-shadow: 0 0 15px rgba(116, 185, 255, 0.4);}
+        .num-box.scan::after { content: "SCAN"; position: absolute; top: -18px; font-size: 0.6rem; color: #74b9ff; font-family: 'Segoe UI', sans-serif;}
+        
+        .num-box.miss { border-color: #ff7675; color: rgba(255, 118, 117, 0.5); border-style: solid;}
+        
+        .num-box.found { border: 3px solid #00b894; color: #00b894; background: rgba(0, 184, 148, 0.2); transform: scale(1.2); border-style: solid; box-shadow: 0 0 20px rgba(0, 184, 148, 0.6);}
+        .num-box.found::after { content: "MATCH!"; position: absolute; top: -18px; font-size: 0.65rem; font-weight: bold; color: #00b894; font-family: 'Segoe UI', sans-serif;}
+
+        /* Изскачащ Математически Панел */
+        .math-toast { background: rgba(12, 12, 12, 0.8); border: 1px solid #a29bfe; border-radius: 8px; padding: 10px 20px; font-family: Consolas, monospace; color: #a29bfe; margin-top: 25px; opacity: 0; transform: translateY(-10px); transition: all 0.3s; text-align: center; font-size: 1.1rem;}
+        .math-toast.show { opacity: 1; transform: translateY(0); }
+
+        /* Конзола */
+        .console-box { background-color: #000; border: 1px solid #333; border-top: 25px solid #2d3436; border-radius: 8px; padding: 10px; font-family: Consolas, 'Courier New', monospace; font-size: 13px; position: relative; box-shadow: 0 8px 15px rgba(0,0,0,0.5); min-height: 130px; flex-shrink: 0; margin-top: auto;}
+        .console-box::before { content: "C:\\Windows\\System32\\cmd.exe"; position: absolute; top: -20px; left: 10px; color: #b2bec3; font-size: 11px; font-family: 'Segoe UI', sans-serif;}
+        .console-output { color: #b2bec3; white-space: pre-wrap; line-height: 1.4; }
+
+        /* Контроли */
+        .controls { display: flex; gap: 15px; justify-content: center; align-items: center; background: #2b2b36; padding: 10px; border-radius: 8px; border: 1px solid #444; flex-shrink: 0;}
+        button { padding: 8px 15px; border: none; border-radius: 6px; background: linear-gradient(180deg, #6c5ce7, #4834d4); color: white; font-size: 13px; font-weight: bold; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.3); text-transform: uppercase;}
+        button:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 10px rgba(108, 92, 231, 0.5); }
+        button:disabled { background: #555; color: #888; cursor: not-allowed; box-shadow: none; transform: none;}
+        .step-indicator { color: #a29bfe; font-weight: bold; font-family: Consolas, monospace; font-size: 0.95rem; width: 140px; text-align: center;}
+    </style>
+</head>
+
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-YYBQF66CTS"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-YYBQF66CTS');
+</script>
+
+<body>
+
+    <div class="panel left-panel" id="leftPanel">
+        <div class="content-wrapper">
+            <a href="../index.html" class="back-to-home">← Начало</a>
+            
+            <h1>Задача 5: Кратно на първото</h1>
+            <h2>Конструктори в класове</h2>
+            
+            <p>Учителка измислила игра. Тя пише на дъската редица от 5 числа, а учениците трябва да определят първото число от редицата, което е кратно на първото написано число.</p>
+            
+            <div class="concept-card">
+                <div class="concept-title">Примерна логика</div>
+                <div style="font-size: 0.85rem; color: #b2bec3;">Редица:</div>
+                <div class="example-array">
+                    <div class="arr-num arr-target">8</div>
+                    <div class="arr-num">3</div>
+                    <div class="arr-num arr-found">16</div>
+                    <div class="arr-num">6</div>
+                    <div class="arr-num">24</div>
+                </div>
+                <p style="font-size: 0.85rem; color: #dcdde1; margin-bottom: 0;">Резултат: <strong>16</strong>, защото 16 е първото намерено число, кратно на първото в редицата (8).</p>
+            </div>
+
+            <p>Да се напише програма, която симулира поведението на играта. Да се дефинира клас <code>Mult</code> със следните полета:</p>
+            
+            <table>
+                <tr><th>Поле</th><th>Тип</th><th>Описание</th></tr>
+                <tr><td>n1 .. n5</td><td>цяло число</td><td>първо до пето число</td></tr>
+            </table>
+
+            <h3>Класът да съдържа два конструктора:</h3>
+            <ol>
+                <li><code>Mult()</code> - записва 2 в полетата на класа.</li>
+                <li><code>Mult(int n1, int n2, int n3, int n4, int n5)</code> - записва стойностите на параметрите си в полетата на класа.</li>
+            </ol>
+
+            <h3>В класа да се дефинират следните методи:</h3>
+            <ol>
+                <li>Метод <code>int FindMult()</code> намира и връща първото число, кратно на първото число в редицата. Ако липсва кратно число, то методът да връща -1.</li>
+                <li>Метод <code>void PrintMult()</code> отпечатва "Mult! ?" или "No Mult!", където на мястото на ? се отпечатва резултатът.</li>
+            </ol>
+
+            <h3>Като се използва класът Mult, да се напише програма, която:</h3>
+            <ul>
+                <li>Създава обект от класа Mult чрез подразбиращия се конструктор и показва резултат чрез извикване на подходящия метод.</li>
+                <li>Въвежда от клавиатурата 5 цели числа едно под друго.</li>
+                <li>Създава втори обект от класа с параметри като числовите данни са въведените от клавиатурата.</li>
+                <li>Отпечатва резултата.</li>
+            </ul>
+
+            <h3>Примери:</h3>
+            <div class="examples-grid">
+                <div class="example-box">Mult! 2
+- End of default constructor -
+
+Enter five integers:
+8
+3
+12
+6
+24
+Mult! 24</div>
+                <div class="example-box">Mult! 2
+- End of default constructor -
+
+Enter five integers:
+9
+2
+4
+6
+8
+No Mult!</div>
+            </div>
+        </div>
+
+        <div class="copyright">
+            &copy; 2026 Algorithma. Всички права запазени.
+        </div>
+    </div>
+
+    <!-- Сплитер за преоразмеряване -->
+    <div class="resizer" id="resizer"></div>
+
+    <div class="panel right-panel">
+        
+        <div class="viz-header">
+            ⚡ Интерактивна Търсачка ⚡
+        </div>
+        
+        <div class="viz-text" id="vizText">Кликнете 'Напред', за да проследите примерно изпълнение.</div>
+
+        <div class="visualization-workspace">
+            
+            <div class="chalkboard-panel">
+                <div class="board-title">Find the Multiple!</div>
+                
+                <div class="numbers-row" id="boardNumbers">
+                    <div class="num-box" id="nb0"></div>
+                    <div class="num-box" id="nb1"></div>
+                    <div class="num-box" id="nb2"></div>
+                    <div class="num-box" id="nb3"></div>
+                    <div class="num-box" id="nb4"></div>
+                </div>
+
+                <div class="math-toast" id="mathToast">
+                    // Изчисления
+                </div>
+            </div>
+
+            <!-- Конзола -->
+            <div class="console-box">
+                <div class="console-output" id="consoleOutput"></div>
+            </div>
+
+        </div>
+
+        <div class="controls">
+            <button id="prevBtn" onclick="prevStep()" disabled>⏪ Назад</button>
+            <div class="step-indicator" id="stepIndicator">Стъпка: 0 / 0</div>
+            <button id="nextBtn" onclick="nextStep()">Напред ⏩</button>
+        </div>
+
+    </div>
+
+    <script>
+        const steps = [
+            { text: "Стъпка 1: Декларираме обект mult1. Извиква се конструкторът по подразбиране.", bData: [], targetIdx: -1, scanIdx: -1, state: "", math: "", con: "" },
+            
+            { text: "Стъпка 2: Конструкторът записва числото 2 във всичките пет полета на класа.", bData: [2, 2, 2, 2, 2], targetIdx: -1, scanIdx: -1, state: "", math: "Инициализация: 2, 2, 2, 2, 2", con: "" },
+            
+            { text: "Стъпка 3: Извикваме PrintMult(). Методът от своя страна извиква FindMult().", bData: [2, 2, 2, 2, 2], targetIdx: 0, scanIdx: -1, state: "", math: "Търсим кратно на 2", con: "" },
+            
+            { text: "Стъпка 4: Проверяваме първото число след целта (2). То е кратно на 2.", bData: [2, 2, 2, 2, 2], targetIdx: 0, scanIdx: 1, state: "found", math: "2 % 2 == 0 ? ДА", con: "" },
+            
+            { text: "Стъпка 5: Методът PrintMult() отпечатва резултата от търсенето в конзолата.", bData: [2, 2, 2, 2, 2], targetIdx: 0, scanIdx: 1, state: "found", math: "Намерено: 2", con: "Mult! 2\n" },
+            
+            { text: "Стъпка 6: Отпечатваме разделителен текст в конзолата.", bData: [2, 2, 2, 2, 2], targetIdx: 0, scanIdx: 1, state: "found", math: "", con: "Mult! 2\n- End of default constructor -\n\nEnter five integers:\n" },
+            
+            { text: "Стъпка 7: Създаваме нов обект mult2 с въведени параметри: 8, 3, 16, 6, 24.", bData: [], targetIdx: -1, scanIdx: -1, state: "", math: "Създаване на mult2...", con: "Mult! 2\n- End of default constructor -\n\nEnter five integers:\n8\n3\n16\n6\n24\n" },
+            
+            { text: "Стъпка 8: Параметричният конструктор записва подадените стойности в полетата.", bData: [8, 3, 16, 6, 24], targetIdx: -1, scanIdx: -1, state: "", math: "Инициализация: 8, 3, 16, 6, 24", con: "Mult! 2\n- End of default constructor -\n\nEnter five integers:\n8\n3\n16\n6\n24\n" },
+            
+            { text: "Стъпка 9: Извикваме PrintMult(). Започва търсене чрез FindMult().", bData: [8, 3, 16, 6, 24], targetIdx: 0, scanIdx: -1, state: "", math: "Търсим кратно на 8", con: "Mult! 2\n- End of default constructor -\n\nEnter five integers:\n8\n3\n16\n6\n24\n" },
+            
+            { text: "Стъпка 10: Проверяваме числото 3. То НЕ се дели на 8 без остатък.", bData: [8, 3, 16, 6, 24], targetIdx: 0, scanIdx: 1, state: "miss", math: "3 % 8 == 0 ? НЕ", con: "Mult! 2\n- End of default constructor -\n\nEnter five integers:\n8\n3\n16\n6\n24\n" },
+            
+            { text: "Стъпка 11: Проверяваме числото 16. То е кратно на 8.", bData: [8, 3, 16, 6, 24], targetIdx: 0, scanIdx: 2, state: "found", math: "16 % 8 == 0 ? ДА", con: "Mult! 2\n- End of default constructor -\n\nEnter five integers:\n8\n3\n16\n6\n24\n" },
+            
+            { text: "Стъпка 12: Методът PrintMult() отпечатва намереното число в конзолата.", bData: [8, 3, 16, 6, 24], targetIdx: 0, scanIdx: 2, state: "found", math: "Намерено: 16", con: "Mult! 2\n- End of default constructor -\n\nEnter five integers:\n8\n3\n16\n6\n24\nMult! 16" }
+        ];
+
+        let currentStep = 0;
+
+        function updateUI() {
+            const step = steps[currentStep];
+            
+            if (step) {
+                // Текст за стъпката
+                document.getElementById('vizText').innerText = step.text;
+
+                // Update Board
+                for(let i=0; i<5; i++) {
+                    const box = document.getElementById('nb'+i);
+                    box.className = "num-box"; // reset
+                    
+                    if (step.bData.length > 0) {
+                        box.innerText = step.bData[i];
+                        
+                        if (i === step.targetIdx) {
+                            box.classList.add('target');
+                        } else if (i === step.scanIdx) {
+                            if (step.state === "found") box.classList.add('found');
+                            else if (step.state === "miss") box.classList.add('miss');
+                            else box.classList.add('scan');
+                        } else if (i < step.scanIdx && i !== step.targetIdx) {
+                            box.classList.add('miss'); // Previous misses
+                        }
+                    } else {
+                        box.innerText = "";
+                    }
+                }
+
+                // Math Toast
+                const mathToast = document.getElementById('mathToast');
+                if (step.math !== "") {
+                    mathToast.innerText = step.math;
+                    if (step.state === "found") mathToast.style.color = "#00b894";
+                    else if (step.state === "miss") mathToast.style.color = "#ff7675";
+                    else mathToast.style.color = "#a29bfe";
+                    
+                    mathToast.classList.add('show');
+                } else {
+                    mathToast.classList.remove('show');
+                }
+                
+                document.getElementById('consoleOutput').innerText = step.con;
+                document.getElementById('stepIndicator').innerText = `Стъпка: ${currentStep + 1} / ${steps.length}`;
+            }
+
+            document.getElementById('prevBtn').disabled = currentStep <= 0;
+            document.getElementById('nextBtn').disabled = currentStep >= steps.length - 1;
+        }
+
+        function nextStep() { if (currentStep < steps.length - 1) { currentStep++; updateUI(); } }
+        function prevStep() { if (currentStep > 0) { currentStep--; updateUI(); } }
+
+        window.onload = updateUI;
+
+        // ----------------------------------------------------------------
+        // Логика за преоразмеряване на панелите (Drag-to-resize)
+        // ----------------------------------------------------------------
+        const resizer = document.getElementById('resizer');
+        const leftPanel = document.getElementById('leftPanel');
+        let isResizing = false;
+
+        resizer.addEventListener('mousedown', (e) => {
+            isResizing = true;
+            document.body.style.cursor = 'col-resize';
+            document.body.style.userSelect = 'none';
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (!isResizing) return;
+            
+            let newWidthPercent = (e.clientX / window.innerWidth) * 100;
+            
+            if (newWidthPercent > 20 && newWidthPercent < 80) {
+                leftPanel.style.flex = `0 0 ${newWidthPercent}%`;
+            }
+        });
+
+        document.addEventListener('mouseup', () => {
+            if (isResizing) {
+                isResizing = false;
+                document.body.style.cursor = 'default';
+                document.body.style.userSelect = 'auto'; 
+            }
+        });
+    </script>
+</body>
+</html>
