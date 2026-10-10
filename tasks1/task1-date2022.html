@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Задача 1: Дата от 2022 година - Algorithma</title>
+    <style>
+        body { margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; height: 100vh; background-color: #1e1e24; color: #e0e0e0; overflow: hidden;}
+        
+        /* Панели */
+        .panel { padding: 20px; overflow-y: auto; box-sizing: border-box; display: flex; flex-direction: column;}
+        .left-panel { border-right: 2px solid #333; background-color: #2b2b36; flex: 0 0 50%; min-width: 20%; box-shadow: inset -5px 0 15px rgba(0,0,0,0.2);}
+        .right-panel { display: flex; flex-direction: column; gap: 10px; background-color: #1e1e24; flex: 1; min-width: 20%; position: relative;}
+        
+        /* Съдържание на левия панел */
+        .content-wrapper { flex-grow: 1; padding-right: 10px;}
+
+        /* Сплитер / Разделител */
+        .resizer {
+            width: 6px;
+            background-color: #444;
+            cursor: col-resize; 
+            transition: background-color 0.2s;
+            z-index: 10;
+        }
+        .resizer:hover, .resizer:active {
+            background-color: #00cec9;
+        }
+
+        /* Бутон Назад */
+        .back-to-home { display: inline-block; text-decoration: none; color: #00cec9; font-weight: bold; font-size: 0.9rem; margin-bottom: 15px; padding: 5px 10px; border: 1px solid #00cec9; border-radius: 6px; transition: all 0.3s ease; background: transparent; align-self: flex-start;}
+        .back-to-home:hover { background-color: #00cec9; color: #1e1e24; box-shadow: 0 0 10px rgba(0, 206, 201, 0.5); }
+
+        h1 { color: #ffffff; font-size: 1.6rem; margin-bottom: 5px; text-shadow: 0 2px 4px rgba(0,0,0,0.3);}
+        h2 { color: #00cec9; font-size: 1rem; text-transform: uppercase; margin-top: 0; margin-bottom: 15px; letter-spacing: 1px;}
+        h3 { color: #ffeaa7; border-bottom: 1px solid #444; padding-bottom: 5px; margin-top: 20px; font-size: 1.15rem;}
+        p, ul, li { line-height: 1.5; color: #dcdde1; font-size: 0.95rem; margin-bottom: 8px;}
+        ol { margin-top: 5px; margin-bottom: 10px; padding-left: 20px; line-height: 1.6;}
+        
+        /* Таблици */
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; margin-bottom: 15px; font-size: 0.85rem; background-color: #353b48; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.3);}
+        th, td { border: 1px solid #444; padding: 8px; text-align: left; }
+        th { background-color: #2f3640; color: #00cec9; font-weight: bold;}
+        
+        /* Примери - Конзолен изглед */
+        .examples-grid { display: flex; flex-direction: column; gap: 10px; margin-top: 15px;}
+        .example-box { background-color: #0c0c0c; border: 1px solid #555; border-top: 10px solid #2d3436; border-radius: 6px; padding: 10px; font-family: Consolas, monospace; color: #bdc3c7; font-size: 0.85rem; white-space: pre-wrap;}
+
+        /* Условие - Анимирана концепция */
+        .concept-card { background: linear-gradient(135deg, #0984e3 0%, #00cec9 100%); color: #fff; border-radius: 12px; padding: 15px; text-align: center; margin-top: 15px; margin-bottom: 15px; box-shadow: 0 8px 20px rgba(0,0,0,0.4);}
+        .concept-title { font-weight: bold; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px; font-size: 1rem; text-shadow: 0 2px 4px rgba(0,0,0,0.3);}
+        .concept-text { font-size: 0.9rem; margin-bottom: 0; text-shadow: 0 1px 2px rgba(0,0,0,0.2);}
+
+        /* Авторски права */
+        .copyright {
+            margin-top: 30px;
+            padding-top: 15px;
+            border-top: 1px solid #444;
+            color: #7f8c8d;
+            font-size: 0.85rem;
+            text-align: center;
+        }
+
+        /* Специален Раздел ВИЗУАЛИЗАЦИИ */
+        .viz-header { background: linear-gradient(90deg, #00cec9, #0984e3); color: #fff; padding: 8px 15px; border-radius: 8px; text-align: center; font-weight: bold; font-size: 1.05rem; text-transform: uppercase; letter-spacing: 2px; box-shadow: 0 4px 10px rgba(0, 206, 201, 0.4); flex-shrink: 0;}
+
+        /* Визуална Зона (Календар и Валидатор) - Намалена височина */
+        .visualization-workspace { display: flex; flex-direction: column; gap: 10px; min-height: 0; flex-shrink: 0;}
+        
+        .calendar-panel { background: #2d3436; border: 2px solid #555; border-radius: 12px; padding: 15px; box-shadow: inset 0 0 20px rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; gap: 30px; position: relative; min-height: 130px;}
+        
+        /* Календар */
+        .calendar-card { width: 110px; background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 8px 20px rgba(0,0,0,0.5); text-align: center; display: flex; flex-direction: column; transform: scale(1); transition: all 0.3s;}
+        .cal-header { background: #d63031; color: white; padding: 6px; font-weight: bold; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 1px;}
+        .cal-body { color: #2d3436; padding: 10px 0; background: #fdfdfd;}
+        .cal-day { font-size: 3rem; font-weight: bold; line-height: 1; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;}
+        .cal-month-year { font-size: 0.9rem; color: #636e72; font-weight: bold; margin-top: 5px; text-transform: uppercase;}
+        
+        /* Информация / Сезон */
+        .info-card { display: flex; flex-direction: column; gap: 10px;}
+        .season-badge { display: flex; align-items: center; gap: 8px; background: #1e1e24; padding: 8px 12px; border-radius: 6px; border: 1px solid #444; font-weight: bold; color: #dfe6e9; font-size: 0.85rem;}
+        .season-icon { font-size: 1.4rem; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)); transition: all 0.3s;}
+        
+        .days-left-badge { display: flex; align-items: center; gap: 8px; background: #1e1e24; padding: 8px 12px; border-radius: 6px; border: 1px solid #444; font-weight: bold; color: #dfe6e9; font-size: 0.85rem;}
+        .days-icon { font-size: 1.3rem; color: #fdcb6e; }
+
+        /* Property Validation Toast */
+        .validation-toast { position: absolute; top: -15px; left: 50%; transform: translateX(-50%); background: #2d3436; border: 2px solid #00cec9; color: #00cec9; padding: 4px 12px; border-radius: 15px; font-family: Consolas, monospace; font-size: 0.8rem; font-weight: bold; opacity: 0; transition: all 0.3s; box-shadow: 0 4px 10px rgba(0,0,0,0.4); z-index: 10;}
+        .validation-toast.show { opacity: 1; top: 10px; }
+        .validation-toast.error { border-color: #d63031; color: #ff7675; }
+
+        /* Зона за код (Увеличена) */
+        .code-container { background-color: #282c34; color: #abb2bf; padding: 10px 15px; border-radius: 8px; font-family: Consolas, monospace; font-size: 11.5px; overflow-y: auto; box-shadow: inset 0 0 8px rgba(0,0,0,0.8); border: 1px solid #444; flex: 1; min-height: 180px;}
+        .code-line { padding: 2px 6px; margin: 1px 0; border-radius: 4px; transition: background-color 0.3s; white-space: pre; border-left: 3px solid transparent;}
+        .active-line { background-color: #3e4451; border-left: 3px solid #00cec9; color: #ffffff; font-weight: bold; }
+        .error-line { background-color: rgba(214, 48, 49, 0.2); border-left: 3px solid #d63031; }
+
+        /* Конзола (Намалена) */
+        .console-box { background-color: #0c0c0c; border: 1px solid #333; border-top: 18px solid #2d3436; border-radius: 8px; padding: 10px 15px; font-family: Consolas, 'Courier New', monospace; font-size: 11.5px; position: relative; box-shadow: 0 6px 12px rgba(0,0,0,0.5); min-height: 65px; height: 65px; overflow-y: auto; flex-shrink: 0;}
+        .console-box::before { content: "C:\\Windows\\System32\\cmd.exe"; position: absolute; top: -15px; left: 10px; color: #b2bec3; font-size: 9.5px; font-family: 'Segoe UI', sans-serif;}
+        .console-output { color: #b2bec3; white-space: pre-wrap; line-height: 1.4; }
+        .console-error { color: #ff7675; font-weight: bold;}
+        
+        /* Контроли */
+        .controls { display: flex; gap: 10px; justify-content: center; align-items: center; background: #2b2b36; padding: 8px; border-radius: 8px; border: 1px solid #444; flex-shrink: 0;}
+        button { padding: 8px 15px; border: none; border-radius: 6px; background: linear-gradient(180deg, #00cec9, #0984e3); color: white; font-size: 12px; font-weight: bold; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.3); text-transform: uppercase;}
+        button:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0, 206, 201, 0.5); }
+        button:disabled { background: #555; color: #888; cursor: not-allowed; box-shadow: none; transform: none;}
+        .step-indicator { color: #00cec9; font-weight: bold; font-family: Consolas, monospace; font-size: 0.95rem; width: 140px; text-align: center;}
+    </style>
+</head>
+<body>
+
+    <div class="panel left-panel" id="leftPanel">
+        <div class="content-wrapper">
+            <a href="../index.html" class="back-to-home">← Начало</a>
+            
+            <h1>Задача 1: Дата от 2022 година</h1>
+            <h2>Модификатори на достъпа. Свойства на клас</h2>
+            
+            <p>Да се декларира клас <code>Date2022</code>, който описва дата от 2022 година, като съдържа следните <code>private</code> полета:</p>
+            
+            <table>
+                <tr><th>Поле</th><th>Тип</th><th>Описание</th></tr>
+                <tr><td>month</td><td>цяло число</td><td>номер на месец, число между 1 и 12 вкл.</td></tr>
+                <tr><td>day</td><td>цяло число</td><td>номер на деня в месеца, число между 1 и 28/30/31</td></tr>
+            </table>
+
+            <h3>Класът да съдържа публичен конструктор:</h3>
+            <p><code>Date2022(int m, int d)</code>, който да копира параметрите m в month и d в day.</p>
+
+            <h3>Свойства (Properties):</h3>
+            <p>Да се добавят публично достъпни свойства <code>Month</code> и <code>Day</code>, които да осигуряват достъп за четене и за запис в съответните полета. При запис да се добавят следните изисквания:</p>
+            <ul>
+                <li>Допуска се записване на стойност за месец, само ако е число между 1 и 12 вкл.</li>
+                <li>Допуска се записване на стойност за ден, само ако е:
+                    <br>между 1 и 28 (при month = 2)
+                    <br>между 1 и 30 (при month = 4, 6, 9, 11)
+                    <br>между 1 и 31 (при month = 1, 3, 5, 7, 8, 10, 12).
+                </li>
+                <li>При невалидни данни да се хвърля изключение (Exception).</li>
+            </ul>
+
+            <div class="concept-card">
+                <div class="concept-title">Летен сезон</div>
+                <p class="concept-text">Приемаме, че една дата се намира през лятото, ако попада точно в интервала между <strong>22 юни</strong> и <strong>22 септември</strong> включително.</p>
+            </div>
+
+            <h3>Методи в класа:</h3>
+            <ol>
+                <li><code>int GetDaysLeft()</code> изчислява и връща броя на дните, оставащи от текущия ден до края на текущия месец. Например от 11 май до края на май остават 20 дни.</li>
+                <li><code>bool IsInTheSummer()</code> връща true, ако текущата дата е между 22 юни и 22 септември вкл.</li>
+                <li><code>void Print()</code> извежда на екрана информация във вида <code>dd.mm.2022</code>, показва дали е през лятото и колко дни остават до края на месеца.</li>
+            </ol>
+
+            <h3>Програма (Main метод):</h3>
+            <ul>
+                <li>Създава обект от класа Date2022 с фиксирани стойности (например 8 и 28).</li>
+                <li>Извежда информацията за обекта.</li>
+                <li>Организира въвеждане на нов месец и нов ден от клавиатурата и ги записва чрез свойствата.</li>
+                <li>Отново извежда информацията за обекта.</li>
+            </ul>
+
+            <h3>Примери за работа и изключения:</h3>
+            <div class="examples-grid">
+                <div class="example-box">Дата: 28.08.2022
+Това е през лятото
+Дни до края на месеца: 3
+
+Въведете месец: 3
+Въведете ден: 5
+
+Дата: 05.03.2022
+Това не е през лятото
+Дни до края на месеца: 26</div>
+                <div class="example-box">Дата: 28.08.2022
+Това е през лятото
+Дни до края на месеца: 3
+
+Въведете месец: 14
+System.ArgumentException: Невалидна стойност за месец!</div>
+            </div>
+        </div>
+
+        <div class="copyright">
+            &copy; 2026 Algorithma. Всички права запазени.
+        </div>
+    </div>
+
+    <!-- Сплитер за преоразмеряване -->
+    <div class="resizer" id="resizer"></div>
+
+    <div class="panel right-panel">
+        
+        <div class="viz-header">
+            ⚡ Интерактивен Календар & Валидатор ⚡
+        </div>
+
+        <div class="visualization-workspace">
+            
+            <div class="calendar-panel">
+                
+                <div class="validation-toast" id="valToast">
+                    Property Check...
+                </div>
+
+                <!-- Календар -->
+                <div class="calendar-card" id="calUI" style="opacity: 0;">
+                    <div class="cal-header">2022</div>
+                    <div class="cal-body">
+                        <div class="cal-day" id="cDay">28</div>
+                        <div class="cal-month-year" id="cMonth">AUG</div>
+                    </div>
+                </div>
+
+                <!-- Инфо Баджове -->
+                <div class="info-card">
+                    <div class="season-badge" id="sBadge" style="opacity: 0;">
+                        <div class="season-icon" id="sIcon">☀️</div>
+                        <div id="sText">Лято</div>
+                    </div>
+                    
+                    <div class="days-left-badge" id="dBadge" style="opacity: 0;">
+                        <div class="days-icon">⏳</div>
+                        <div id="dText">3 дни</div>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- Код -->
+        <div class="code-container">
+<div class="code-line" id="line-0">class Date2022 {</div>
+<div class="code-line" id="line-1">    private int month, day;</div>
+<div class="code-line" id="line-2">    public Date2022(int m, int d) {</div>
+<div class="code-line" id="line-3">        Month = m; Day = d;</div>
+<div class="code-line" id="line-4">    }</div>
+<div class="code-line" id="line-5">    public int Month {</div>
+<div class="code-line" id="line-6">        get { return month; }</div>
+<div class="code-line" id="line-7">        set {</div>
+<div class="code-line" id="line-8">            if (value > 0 && value < 13) month = value;</div>
+<div class="code-line" id="line-9">            else throw new ArgumentException("Невалиден месец!");</div>
+<div class="code-line" id="line-10">        }</div>
+<div class="code-line" id="line-11">    }</div>
+<div class="code-line" id="line-12">    public int Day {</div>
+<div class="code-line" id="line-13">        get { return day; }</div>
+<div class="code-line" id="line-14">        set {</div>
+<div class="code-line" id="line-15">            int max = 31;</div>
+<div class="code-line" id="line-16">            if (month == 2) max = 28;</div>
+<div class="code-line" id="line-17">            else if (month==4||month==6||month==9||month==11) max=30;</div>
+<div class="code-line" id="line-18">            if (value > 0 && value <= max) day = value;</div>
+<div class="code-line" id="line-19">            else throw new ArgumentException("Невалиден ден!");</div>
+<div class="code-line" id="line-20">        }</div>
+<div class="code-line" id="line-21">    }</div>
+<div class="code-line" id="line-22">    public void Print() {</div>
+<div class="code-line" id="line-23">        Console.WriteLine($"Дата: {day:d2}.{month:d2}.2022");</div>
+<div class="code-line" id="line-24">        Console.WriteLine(IsInSummer() ? "Това е през лятото" : "Това не е през лятото");</div>
+<div class="code-line" id="line-25">        Console.WriteLine($"Дни до края на месеца: {GetDaysLeft()}");</div>
+<div class="code-line" id="line-26">    }</div>
+<div class="code-line" id="line-27">}</div>
+<div class="code-line" id="line-28">class Program {</div>
+<div class="code-line" id="line-29">    static void Main() {</div>
+<div class="code-line" id="line-30">        Date2022 d = new Date2022(8, 28);</div>
+<div class="code-line" id="line-31">        d.Print();</div>
+<div class="code-line" id="line-32">        </div>
+<div class="code-line" id="line-33">        d.Month = 3; // От конзолата</div>
+<div class="code-line" id="line-34">        d.Day = 5;   // От конзолата</div>
+<div class="code-line" id="line-35">        d.Print();</div>
+<div class="code-line" id="line-36">        </div>
+<div class="code-line" id="line-37">        d.Day = 32;  // Грешка!</div>
+<div class="code-line" id="line-38">    }</div>
+<div class="code-line" id="line-39">}</div>
+        </div>
+
+        <!-- Конзола -->
+        <div class="console-box" id="consoleBox">
+            <div class="console-output" id="consoleOutput"></div>
+        </div>
+
+        <div class="controls">
+            <button id="prevBtn" onclick="prevStep()" disabled>⏪ Назад</button>
+            <div class="step-indicator" id="stepIndicator">Стъпка: 0 / 0</div>
+            <button id="nextBtn" onclick="nextStep()">Напред ⏩</button>
+        </div>
+
+    </div>
+
+    <script>
+        const monthNames = ["", "JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
+
+        const steps = [
+            { lines: [29], calVis: false, d: "00", m: 0, sVis: false, sIcon: "", sTxt: "", dVis: false, dLeft: 0, toast: "", tErr: false, con: "", errLine: false },
+            
+            // Обект 1
+            { lines: [30, 2], calVis: false, d: "00", m: 0, sVis: false, sIcon: "", sTxt: "", dVis: false, dLeft: 0, toast: "", tErr: false, con: "", errLine: false },
+            { lines: [3, 7, 8], calVis: true, d: "--", m: 8, sVis: false, sIcon: "", sTxt: "", dVis: false, dLeft: 0, toast: "Month=8 (VALID)", tErr: false, con: "", errLine: false },
+            { lines: [3, 14, 18], calVis: true, d: "28", m: 8, sVis: false, sIcon: "", sTxt: "", dVis: false, dLeft: 0, toast: "Day=28 (VALID max 31)", tErr: false, con: "", errLine: false },
+            
+            // Print 1
+            { lines: [31, 22], calVis: true, d: "28", m: 8, sVis: false, sIcon: "", sTxt: "", dVis: false, dLeft: 0, toast: "", tErr: false, con: "", errLine: false },
+            { lines: [23], calVis: true, d: "28", m: 8, sVis: false, sIcon: "", sTxt: "", dVis: false, dLeft: 0, toast: "", tErr: false, con: "Дата: 28.08.2022\n", errLine: false },
+            { lines: [24], calVis: true, d: "28", m: 8, sVis: true, sIcon: "☀️", sTxt: "Лято", dVis: false, dLeft: 0, toast: "", tErr: false, con: "Дата: 28.08.2022\nТова е през лятото\n", errLine: false },
+            { lines: [25], calVis: true, d: "28", m: 8, sVis: true, sIcon: "☀️", sTxt: "Лято", dVis: true, dLeft: 3, toast: "", tErr: false, con: "Дата: 28.08.2022\nТова е през лятото\nДни до края на месеца: 3\n", errLine: false },
+            
+            // Set Properties (Въвеждане)
+            { lines: [33, 7], calVis: true, d: "28", m: 8, sVis: true, sIcon: "☀️", sTxt: "Лято", dVis: true, dLeft: 3, toast: "Проверка: Month = 3", tErr: false, con: "Дата: 28.08.2022\nТова е през лятото\nДни до края на месеца: 3\n\nВъведете месец: 3\n", errLine: false },
+            { lines: [8], calVis: true, d: "28", m: 3, sVis: true, sIcon: "☀️", sTxt: "Лято", dVis: true, dLeft: 3, toast: "Успех! month = 3", tErr: false, con: "Дата: 28.08.2022\nТова е през лятото\nДни до края на месеца: 3\n\nВъведете месец: 3\n", errLine: false },
+            { lines: [34, 14], calVis: true, d: "28", m: 3, sVis: true, sIcon: "☀️", sTxt: "Лято", dVis: true, dLeft: 3, toast: "Проверка: Day = 5", tErr: false, con: "Дата: 28.08.2022\nТова е през лятото\nДни до края на месеца: 3\n\nВъведете месец: 3\nВъведете ден: 5\n", errLine: false },
+            { lines: [15, 18], calVis: true, d: "05", m: 3, sVis: true, sIcon: "☀️", sTxt: "Лято", dVis: true, dLeft: 3, toast: "Успех! max=31", tErr: false, con: "Дата: 28.08.2022\nТова е през лятото\nДни до края на месеца: 3\n\nВъведете месец: 3\nВъведете ден: 5\n", errLine: false },
+            
+            // Print 2
+            { lines: [35, 22], calVis: true, d: "05", m: 3, sVis: false, sIcon: "", sTxt: "", dVis: false, dLeft: 0, toast: "", tErr: false, con: "...\nВъведете месец: 3\nВъведете ден: 5\n", errLine: false },
+            { lines: [23], calVis: true, d: "05", m: 3, sVis: false, sIcon: "", sTxt: "", dVis: false, dLeft: 0, toast: "", tErr: false, con: "...\nВъведете месец: 3\nВъведете ден: 5\nДата: 05.03.2022\n", errLine: false },
+            { lines: [24], calVis: true, d: "05", m: 3, sVis: true, sIcon: "❄️", sTxt: "Не е лято", dVis: false, dLeft: 0, toast: "", tErr: false, con: "...\nВъведете месец: 3\nВъведете ден: 5\nДата: 05.03.2022\nТова не е през лятото\n", errLine: false },
+            { lines: [25], calVis: true, d: "05", m: 3, sVis: true, sIcon: "❄️", sTxt: "Не е лято", dVis: true, dLeft: 26, toast: "", tErr: false, con: "...\nВъведете месец: 3\nВъведете ден: 5\nДата: 05.03.2022\nТова не е през лятото\nДни до края на месеца: 26\n", errLine: false },
+            
+            // Exception Test
+            { lines: [37, 14], calVis: true, d: "05", m: 3, sVis: true, sIcon: "❄️", sTxt: "Не е лято", dVis: true, dLeft: 26, toast: "Проверка: Day = 32", tErr: false, con: "...\nДата: 05.03.2022\nТова не е през лятото\nДни до края на месеца: 26\n\nВъведете ден: 32\n", errLine: false },
+            { lines: [19], calVis: true, d: "05", m: 3, sVis: true, sIcon: "❄️", sTxt: "Не е лято", dVis: true, dLeft: 26, toast: "ОТХВЪРЛЕНО! > max", tErr: true, con: "...\nДата: 05.03.2022\nТова не е през лятото\nДни до края на месеца: 26\n\nВъведете ден: 32\n<span class='console-error'>Unhandled Exception: System.ArgumentException: Невалиден ден!</span>", errLine: true }
+        ];
+
+        let currentStep = -1;
+
+        function updateUI() {
+            document.querySelectorAll('.code-line').forEach(el => {
+                el.classList.remove('active-line');
+                el.classList.remove('error-line');
+            });
+            
+            const calUI = document.getElementById('calUI');
+            const toast = document.getElementById('valToast');
+            const sBadge = document.getElementById('sBadge');
+            const dBadge = document.getElementById('dBadge');
+            const conOut = document.getElementById('consoleOutput');
+            const consoleBox = document.getElementById('consoleBox');
+            
+            if (currentStep >= 0) {
+                const step = steps[currentStep];
+                
+                // Code Highlight
+                let firstLine = null;
+                step.lines.forEach(lineNum => {
+                    let el = document.getElementById('line-' + lineNum);
+                    if(el) {
+                        if (step.errLine && lineNum === 19) el.classList.add('error-line');
+                        else el.classList.add('active-line');
+                        
+                        if(!firstLine) firstLine = el;
+                    }
+                });
+                if(firstLine) firstLine.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+                // Calendar UI
+                if (step.calVis) {
+                    calUI.style.opacity = "1";
+                    document.getElementById('cDay').innerText = step.d;
+                    document.getElementById('cMonth').innerText = monthNames[step.m] || "---";
+                } else {
+                    calUI.style.opacity = "0";
+                }
+
+                // Season Badge
+                if (step.sVis) {
+                    sBadge.style.opacity = "1";
+                    document.getElementById('sIcon').innerText = step.sIcon;
+                    document.getElementById('sText').innerText = step.sTxt;
+                    sBadge.style.borderColor = step.sIcon === "☀️" ? "#fdcb6e" : "#74b9ff";
+                } else {
+                    sBadge.style.opacity = "0";
+                }
+
+                // Days Left Badge
+                if (step.dVis) {
+                    dBadge.style.opacity = "1";
+                    document.getElementById('dText').innerText = step.dLeft + " дни остават";
+                } else {
+                    dBadge.style.opacity = "0";
+                }
+
+                // Toast Validation
+                if (step.toast !== "") {
+                    toast.innerText = step.toast;
+                    toast.classList.add('show');
+                    if (step.tErr) toast.classList.add('error');
+                    else toast.classList.remove('error');
+                } else {
+                    toast.classList.remove('show');
+                }
+
+                // Console
+                conOut.innerHTML = step.con;
+                consoleBox.scrollTop = consoleBox.scrollHeight;
+                
+                document.getElementById('stepIndicator').innerText = `Стъпка: ${currentStep + 1} / ${steps.length}`;
+            }
+
+            document.getElementById('prevBtn').disabled = currentStep <= 0;
+            document.getElementById('nextBtn').disabled = currentStep >= steps.length - 1;
+        }
+
+        function nextStep() { if (currentStep < steps.length - 1) { currentStep++; updateUI(); } }
+        function prevStep() { if (currentStep > 0) { currentStep--; updateUI(); } }
+
+        currentStep = 0;
+        window.onload = updateUI;
+
+        // ----------------------------------------------------------------
+        // Логика за преоразмеряване на панелите (Drag-to-resize)
+        // ----------------------------------------------------------------
+        const resizer = document.getElementById('resizer');
+        const leftPanel = document.getElementById('leftPanel');
+        let isResizing = false;
+
+        resizer.addEventListener('mousedown', (e) => {
+            isResizing = true;
+            document.body.style.cursor = 'col-resize';
+            document.body.style.userSelect = 'none';
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (!isResizing) return;
+            
+            let newWidthPercent = (e.clientX / window.innerWidth) * 100;
+            
+            if (newWidthPercent > 20 && newWidthPercent < 80) {
+                leftPanel.style.flex = `0 0 ${newWidthPercent}%`;
+            }
+        });
+
+        document.addEventListener('mouseup', () => {
+            if (isResizing) {
+                isResizing = false;
+                document.body.style.cursor = 'default';
+                document.body.style.userSelect = 'auto'; 
+            }
+        });
+    </script>
+</body>
+</html>

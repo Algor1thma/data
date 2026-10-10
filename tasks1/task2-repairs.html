@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Задача 2: Ремонти - Algorithma</title>
+    <style>
+        body { margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; height: 100vh; background-color: #1e1e24; color: #e0e0e0; overflow: hidden;}
+        
+        /* Панели */
+        .panel { padding: 25px; overflow-y: auto; box-sizing: border-box; display: flex; flex-direction: column; }
+        
+        /* Ляв Панел - Условие */
+        .left-panel { border-right: 2px solid #333; background-color: #2b2b36; flex: 0 0 50%; min-width: 20%; box-shadow: inset -5px 0 15px rgba(0,0,0,0.2);}
+        
+        /* Съдържание на левия панел */
+        .content-wrapper { flex-grow: 1; }
+        
+        /* Десен Панел - Визуализации */
+        .right-panel { display: flex; flex-direction: column; gap: 15px; background-color: #1e1e24; flex: 1; min-width: 20%; position: relative;}
+        
+        /* Сплитер / Разделител */
+        .resizer {
+            width: 6px;
+            background-color: #444;
+            cursor: col-resize; 
+            transition: background-color 0.2s;
+            z-index: 10;
+        }
+        .resizer:hover, .resizer:active {
+            background-color: #fd79a8;
+        }
+
+        /* Бутон Назад */
+        .back-to-home { display: inline-block; text-decoration: none; color: #fd79a8; font-weight: bold; font-size: 0.95rem; margin-bottom: 15px; padding: 8px 15px; border: 1px solid #fd79a8; border-radius: 8px; transition: all 0.3s ease; background: transparent; align-self: flex-start; }
+        .back-to-home:hover { background-color: #fd79a8; color: #1e1e24; box-shadow: 0 0 10px rgba(253, 121, 168, 0.5); }
+
+        h1 { color: #ffffff; font-size: 1.7rem; margin-bottom: 5px; text-shadow: 0 2px 4px rgba(0,0,0,0.3);}
+        h2 { color: #fd79a8; font-size: 1.1rem; text-transform: uppercase; margin-top: 0; margin-bottom: 15px; letter-spacing: 1px;}
+        h3 { color: #ffeaa7; border-bottom: 1px solid #444; padding-bottom: 5px; margin-top: 20px; font-size: 1.15rem;}
+        p, ul, li { line-height: 1.5; color: #dcdde1; font-size: 0.95rem; margin-bottom: 8px;}
+        ol { margin-top: 5px; margin-bottom: 10px; padding-left: 20px; line-height: 1.6;}
+        
+        /* Таблици */
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; margin-bottom: 15px; font-size: 0.85rem; background-color: #353b48; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.3);}
+        th, td { border: 1px solid #444; padding: 8px; text-align: left; }
+        th { background-color: #2f3640; color: #fd79a8; font-weight: bold;}
+        
+        /* Примери - Конзолен изглед */
+        .examples-grid { display: flex; flex-direction: column; gap: 10px; margin-top: 15px; margin-bottom: 25px;}
+        .example-box { background-color: #0c0c0c; border: 1px solid #555; border-top: 10px solid #2d3436; border-radius: 6px; padding: 15px; font-family: Consolas, monospace; color: #bdc3c7; font-size: 0.9rem; white-space: pre-wrap; line-height: 1.4;}
+        .err-text { color: #ff7675; }
+
+        /* Вмъкнат код в текста */
+        code { background: #1e1e24; padding: 2px 6px; border-radius: 4px; color: #fd79a8; font-family: Consolas, monospace; border: 1px solid #444;}
+        .block-code { display: block; background: #0c0c0c; padding: 10px; margin: 10px 0; border-left: 4px solid #fd79a8; color: #e0e0e0;}
+
+        /* Авторски права */
+        .copyright {
+            margin-top: 40px;
+            padding-top: 15px;
+            border-top: 1px solid #444;
+            color: #7f8c8d;
+            font-size: 0.85rem;
+            text-align: center;
+        }
+
+        /* Специален Раздел ВИЗУАЛИЗАЦИИ */
+        .viz-header { background: linear-gradient(90deg, #e84393, #fd79a8); color: #fff; padding: 10px 20px; border-radius: 8px; text-align: center; font-weight: bold; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 2px; box-shadow: 0 4px 15px rgba(232, 67, 147, 0.4); flex-shrink: 0;}
+
+        /* Описание на стъпките */
+        .viz-text { text-align: center; font-size: 1.05rem; font-weight: bold; color: #dcdde1; margin: 10px 0; min-height: 45px; display: flex; align-items: center; justify-content: center;}
+
+        /* Визуална Зона (Сервизна Поръчка) */
+        .visualization-workspace { display: flex; flex-direction: column; gap: 15px; min-height: 250px; flex: 1 0 auto; justify-content: center;}
+        
+        .service-panel { background: #2b2b36; border: 2px dashed #555; border-radius: 12px; padding: 20px; display: flex; justify-content: center; align-items: center; position: relative;}
+        
+        /* Касова бележка / Поръчка */
+        .receipt-card { background: #fff; color: #2d3436; width: 280px; padding: 15px 20px; border-radius: 4px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); font-family: 'Courier New', Courier, monospace; font-size: 0.9rem; position: relative; border-top: 8px solid #fd79a8; opacity: 0; transform: translateY(10px); transition: all 0.4s;}
+        .receipt-card.show { opacity: 1; transform: translateY(0); }
+        .r-title { text-align: center; font-weight: bold; font-size: 1.1rem; border-bottom: 1px dashed #2d3436; padding-bottom: 10px; margin-bottom: 10px;}
+        .r-row { display: flex; justify-content: space-between; margin-bottom: 5px; }
+        .r-total { border-top: 1px dashed #2d3436; padding-top: 10px; margin-top: 5px; font-weight: bold; font-size: 1rem;}
+
+        /* Validation Toast */
+        .validation-toast { position: absolute; top: -5px; left: 50%; transform: translateX(-50%); background: #2d3436; border: 2px solid #fd79a8; color: #fd79a8; padding: 6px 15px; border-radius: 20px; font-family: Consolas, monospace; font-size: 0.85rem; font-weight: bold; opacity: 0; transition: all 0.3s; box-shadow: 0 5px 15px rgba(0,0,0,0.4); z-index: 10;}
+        .validation-toast.show { opacity: 1; top: 10px; }
+        .validation-toast.error { border-color: #d63031; color: #ff7675; }
+
+        /* Конзола */
+        .console-box { background-color: #0c0c0c; border: 1px solid #333; border-top: 25px solid #2d3436; border-radius: 8px; padding: 15px; font-family: Consolas, 'Courier New', monospace; font-size: 13px; position: relative; box-shadow: 0 8px 15px rgba(0,0,0,0.5); height: 180px; overflow-y: auto; flex-shrink: 0; margin-top: auto;}
+        .console-box::before { content: "C:\\Windows\\System32\\cmd.exe"; position: absolute; top: -16px; left: 10px; color: #b2bec3; font-size: 10px; font-family: 'Segoe UI', sans-serif;}
+        .console-output { color: #b2bec3; white-space: pre-wrap; line-height: 1.4; }
+
+        /* Контроли */
+        .controls { display: flex; gap: 15px; justify-content: center; align-items: center; background: #2b2b36; padding: 10px; border-radius: 8px; border: 1px solid #444; flex-shrink: 0;}
+        button { padding: 8px 15px; border: none; border-radius: 6px; background: linear-gradient(180deg, #fd79a8, #e84393); color: white; font-size: 13px; font-weight: bold; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.3); text-transform: uppercase;}
+        button:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 10px rgba(253, 121, 168, 0.5); }
+        button:disabled { background: #555; color: #888; cursor: not-allowed; box-shadow: none; transform: none;}
+        .step-indicator { color: #fd79a8; font-weight: bold; font-family: Consolas, monospace; font-size: 0.95rem; width: 130px; text-align: center;}
+    </style>
+</head>
+<body>
+
+    <div class="panel left-panel" id="leftPanel">
+        <div class="content-wrapper">
+            <a href="../index.html" class="back-to-home">← Начало</a>
+            
+            <h1>Задача 2: Ремонти</h1>
+            <h2>Модификатори на достъпа. Свойства на клас (Капсулация)</h2>
+            
+            <p>Маркова сервизна фирма проверява разходите си от приета за ремонт стока и се нуждае от програма за тази цел.</p>
+            <p>Да се декларира клас <code>Repair</code>, който да съдържа следните <code>private</code> полета:</p>
+            
+            <table>
+                <tr><th>Поле</th><th>Тип</th><th>Описание</th></tr>
+                <tr><td>name</td><td>текст</td><td>име на стока</td></tr>
+                <tr><td>guaranty</td><td>текст</td><td>гаранция ("да" или "не")</td></tr>
+                <tr><td>sparePartsValue</td><td>реално число</td><td>стойност на рез. части</td></tr>
+            </table>
+
+            <h3>Конструктор и Свойства (Properties):</h3>
+            <p>Класът да съдържа публичен конструктор: <code>Repair(string name)</code>, който да копира параметъра name в полето name.</p>
+            <p>Да се добавят публично достъпни свойства <code>Guaranty</code> и <code>SparePartsValue</code>, които да осигуряват достъп за четене и запис в съответните полета. При запис да се добавят следните изисквания:</p>
+            <ul>
+                <li>Допуска се стойност за „Гаранция", само ако тя е „да" или „не" (с малки букви), в противен случай се извежда съобщение за грешка (Exception) с текст: <br><strong>"Въведете 'да' или 'не'!"</strong></li>
+                <li>Допуска се за „Стойност на резервни части" да се въвежда само положително число, в противен случай се извежда съобщение за грешка (Exception) с текст: <br><strong>"Стойността на резервната част не може да е отрицателно число!"</strong></li>
+            </ul>
+
+            <h3>Методи в класа:</h3>
+            <ol>
+                <li>Метод <code>double GetRepairCharge()</code> връща стойност 25.00, ако стоката е в гаранция; в противен случай връща 0.00;</li>
+                <li>Метод <code>double GetTotal()</code> изчислява и връща общата стойност на разхода за ремонта;</li>
+                <li>Метод <code>void Print()</code> отпечатва на екрана информация за ремонтираната стока в следния вид:</li>
+            </ol>
+
+            <div class="example-box">Ремонтирана стока
+Име: <em>name</em>
+Гаранция: <em>guaranty</em>
+Начисления за ремонта: ?
+Стойност на рез. части: <em>sparePartsValue</em>
+Стойност на ремонта: ??</div>
+            
+            <p>На мястото на „<strong>?</strong>" се извежда резултатът от метода <code>GetRepairCharge()</code>. На мястото на „<strong>??</strong>" се извежда стойността на ремонта, изчислена от метода <code>GetTotal()</code>.</p>
+
+            <h3>Като се използва класът Repair, да се напише програма, която:</h3>
+            <ul>
+                <li>Създава обект от класа <code>Repair</code>, като използва директно въведена стойност в конструктора за името на стоката. В примера е:<br>
+                <code class="block-code">Repair repair = new Repair("Телевизор 19 инча");</code></li>
+                <li>Присвоява стойности на свойствата, например:<br>
+                <code class="block-code">repair.Guaranty = "да";<br>repair.SparePartsValue = 16.0;</code></li>
+                <li>Отпечатва на екрана информация за създадения обект.</li>
+            </ul>
+
+            <h3>Примери:</h3>
+            <div class="examples-grid">
+                <div class="example-box">repair.Guaranty = "+";
+<span class="err-text">Exception Unhandled
+System.ArgumentException: 'Въведете 'да' или 'не'!'</span></div>
+
+                <div class="example-box">repair.Guaranty = "да";
+repair.SparePartsValue = -16.0;
+<span class="err-text">Exception Unhandled
+System.ArgumentException: 'Стойността на резервната част не може да е отрицателно число!'</span></div>
+
+                <div class="example-box">Ремонтирана стока
+Име: Телевизор 19 инча
+Гаранция: да
+Начисления за ремонта: 25,00
+Стойност на рез. части: 16,00
+Стойност на ремонта: 41,00</div>
+
+                <div class="example-box">Ремонтирана стока
+Име: Телевизор 19 инча
+Гаранция: не
+Начисления за ремонта: 0,00
+Стойност на рез. части: 12,00
+Стойност на ремонта: 12,00</div>
+            </div>
+        </div>
+
+        <div class="copyright">
+            &copy; 2026 Algorithma. Всички права запазени.
+        </div>
+    </div>
+
+    <!-- Сплитер за преоразмеряване -->
+    <div class="resizer" id="resizer"></div>
+
+    <div class="panel right-panel">
+        
+        <div class="viz-header">
+            ⚡ Интерактивна Сервизна Поръчка ⚡
+        </div>
+        
+        <div class="viz-text" id="vizText">Кликнете 'Напред', за да проследите примерно изпълнение.</div>
+
+        <div class="visualization-workspace">
+            
+            <div class="service-panel">
+                
+                <div class="validation-toast" id="valToast">
+                    Property Check...
+                </div>
+
+                <!-- Receipt / Order -->
+                <div class="receipt-card" id="receiptUI">
+                    <div class="r-title">СЕРВИЗНА ПОРЪЧКА</div>
+                    <div class="r-row"><span>Име:</span> <span id="rName">---</span></div>
+                    <div class="r-row"><span>Гаранция:</span> <span id="rGuaranty">---</span></div>
+                    <div class="r-row"><span>Начисления:</span> <span id="rCharge">0,00</span></div>
+                    <div class="r-row"><span>Рез. части:</span> <span id="rParts">0,00</span></div>
+                    <div class="r-total"><span>Общо ремонт:</span> <span id="rTotal">0,00</span></div>
+                </div>
+
+            </div>
+
+            <!-- Конзола -->
+            <div class="console-box">
+                <div class="console-output" id="consoleOutput"></div>
+            </div>
+
+        </div>
+
+        <div class="controls">
+            <button id="prevBtn" onclick="prevStep()" disabled>⏪ Назад</button>
+            <div class="step-indicator" id="stepIndicator">Стъпка: 0 / 0</div>
+            <button id="nextBtn" onclick="nextStep()">Напред ⏩</button>
+        </div>
+
+    </div>
+
+    <script>
+        const steps = [
+            { text: "Стъпка 1: Декларираме обекта repair, но преди това влизаме в Main().", rVis: false, rName: "---", rGuaranty: "---", rParts: "0,00", rCharge: "0,00", rTotal: "0,00", toast: "", tErr: false, con: "" },
+            
+            { text: "Стъпка 2: Създава се обект repair чрез конструктора с параметър 'Телевизор 19 инча'.", rVis: true, rName: "Телевизор 19 инча", rGuaranty: "---", rParts: "0,00", rCharge: "0,00", rTotal: "0,00", toast: "Обектът е създаден", tErr: false, con: "" },
+            
+            { text: "Стъпка 3: Записваме стойност 'да' в свойството Guaranty.", rVis: true, rName: "Телевизор 19 инча", rGuaranty: "да", rParts: "0,00", rCharge: "25,00", rTotal: "25,00", toast: "УСПЕХ: Guaranty = 'да'", tErr: false, con: "" },
+            
+            { text: "Стъпка 4: Записваме стойност 16.0 в свойството SparePartsValue.", rVis: true, rName: "Телевизор 19 инча", rGuaranty: "да", rParts: "16,00", rCharge: "25,00", rTotal: "41,00", toast: "УСПЕХ: SpareParts = 16.0", tErr: false, con: "" },
+            
+            { text: "Стъпка 5: Извикваме метода Print() за отпечатване на информацията.", rVis: true, rName: "Телевизор 19 инча", rGuaranty: "да", rParts: "16,00", rCharge: "25,00", rTotal: "41,00", toast: "", tErr: false, con: "Ремонтирана стока\nИме: Телевизор 19 инча\nГаранция: да\nНачисления за ремонта: 25,00\nСтойност на рез. части: 16,00\nСтойност на ремонта: 41,00\n" },
+            
+            { text: "Стъпка 6: Опитваме се да зададем невалидна стойност за Guaranty ('+'). Програмата ще хвърли изключение.", rVis: true, rName: "Телевизор 19 инча", rGuaranty: "да", rParts: "16,00", rCharge: "25,00", rTotal: "41,00", toast: "ГРЕШКА: Невалидна гаранция!", tErr: true, con: "Ремонтирана стока\nИме: Телевизор 19 инча\nГаранция: да\nНачисления за ремонта: 25,00\nСтойност на рез. части: 16,00\nСтойност на ремонта: 41,00\n\n<span style='color:#ff7675;font-weight:bold;'>Unhandled Exception: System.ArgumentException: Въведете 'да' или 'не'!</span>" }
+        ];
+
+        let currentStep = 0;
+
+        function updateUI() {
+            const step = steps[currentStep];
+            
+            if (step) {
+                document.getElementById('vizText').innerText = step.text;
+
+                const receipt = document.getElementById('receiptUI');
+                const toast = document.getElementById('valToast');
+                const conOut = document.getElementById('consoleOutput');
+                
+                // Receipt UI
+                if (step.rVis) {
+                    receipt.classList.add('show');
+                    document.getElementById('rName').innerText = step.rName;
+                    document.getElementById('rGuaranty').innerText = step.rGuaranty;
+                    document.getElementById('rCharge').innerText = step.rCharge;
+                    document.getElementById('rParts').innerText = step.rParts;
+                    document.getElementById('rTotal').innerText = step.rTotal;
+                } else {
+                    receipt.classList.remove('show');
+                }
+
+                // Toast Validation
+                if (step.toast !== "") {
+                    toast.innerText = step.toast;
+                    toast.classList.add('show');
+                    if (step.tErr) toast.classList.add('error');
+                    else toast.classList.remove('error');
+                } else {
+                    toast.classList.remove('show');
+                }
+
+                // Console
+                conOut.innerHTML = step.con;
+                
+                document.getElementById('stepIndicator').innerText = `Стъпка: ${currentStep + 1} / ${steps.length}`;
+            }
+
+            document.getElementById('prevBtn').disabled = currentStep <= 0;
+            document.getElementById('nextBtn').disabled = currentStep >= steps.length - 1;
+        }
+
+        function nextStep() { if (currentStep < steps.length - 1) { currentStep++; updateUI(); } }
+        function prevStep() { if (currentStep > 0) { currentStep--; updateUI(); } }
+
+        window.onload = updateUI;
+
+        // ----------------------------------------------------------------
+        // Логика за преоразмеряване на панелите (Drag-to-resize)
+        // ----------------------------------------------------------------
+        const resizer = document.getElementById('resizer');
+        const leftPanel = document.getElementById('leftPanel');
+        let isResizing = false;
+
+        resizer.addEventListener('mousedown', (e) => {
+            isResizing = true;
+            document.body.style.cursor = 'col-resize';
+            document.body.style.userSelect = 'none';
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (!isResizing) return;
+            
+            let newWidthPercent = (e.clientX / window.innerWidth) * 100;
+            
+            if (newWidthPercent > 20 && newWidthPercent < 80) {
+                leftPanel.style.flex = `0 0 ${newWidthPercent}%`;
+            }
+        });
+
+        document.addEventListener('mouseup', () => {
+            if (isResizing) {
+                isResizing = false;
+                document.body.style.cursor = 'default';
+                document.body.style.userSelect = 'auto'; 
+            }
+        });
+    </script>
+</body>
+</html>
