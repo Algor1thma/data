@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Урок 7: Свойства (Properties) на клас - Algorithma</title>
+    <style>
+        body { margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; height: 100vh; background-color: #f4f4f9; overflow: hidden;}
+        
+        /* Панели */
+        .panel { padding: 20px; overflow-y: auto; box-sizing: border-box; display: flex; flex-direction: column;}
+        .left-panel { border-right: 2px solid #ddd; background-color: #ffffff; flex: 0 0 50%; min-width: 20%;}
+        .right-panel { display: flex; flex-direction: column; gap: 10px; background-color: #1e1e24; flex: 1; min-width: 20%; color: #e0e0e0; position: relative;}
+        
+        /* Съдържание на левия панел */
+        .content-wrapper { flex-grow: 1; padding-right: 10px;}
+
+        /* Сплитер / Разделител */
+        .resizer {
+            width: 6px;
+            background-color: #ddd;
+            cursor: col-resize; 
+            transition: background-color 0.2s;
+            z-index: 10;
+        }
+        .resizer:hover, .resizer:active {
+            background-color: #00cec9;
+        }
+
+        /* Стил за бутона "Назад" */
+        .back-to-home { display: inline-block; text-decoration: none; color: #7f8c8d; font-weight: bold; font-size: 0.9rem; margin-bottom: 15px; padding: 5px 10px; border: 1px solid #ddd; border-radius: 5px; background-color: #f8f9fa; transition: all 0.2s ease; align-self: flex-start;}
+        .back-to-home:hover { color: #2c3e50; background-color: #ecf0f1; border-color: #bdc3c7; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+
+        h1 { color: #2c3e50; font-size: 1.6rem; margin-bottom: 5px; }
+        h2 { color: #7f8c8d; font-size: 1rem; text-transform: uppercase; margin-top: 0; margin-bottom: 15px; }
+        h3 { color: #34495e; border-bottom: 2px solid #00cec9; padding-bottom: 5px; margin-top: 20px; font-size: 1.15rem;}
+        p, ul, li { line-height: 1.5; color: #333; font-size: 0.95rem; margin-bottom: 10px;}
+        
+        /* Блокове за код в текста */
+        .inline-code-block { background-color: #f8f9fa; border-left: 4px solid #00cec9; padding: 12px; font-family: Consolas, monospace; font-size: 0.85rem; margin: 10px 0; white-space: pre-wrap; color: #2c3e50; border-radius: 0 8px 8px 0; box-shadow: 0 2px 5px rgba(0,0,0,0.05);}
+        .code-comment { color: #27ae60; font-style: italic; }
+        .keyword { color: #0984e3; font-weight: bold; }
+        .property { color: #00cec9; font-weight: bold; }
+        
+        /* Подсказка / Обобщение */
+        .hint-box { background-color: #e0f8f8; border-left: 4px solid #00cec9; padding: 12px; margin-top: 15px; border-radius: 4px; color: #2c3e50; font-size: 0.9rem; }
+
+        /* Авторски права */
+        .copyright {
+            margin-top: 30px;
+            padding-top: 15px;
+            border-top: 1px solid #ddd;
+            color: #7f8c8d;
+            font-size: 0.85rem;
+            text-align: center;
+        }
+
+        /* Специален Раздел ВИЗУАЛИЗАЦИИ */
+        .viz-header { background: linear-gradient(90deg, #00cec9, #81ecec); color: #2d3436; padding: 8px 15px; border-radius: 8px; text-align: center; font-weight: bold; font-size: 1.05rem; text-transform: uppercase; letter-spacing: 2px; box-shadow: 0 4px 10px rgba(0, 206, 201, 0.3); flex-shrink: 0;}
+
+        /* Визуализация - Property Guard */
+        .visualization-workspace { flex: 1; display: flex; flex-direction: column; gap: 10px; min-height: 0; }
+        
+        .guard-container { display: flex; flex-direction: column; align-items: center; justify-content: center; background: #2b2b36; border-radius: 12px; border: 2px dashed #444; padding: 15px; position: relative; min-height: 140px; gap: 10px; flex-shrink: 0;}
+        
+        /* Структура на Трезора */
+        .system-flow { display: flex; align-items: center; justify-content: space-between; width: 100%; max-width: 400px;}
+        
+        /* Външен код (Program) */
+        .caller-box { background: #353b48; border: 2px solid #636e72; border-radius: 8px; padding: 10px; text-align: center; color: #dfe6e9; width: 80px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); font-size: 0.85rem;}
+        
+        /* Свойство (Охрана) */
+        .property-gate { background: #2d3436; border: 3px solid #00cec9; border-radius: 8px; padding: 10px; text-align: center; color: #00cec9; width: 100px; font-weight: bold; font-family: Consolas, monospace; box-shadow: 0 0 15px rgba(0, 206, 201, 0.2); position: relative; transition: all 0.3s;}
+        .property-gate::after { content: "СВОЙСТВО"; position: absolute; top: -10px; left: 50%; transform: translateX(-50%); background: #2b2b36; padding: 0 5px; font-size: 0.6rem; color: #00cec9; letter-spacing: 1px;}
+        .guard-status { margin-top: 5px; font-size: 0.75rem; background: #1e1e24; padding: 4px; border-radius: 4px; border: 1px solid #555; color: #b2bec3; transition: all 0.3s;}
+        
+        /* Частно Поле (Трезор) */
+        .private-vault { background: #2d3436; border: 3px solid #d63031; border-radius: 8px; padding: 10px; text-align: center; color: #ff7675; width: 80px; font-weight: bold; font-family: Consolas, monospace; box-shadow: 0 0 15px rgba(214, 48, 49, 0.2); position: relative; transition: all 0.3s;}
+        .private-vault::after { content: "PRIVATE"; position: absolute; top: -10px; left: 50%; transform: translateX(-50%); background: #2b2b36; padding: 0 5px; font-size: 0.6rem; color: #d63031; letter-spacing: 1px;}
+        .vault-value { font-size: 0.95rem; color: #fff; margin-top: 5px; background: #000; padding: 4px; border-radius: 4px;}
+
+        /* Пакет данни (value) */
+        .data-packet { position: absolute; background: #fdcb6e; color: #2d3436; font-family: Consolas, monospace; font-size: 0.75rem; padding: 4px 8px; border-radius: 15px; font-weight: bold; box-shadow: 0 4px 8px rgba(0,0,0,0.3); opacity: 0; transition: all 0.5s ease-in-out; z-index: 10;}
+        .data-packet::before { content: "value="; font-size: 0.6rem; color: #555; margin-right: 3px;}
+
+        /* Зона за код */
+        .code-container { background-color: #282c34; color: #abb2bf; padding: 10px 15px; border-radius: 8px; font-family: Consolas, monospace; font-size: 11.5px; overflow-y: auto; box-shadow: inset 0 0 8px rgba(0,0,0,0.8); border: 1px solid #444; flex: 1; min-height: 150px;}
+        .code-line { padding: 2px 6px; margin: 1px 0; border-radius: 4px; transition: background-color 0.3s; white-space: pre; border-left: 3px solid transparent;}
+        .active-line { background-color: #3e4451; border-left: 3px solid #00cec9; color: #ffffff; font-weight: bold; }
+        .error-line { background-color: rgba(214, 48, 49, 0.2); border-left: 3px solid #d63031; }
+
+        /* Конзола */
+        .console-box { background-color: #000; border: 1px solid #333; border-top: 18px solid #2d3436; border-radius: 8px; padding: 10px 15px; font-family: Consolas, 'Courier New', monospace; font-size: 11.5px; position: relative; box-shadow: 0 6px 12px rgba(0,0,0,0.5); min-height: 65px; height: 65px; overflow-y: auto; flex-shrink: 0;}
+        .console-box::before { content: "C:\\Windows\\System32\\cmd.exe"; position: absolute; top: -15px; left: 10px; color: #b2bec3; font-size: 9.5px; font-family: 'Segoe UI', sans-serif;}
+        .console-output { color: #ecf0f1; white-space: pre-wrap; line-height: 1.4; }
+        .console-error { color: #ff7675; font-weight: bold;}
+        
+        /* Контроли */
+        .controls { display: flex; gap: 10px; justify-content: center; align-items: center; background: #2b2b36; padding: 8px; border-radius: 8px; border: 1px solid #444; flex-shrink: 0;}
+        button { padding: 8px 15px; border: none; border-radius: 6px; background: linear-gradient(180deg, #00cec9, #0984e3); color: white; font-size: 12px; font-weight: bold; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.3); text-transform: uppercase;}
+        button:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0, 206, 201, 0.5); }
+        button:disabled { background: #555; color: #888; cursor: not-allowed; box-shadow: none; transform: none;}
+        .step-indicator { color: #00cec9; font-weight: bold; font-family: Consolas, monospace; font-size: 0.95rem; width: 140px; text-align: center;}
+    </style>
+</head>
+<body>
+
+    <div class="panel left-panel" id="leftPanel">
+        <div class="content-wrapper">
+            <a href="../index.html" class="back-to-home">← Начало</a>
+            
+            <h1>Свойства (Properties) на клас</h1>
+            <h2>Модификатори на достъпа. Свойства на клас</h2>
+            
+            <h3>Достъп и капсулиране чрез свойства</h3>
+            <p>C# предлага една възможност за осигуряване на достъп до защитени полета - създаване на особени елементи, наречени <strong>properties</strong> (на български се среща като свойства или атрибути). Описването и работата с тези т. нар. свойства е максимално улеснено.</p>
+            <p>Свойството е нещо като комбинация от променлива и метод – изглежда като променлива и с него се работи като с такава, но се описва по подобие на метод. Обикновено се „свързва“ с <code>private</code> поле и осигурява достъп до него. Този достъп може да е двупосочен (и за четене, и за запис), но може да бъде и само в една посока.</p>
+
+            <h3>Свойства – начин на описване</h3>
+            <div class="inline-code-block"><span class="keyword">public</span> &lt;тип&gt; Име_на_свойството
+{
+    <span class="keyword">get</span> { return стойност; }
+    <span class="keyword">set</span> 
+    {
+        команди за настройване;
+    }
+}</div>
+            <ul>
+                <li>В <strong>get</strong> се описва каква стойност да има свойството – какво да се получава, когато се спомене някъде името му. Най-често се връща стойността на свързаното private поле, но може и да е нещо друго, например комбинация от стойности на различни полета или друг израз.</li>
+                <li>В <strong>set</strong> се описва начин, по който да се провери дали дадена стойност е подходяща за записване в свързаното поле. Стойността е достъпна чрез служебната дума <span class="keyword">value</span>. Най-често се използва <code>if(...)</code> конструкция.</li>
+            </ul>
+            <p>Не е задължително да има <code>set { ... }</code>. Ако свойството не е свързано с едно конкретно поле, тогава няма <code>set{...}</code>.</p>
+            <p><em>Препоръчва се името на свойството да е същото като името на свързаното private поле, но изписано с главна начална буква.</em></p>
+
+            <h3>Свойства (properties) в клас – пример за описание</h3>
+            <div class="inline-code-block"><span class="keyword">class</span> Person
+{
+    <span class="keyword">private</span> <span class="keyword">string</span> fName, LName; <span class="code-comment">//полета</span>
+
+    <span class="keyword">public</span> Person(<span class="keyword">string</span> fn, <span class="keyword">string</span> ln) <span class="code-comment">//конструктор</span>
+    {
+        fName = fn; LName = ln;
+    }
+
+    <span class="keyword">public</span> <span class="keyword">string</span> FName <span class="code-comment">//свойство към полето fName</span>
+    {
+        <span class="keyword">get</span> { return fName; } <span class="code-comment">//get метод</span>
+        <span class="keyword">set</span> <span class="code-comment">//set метод</span>
+        {
+            <span class="keyword">if</span>(!<span class="keyword">string</span>.IsNullOrEmpty(value)) fName = value;
+            <span class="keyword">else</span> <span class="keyword">throw new</span> ArgumentException();
+        }
+    }
+    
+    <span class="keyword">public void</span> PrintFullName()
+    {
+        Console.WriteLine("Person full name " + fName + " " + LName);
+    }
+}</div>
+
+            <h3>Properties – пояснения за get и set</h3>
+            <p>В <code>set</code> се описва какво (и дали) да се запише в „скритото“ поле, като <span class="keyword">value</span> тук обозначава присвояваната стойност. В примера, при присвояването <code>p.FName = "Hans-Dieter";</code> <strong>value</strong> е <code>"Hans-Dieter"</code> и тъй като това е стандартен текст (издържа проверката за валидност – не е празен низ), присвояването се извършва успешно.</p>
+            <p>В <code>get</code> се указва връщаната стойност, тоест какво да се „разбира“ под името на свойството.</p>
+
+            <h3>Свойства (properties) в клас - възможности</h3>
+            <ul>
+                <li>Защитата чрез <code>private</code> достъп и създаването на свойство позволява да се осъществи по-добър контрол на полетата на класа.</li>
+                <li>Свойство може да има само „гетър“ и по този начин съответното поле се превръща в поле само за четене (read-only).</li>
+                <li>Свойствата и модификаторите за достъп осигуряват гъвкавост – програмистът може да промени скритата част от класа, без това да повлияе (и да налага промени) на използването на този клас.</li>
+            </ul>
+        </div>
+        
+        <div class="copyright">
+            &copy; 2026 Algorithma. Всички права запазени.
+        </div>
+    </div>
+
+    <!-- Сплитер за преоразмеряване -->
+    <div class="resizer" id="resizer"></div>
+
+    <div class="panel right-panel">
+        
+        <div class="viz-header">
+            ⚡ Интерактивен Охранител (Property) ⚡
+        </div>
+
+        <div class="visualization-workspace">
+            
+            <div class="guard-container" id="guardContainer">
+                
+                <div class="system-flow">
+                    <!-- Caller -->
+                    <div class="caller-box">
+                        p.FName
+                    </div>
+                    
+                    <!-- Property (Guard) -->
+                    <div class="property-gate" id="propGate">
+                        <div id="gateIcon">🛡️</div>
+                        <div class="guard-status" id="guardStatus">set { ... }</div>
+                    </div>
+                    
+                    <!-- Private Field (Vault) -->
+                    <div class="private-vault" id="privVault">
+                        <div>fName</div>
+                        <div class="vault-value" id="vaultVal">"Hansi"</div>
+                    </div>
+                </div>
+
+                <!-- Анимиран Пакет Данни -->
+                <div class="data-packet" id="dataPacket"></div>
+
+            </div>
+
+            <!-- Зона за код -->
+            <div class="code-container">
+<div class="code-line" id="line-0">class Program {</div>
+<div class="code-line" id="line-1">    static void Main() {</div>
+<div class="code-line" id="line-2">        Person p = new Person("Hansi", "Flick");</div>
+<div class="code-line" id="line-3">        p.PrintFullName();</div>
+<div class="code-line" id="line-4">        </div>
+<div class="code-line" id="line-5">        // Успешно присвояване (value не е празно)</div>
+<div class="code-line" id="line-6">        p.FName = "Hans-Dieter";</div>
+<div class="code-line" id="line-7">        p.PrintFullName();</div>
+<div class="code-line" id="line-8">        </div>
+<div class="code-line" id="line-9">        // Грешка! value е празен низ</div>
+<div class="code-line" id="line-10">        p.FName = "";</div>
+<div class="code-line" id="line-11">    }</div>
+<div class="code-line" id="line-12">}</div>
+            </div>
+
+            <!-- Конзола -->
+            <div class="console-box" id="consoleBox">
+                <div class="console-output" id="consoleOutput"></div>
+            </div>
+
+        </div>
+
+        <div class="controls">
+            <button id="prevBtn" onclick="prevStep()" disabled>⏪ Назад</button>
+            <div class="step-indicator" id="stepIndicator">Стъпка: 0 / 0</div>
+            <button id="nextBtn" onclick="nextStep()">Напред ⏩</button>
+        </div>
+
+    </div>
+
+    <script>
+        const steps = [
+            { lines: [2], val: "Hansi", animState: "none", packetTxt: "", guardStat: "set { ... }", gateColor: "#00cec9", vaultCol: "#d63031", con: "", errLine: false },
+            
+            // Първи печат
+            { lines: [3], val: "Hansi", animState: "none", packetTxt: "", guardStat: "get { return fName; }", gateColor: "#00cec9", vaultCol: "#d63031", con: "Person full name Hansi Flick\n", errLine: false },
+            
+            // Успешен запис - Стъпка 1: Изпращане на value
+            { lines: [6], val: "Hansi", animState: "move-to-guard", packetTxt: "\"Hans-Dieter\"", guardStat: "Проверка на value...", gateColor: "#fdcb6e", vaultCol: "#d63031", con: "Person full name Hansi Flick\n", errLine: false },
+            
+            // Успешен запис - Стъпка 2: Проверка премината
+            { lines: [6], val: "Hans-Dieter", animState: "move-to-vault", packetTxt: "\"Hans-Dieter\"", guardStat: "if(true) -> Запис!", gateColor: "#00b894", vaultCol: "#00b894", con: "Person full name Hansi Flick\n", errLine: false },
+            
+            // Втори печат
+            { lines: [7], val: "Hans-Dieter", animState: "none", packetTxt: "", guardStat: "get { return fName; }", gateColor: "#00cec9", vaultCol: "#d63031", con: "Person full name Hansi Flick\nPerson full name Hans-Dieter Flick\n", errLine: false },
+            
+            // Неуспешен запис - Стъпка 1: Изпращане на празно value
+            { lines: [10], val: "Hans-Dieter", animState: "move-to-guard-fail", packetTxt: "\"\"", guardStat: "Проверка на value...", gateColor: "#fdcb6e", vaultCol: "#d63031", con: "Person full name Hansi Flick\nPerson full name Hans-Dieter Flick\n", errLine: false },
+            
+            // Неуспешен запис - Стъпка 2: Изключение
+            { lines: [10], val: "Hans-Dieter", animState: "blocked", packetTxt: "\"\"", guardStat: "else throw Exception!", gateColor: "#d63031", vaultCol: "#d63031", con: "Person full name Hansi Flick\nPerson full name Hans-Dieter Flick\n\n<span class='console-error'>Unhandled Exception: System.ArgumentException: Value does not fall within the expected range.</span>", errLine: true }
+        ];
+
+        let currentStep = -1;
+
+        function updateUI() {
+            document.querySelectorAll('.code-line').forEach(el => {
+                el.classList.remove('active-line');
+                el.classList.remove('error-line');
+            });
+            
+            const gate = document.getElementById('propGate');
+            const vault = document.getElementById('privVault');
+            const packet = document.getElementById('dataPacket');
+            const guardStat = document.getElementById('guardStatus');
+            const vaultVal = document.getElementById('vaultVal');
+            const conOut = document.getElementById('consoleOutput');
+            const consoleBox = document.getElementById('consoleBox');
+            
+            if (currentStep >= 0) {
+                const step = steps[currentStep];
+                
+                // Code Highlight
+                let firstLine = null;
+                step.lines.forEach(lineNum => {
+                    let el = document.getElementById('line-' + lineNum);
+                    if(el) {
+                        if (step.errLine) el.classList.add('error-line');
+                        else el.classList.add('active-line');
+                        if(!firstLine) firstLine = el;
+                    }
+                });
+                if(firstLine) firstLine.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+                // UI Updates
+                vaultVal.innerText = `"${step.val}"`;
+                guardStat.innerText = step.guardStat;
+                gate.style.borderColor = step.gateColor;
+                gate.style.color = step.gateColor;
+                vault.style.borderColor = step.vaultCol;
+                
+                if (step.vaultCol === "#00b894") {
+                    vault.style.boxShadow = "0 0 20px rgba(0, 184, 148, 0.5)";
+                } else {
+                    vault.style.boxShadow = "0 0 15px rgba(214, 48, 49, 0.2)";
+                }
+
+                if (step.gateColor === "#d63031") {
+                    gate.style.boxShadow = "0 0 20px rgba(214, 48, 49, 0.5)";
+                    document.getElementById('gateIcon').innerText = "🚫";
+                } else {
+                    gate.style.boxShadow = "0 0 15px rgba(0, 206, 201, 0.2)";
+                    document.getElementById('gateIcon').innerText = "🛡️";
+                }
+
+                // Animation States
+                packet.innerText = step.packetTxt;
+                
+                if (step.animState === "none") {
+                    packet.style.opacity = "0";
+                    packet.style.left = "10%";
+                } else if (step.animState === "move-to-guard" || step.animState === "move-to-guard-fail") {
+                    packet.style.opacity = "1";
+                    packet.style.left = "40%"; // Средата при охраната
+                    packet.style.top = "50%";
+                } else if (step.animState === "move-to-vault") {
+                    packet.style.opacity = "0"; // Изчезва в трезора
+                    packet.style.left = "75%";
+                } else if (step.animState === "blocked") {
+                    packet.style.opacity = "1";
+                    packet.style.left = "40%";
+                    packet.style.backgroundColor = "#ff7675"; // Става червен
+                } else {
+                    packet.style.backgroundColor = "#fdcb6e"; // Нормален жълт
+                }
+
+                // Console
+                conOut.innerHTML = step.con;
+                consoleBox.scrollTop = consoleBox.scrollHeight;
+                
+                document.getElementById('stepIndicator').innerText = `Стъпка: ${currentStep + 1} / ${steps.length}`;
+            }
+
+            document.getElementById('prevBtn').disabled = currentStep <= 0;
+            document.getElementById('nextBtn').disabled = currentStep >= steps.length - 1;
+        }
+
+        function nextStep() { if (currentStep < steps.length - 1) { currentStep++; updateUI(); } }
+        function prevStep() { if (currentStep > 0) { currentStep--; updateUI(); } }
+
+        currentStep = 0;
+        window.onload = updateUI;
+
+        // ----------------------------------------------------------------
+        // Логика за преоразмеряване на панелите (Drag-to-resize)
+        // ----------------------------------------------------------------
+        const resizer = document.getElementById('resizer');
+        const leftPanel = document.getElementById('leftPanel');
+        let isResizing = false;
+
+        resizer.addEventListener('mousedown', (e) => {
+            isResizing = true;
+            document.body.style.cursor = 'col-resize';
+            document.body.style.userSelect = 'none';
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (!isResizing) return;
+            
+            let newWidthPercent = (e.clientX / window.innerWidth) * 100;
+            
+            if (newWidthPercent > 20 && newWidthPercent < 80) {
+                leftPanel.style.flex = `0 0 ${newWidthPercent}%`;
+            }
+        });
+
+        document.addEventListener('mouseup', () => {
+            if (isResizing) {
+                isResizing = false;
+                document.body.style.cursor = 'default';
+                document.body.style.userSelect = 'auto'; 
+            }
+        });
+    </script>
+</body>
+</html>

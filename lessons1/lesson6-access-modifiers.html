@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Урок 6: Модификатори на достъпа - Algorithma</title>
+    <style>
+        body { margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; height: 100vh; background-color: #f4f4f9; overflow: hidden;}
+        
+        /* Панели */
+        .panel { padding: 20px; overflow-y: auto; box-sizing: border-box; display: flex; flex-direction: column;}
+        .left-panel { border-right: 2px solid #ddd; background-color: #ffffff; flex: 0 0 50%; min-width: 20%;}
+        .right-panel { display: flex; flex-direction: column; gap: 10px; background-color: #1e1e24; flex: 1; min-width: 20%; color: #e0e0e0; position: relative;}
+        
+        /* Съдържание на левия панел */
+        .content-wrapper { flex-grow: 1; padding-right: 10px;}
+
+        /* Сплитер / Разделител */
+        .resizer {
+            width: 6px;
+            background-color: #ddd;
+            cursor: col-resize; 
+            transition: background-color 0.2s;
+            z-index: 10;
+        }
+        .resizer:hover, .resizer:active {
+            background-color: #fd79a8;
+        }
+
+        /* Стил за бутона "Назад" */
+        .back-to-home { display: inline-block; text-decoration: none; color: #7f8c8d; font-weight: bold; font-size: 0.9rem; margin-bottom: 15px; padding: 5px 10px; border: 1px solid #ddd; border-radius: 5px; background-color: #f8f9fa; transition: all 0.2s ease; align-self: flex-start;}
+        .back-to-home:hover { color: #2c3e50; background-color: #ecf0f1; border-color: #bdc3c7; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+
+        h1 { color: #2c3e50; font-size: 1.6rem; margin-bottom: 5px; }
+        h2 { color: #7f8c8d; font-size: 1rem; text-transform: uppercase; margin-top: 0; margin-bottom: 15px; }
+        h3 { color: #34495e; border-bottom: 2px solid #e84393; padding-bottom: 5px; margin-top: 20px; font-size: 1.15rem;}
+        p, ul, li { line-height: 1.5; color: #333; font-size: 0.95rem; margin-bottom: 10px;}
+        
+        /* Блокове за код в текста */
+        .inline-code-block { background-color: #f8f9fa; border-left: 4px solid #e84393; padding: 12px; font-family: Consolas, monospace; font-size: 0.85rem; margin: 10px 0; white-space: pre-wrap; color: #2c3e50; border-radius: 0 8px 8px 0; box-shadow: 0 2px 5px rgba(0,0,0,0.05);}
+        .code-comment { color: #27ae60; font-style: italic; }
+        .keyword { color: #0984e3; font-weight: bold; }
+        .type { color: #e84393; font-weight: bold; }
+        
+        /* Подсказка / Обобщение */
+        .hint-box { background-color: #fff0f5; border-left: 4px solid #fd79a8; padding: 12px; margin-top: 15px; border-radius: 4px; color: #2c3e50; font-size: 0.9rem; }
+
+        /* Авторски права */
+        .copyright {
+            margin-top: 30px;
+            padding-top: 15px;
+            border-top: 1px solid #ddd;
+            color: #7f8c8d;
+            font-size: 0.85rem;
+            text-align: center;
+        }
+
+        /* Специален Раздел ВИЗУАЛИЗАЦИИ */
+        .viz-header { background: linear-gradient(90deg, #e84393, #fd79a8); color: white; padding: 8px 15px; border-radius: 8px; text-align: center; font-weight: bold; font-size: 1.05rem; text-transform: uppercase; letter-spacing: 2px; box-shadow: 0 4px 10px rgba(232, 67, 147, 0.3); flex-shrink: 0;}
+
+        /* Визуализация - Архитектура */
+        .visualization-workspace { flex: 1; display: flex; flex-direction: column; gap: 10px; min-height: 0; }
+        
+        .architecture-container { display: flex; gap: 15px; justify-content: center; align-items: stretch; background: #2b2b36; border-radius: 12px; border: 2px dashed #444; padding: 15px; position: relative; min-height: 140px; flex-shrink: 0;}
+        
+        /* Клас Кутии */
+        .class-box { background-color: #353b48; border: 2px solid #555; border-radius: 8px; padding: 10px; box-shadow: 0 6px 12px rgba(0,0,0,0.4); width: 190px; display: flex; flex-direction: column; position: relative;}
+        .class-title { font-weight: bold; color: #fd79a8; border-bottom: 1px dashed #555; padding-bottom: 6px; margin-bottom: 8px; font-size: 0.95rem; text-align: center; text-transform: uppercase;}
+        
+        /* Полета и Методи */
+        .member-item { display: flex; justify-content: space-between; align-items: center; background: #1e1e24; padding: 6px; border-radius: 6px; border: 1px solid #444; margin-bottom: 6px; font-family: Consolas, monospace; font-size: 0.8rem;}
+        .member-icon { margin-right: 6px; font-size: 1rem; }
+        .member-name { color: #b2bec3; flex: 1; }
+        .member-modifier { font-size: 0.6rem; padding: 2px 4px; border-radius: 4px; font-weight: bold; text-transform: uppercase;}
+        
+        /* Модификатори стилове */
+        .mod-public { background: rgba(253, 121, 168, 0.2); color: #fd79a8; border: 1px solid #fd79a8; }
+        .mod-private { background: rgba(214, 48, 49, 0.2); color: #ff7675; border: 1px solid #d63031; }
+        
+        /* Симулатор на достъпа (Стрелки и съобщения) */
+        .access-simulator { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative;}
+        .access-arrow { width: 100%; height: 3px; background: #555; position: relative; transition: all 0.3s;}
+        .access-arrow::after { content: "►"; position: absolute; right: -10px; top: -14px; color: #555; font-size: 1.4rem; transition: all 0.3s;}
+        
+        .access-status-card { background: #1e1e24; border: 2px solid #555; border-radius: 6px; padding: 8px; margin-top: 10px; text-align: center; font-weight: bold; font-family: Consolas, monospace; font-size: 0.8rem; transition: all 0.3s; opacity: 0;}
+        .access-status-card.show { opacity: 1; }
+        
+        /* Активни състояния на достъпа */
+        .access-granted .access-arrow { background: #fd79a8; }
+        .access-granted .access-arrow::after { color: #fd79a8; }
+        .access-granted .access-status-card { border-color: #fd79a8; color: #fd79a8; box-shadow: 0 0 10px rgba(253, 121, 168, 0.4);}
+        
+        .access-denied .access-arrow { background: #d63031; }
+        .access-denied .access-arrow::after { content: "✖"; right: 50%; color: #d63031; }
+        .access-denied .access-status-card { border-color: #d63031; color: #ff7675; box-shadow: 0 0 10px rgba(214, 48, 49, 0.4);}
+
+        /* Зона за код */
+        .code-container { background-color: #282c34; color: #abb2bf; padding: 10px 15px; border-radius: 8px; font-family: Consolas, monospace; font-size: 11.5px; overflow-y: auto; box-shadow: inset 0 0 8px rgba(0,0,0,0.8); border: 1px solid #444; flex: 1; min-height: 120px;}
+        .code-line { padding: 2px 6px; margin: 1px 0; border-radius: 4px; transition: background-color 0.3s; white-space: pre; border-left: 3px solid transparent;}
+        .active-line { background-color: #3e4451; border-left: 3px solid #fd79a8; color: #ffffff; font-weight: bold; }
+        .error-line { background-color: rgba(214, 48, 49, 0.2); border-left: 3px solid #d63031; }
+
+        /* Конзола */
+        .console-box { background-color: #000; border: 1px solid #333; border-top: 18px solid #2d3436; border-radius: 8px; padding: 10px 15px; font-family: Consolas, 'Courier New', monospace; font-size: 11.5px; position: relative; box-shadow: 0 6px 12px rgba(0,0,0,0.5); min-height: 65px; height: 65px; overflow-y: auto; flex-shrink: 0;}
+        .console-box::before { content: "C:\\Windows\\System32\\cmd.exe"; position: absolute; top: -15px; left: 10px; color: #b2bec3; font-size: 9.5px; font-family: 'Segoe UI', sans-serif;}
+        .console-output { color: #ecf0f1; white-space: pre-wrap; line-height: 1.4; }
+        .console-error { color: #ff7675; }
+        
+        /* Контроли */
+        .controls { display: flex; gap: 10px; justify-content: center; align-items: center; background: #2b2b36; padding: 8px; border-radius: 8px; border: 1px solid #444; flex-shrink: 0;}
+        button { padding: 8px 15px; border: none; border-radius: 6px; background: linear-gradient(180deg, #e84393, #d63031); color: white; font-size: 12px; font-weight: bold; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.3); text-transform: uppercase;}
+        button:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(232, 67, 147, 0.5); }
+        button:disabled { background: #555; color: #888; cursor: not-allowed; box-shadow: none; transform: none;}
+        .step-indicator { color: #fd79a8; font-weight: bold; font-family: Consolas, monospace; font-size: 0.95rem; width: 140px; text-align: center;}
+    </style>
+</head>
+<body>
+
+    <div class="panel left-panel" id="leftPanel">
+        <div class="content-wrapper">
+            <a href="../index.html" class="back-to-home">← Начало</a>
+            
+            <h1>Модификатори на достъпа</h1>
+            <h2>Модификатори на достъпа. Свойства на клас</h2>
+            
+            <h3>Достъп до елементи на клас – модификатори на достъпа</h3>
+            <p>Различните елементи на един клас могат да имат различна видимост, тоест нивото на достъп до тях може да бъде различно. Някои елементи могат да са видими напълно, други могат да са напълно скрити, а трети могат да имат частична видимост.</p>
+            <p>Тези различни нива се определят с помощта на специални служебни думи, наречени <strong>модификатори на достъпа</strong>.</p>
+            <p>В C# основните модификаторите на достъпа са <span class="keyword">public</span>, <span class="keyword">private</span>, <span class="keyword">protected</span> и <span class="keyword">internal</span>.</p>
+
+            <h3>Модификатор public</h3>
+            <p>Указва, че елементът, пред който е поставен, може да бъде достъпен от всеки друг клас, независимо дали е от текущия проект, от текущото пространство от имена или извън тях. Нивото на достъп public определя липса на ограничения върху видимостта, най-малко рестриктивното от всички нива на достъп в C#.</p>
+            <div class="inline-code-block"><span class="keyword">public</span> <span class="keyword">void</span> PrintData()
+{
+    Console.WriteLine("This is " + model + " of " + brand);
+    Console.WriteLine("Engine volume of " + engineVolume);
+    Console.WriteLine("Year of Production: " + yearProd);
+}</div>
+
+            <h3>Модификатор private</h3>
+            <p>Указва, че елементът, за който се отнася, не може да бъде достъпван от никой друг клас (освен от класа, в който е дефиниран), дори този клас да се намира в същото пространство от имена или в същата компилационна единица (асембли).</p>
+            <p>Това ниво на достъп <strong>се използва по подразбиране</strong>, т.е. се прилага, когато липсва модификатор за достъп пред съответния елемент на класа.</p>
+            <div class="inline-code-block"><span class="keyword">class</span> Car
+{
+    <span class="keyword">private</span> <span class="type">string</span> brand, model;
+    <span class="keyword">private</span> <span class="type">int</span> yearProd, engineVolume;
+    
+    <span class="keyword">public</span> Car()
+    {
+        brand = "Undefined";
+        model = "To be specified";
+        yearProd = 1900;
+        engineVolume = 600;
+    }
+}</div>
+
+            <h3>Модификатор internal</h3>
+            <p>Използва се, за да се ограничи достъпа до елемента само за файлове от същото асембли – всички ресурси, компилирани заедно (често съвпада с един проект във Visual Studio).</p>
+            <div class="inline-code-block"><span class="keyword">internal</span> <span class="keyword">void</span> PrintData()
+{
+    ...
+}</div>
+
+            <h3>Модификатор protected</h3>
+            <p>Използва се, за да определи членове на класа, така че да са невидими за всички други класове, с изключение на класовете - наследници на текущия. При изучаване на идеята за наследяването, ще бъде обяснено по-подробно.</p>
+
+            <h3>Достъп и капсулиране</h3>
+            <p>Капсулирането (известно още и като „скриване на информация“) е един от основните принципи на обектно-ориентираното програмиране. При него един обект трябва да предоставя на ползващия го само пряко необходимите му средства за управление.</p>
+            
+            <div class="hint-box">
+                <strong>Пример:</strong> Когато офис служител използва компютър, той ползва единствено периферията на компютъра. Няма нужда служителят да познава модела на процесора, неговата архитектура, начина на връзка с дънната платка и т.н. Тези компоненти и знанията за тях се явяват скрити за служителя.
+            </div>
+
+            <p>Програмистът, който създава класовете, определя какво да бъде скрито и какво да бъде публично видимо. Тъй като елементите са <code>private</code> (скрити) по подразбиране, то е важно да бъде добавен друг модификатор за достъп само за тези елементи, които трябва да бъдат достъпни извън рамките на класа. Видими (достъпни) трябва да бъдат само тези елементи, без достъп до които използването на описвания клас няма да е възможно.</p>
+
+            <h3>Достъп и капсулиране - пример</h3>
+            <p>Полетата <code>fName</code> и <code>lName</code> са недостъпни както за запис, така и за четене (извън класа Person). Това осигурява защита срещу неправомерни действия (изтриване, запис на невалидни стойности). Има и проблеми – не може да се отпечата само едното име, невъзможно е и редактирането на имената ☹</p>
+        </div>
+        
+        <div class="copyright">
+            &copy; 2026 Algorithma. Всички права запазени.
+        </div>
+    </div>
+
+    <!-- Сплитер за преоразмеряване -->
+    <div class="resizer" id="resizer"></div>
+
+    <div class="panel right-panel">
+        
+        <div class="viz-header">
+            ⚡ Интерактивен Симулатор на Достъпа ⚡
+        </div>
+
+        <div class="visualization-workspace">
+            
+            <div class="architecture-container" id="archContainer">
+                
+                <!-- Опитващ Клас -->
+                <div class="class-box" id="callerClass">
+                    <div class="class-title">Program (Main)</div>
+                    <div style="text-align: center; color: #b2bec3; font-size: 0.75rem; margin-top: 10px;">Обект: <strong style="color: #fff;">Person p</strong></div>
+                </div>
+
+                <!-- Симулатор (Стрелки) -->
+                <div class="access-simulator" id="accSimulator">
+                    <div class="access-arrow"></div>
+                    <div class="access-status-card" id="accStatus">AWAITING</div>
+                </div>
+
+                <!-- Целеви Клас -->
+                <div class="class-box" id="targetClass">
+                    <div class="class-title">Class Person</div>
+                    
+                    <div class="member-item" id="memField">
+                        <span class="member-icon">🔒</span>
+                        <span class="member-name">fName</span>
+                        <span class="member-modifier mod-private">private</span>
+                    </div>
+                    
+                    <div class="member-item" id="memMethod">
+                        <span class="member-icon">🔓</span>
+                        <span class="member-name">PrintFullName()</span>
+                        <span class="member-modifier mod-public">public</span>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Зона за код -->
+            <div class="code-container">
+<div class="code-line" id="line-0">class Person {</div>
+<div class="code-line" id="line-1">    private string fName, lName;</div>
+<div class="code-line" id="line-2">    public Person(string fn, string ln) {</div>
+<div class="code-line" id="line-3">        fName = fn; lName = ln;</div>
+<div class="code-line" id="line-4">    }</div>
+<div class="code-line" id="line-5">    public void PrintFullName() {</div>
+<div class="code-line" id="line-6">        Console.WriteLine("Person full name " + fName + " " + lName);</div>
+<div class="code-line" id="line-7">    }</div>
+<div class="code-line" id="line-8">}</div>
+<div class="code-line" id="line-9">class Program {</div>
+<div class="code-line" id="line-10">    static void Main() {</div>
+<div class="code-line" id="line-11">        Person p = new Person("Hansi", "Flick");</div>
+<div class="code-line" id="line-12">        p.PrintFullName();</div>
+<div class="code-line" id="line-13">        p.fName = "Hans-Dieter";</div>
+<div class="code-line" id="line-14">        p.PrintFullName();</div>
+<div class="code-line" id="line-15">    }</div>
+<div class="code-line" id="line-16">}</div>
+            </div>
+
+            <!-- Конзола -->
+            <div class="console-box" id="consoleBox">
+                <div class="console-output" id="consoleOutput"></div>
+            </div>
+
+        </div>
+
+        <div class="controls">
+            <button id="prevBtn" onclick="prevStep()" disabled>⏪ Назад</button>
+            <div class="step-indicator" id="stepIndicator">Стъпка: 0 / 0</div>
+            <button id="nextBtn" onclick="nextStep()">Напред ⏩</button>
+        </div>
+
+    </div>
+
+    <script>
+        const steps = [
+            { lines: [10], simState: "", statTxt: "", con: "", errLine: false },
+            
+            // Създаване на обект (Достъп до public конструктор)
+            { lines: [11], simState: "access-granted", statTxt: "ACCESS GRANTED\n(public constructor)", con: "", errLine: false },
+            
+            // Извикване на публичен метод
+            { lines: [12, 5], simState: "access-granted", statTxt: "ACCESS GRANTED\n(public method)", con: "Person full name Hansi Flick", errLine: false },
+            
+            // Опит за достъп до private поле
+            { lines: [13], simState: "access-denied", statTxt: "ACCESS DENIED!\n(private field)", con: "Person full name Hansi Flick\n<span class='console-error'>Error CS0122: 'Person.fName' is inaccessible due to its protection level</span>", errLine: true }
+        ];
+
+        let currentStep = -1;
+
+        function updateUI() {
+            document.querySelectorAll('.code-line').forEach(el => {
+                el.classList.remove('active-line');
+                el.classList.remove('error-line');
+            });
+            
+            const archCont = document.getElementById('archContainer');
+            const sim = document.getElementById('accSimulator');
+            const statCard = document.getElementById('accStatus');
+            const conOut = document.getElementById('consoleOutput');
+            const consoleBox = document.getElementById('consoleBox');
+            
+            if (currentStep >= 0) {
+                const step = steps[currentStep];
+                
+                // Code Highlight
+                let firstLine = null;
+                step.lines.forEach(lineNum => {
+                    let el = document.getElementById('line-' + lineNum);
+                    if(el) {
+                        if (step.errLine && lineNum === 13) {
+                            el.classList.add('error-line');
+                        } else {
+                            el.classList.add('active-line');
+                        }
+                        if(!firstLine) firstLine = el;
+                    }
+                });
+                if(firstLine) firstLine.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+                // Simulator
+                archCont.className = "architecture-container " + step.simState;
+                if (step.simState !== "") {
+                    statCard.classList.add('show');
+                    statCard.innerText = step.statTxt;
+                } else {
+                    statCard.classList.remove('show');
+                }
+
+                // Console
+                conOut.innerHTML = step.con;
+                consoleBox.scrollTop = consoleBox.scrollHeight;
+                
+                document.getElementById('stepIndicator').innerText = `Стъпка: ${currentStep + 1} / ${steps.length}`;
+            }
+
+            document.getElementById('prevBtn').disabled = currentStep <= 0;
+            document.getElementById('nextBtn').disabled = currentStep >= steps.length - 1;
+        }
+
+        function nextStep() { if (currentStep < steps.length - 1) { currentStep++; updateUI(); } }
+        function prevStep() { if (currentStep > 0) { currentStep--; updateUI(); } }
+
+        currentStep = 0;
+        window.onload = updateUI;
+
+        // ----------------------------------------------------------------
+        // Логика за преоразмеряване на панелите (Drag-to-resize)
+        // ----------------------------------------------------------------
+        const resizer = document.getElementById('resizer');
+        const leftPanel = document.getElementById('leftPanel');
+        let isResizing = false;
+
+        resizer.addEventListener('mousedown', (e) => {
+            isResizing = true;
+            document.body.style.cursor = 'col-resize';
+            document.body.style.userSelect = 'none';
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (!isResizing) return;
+            
+            let newWidthPercent = (e.clientX / window.innerWidth) * 100;
+            
+            if (newWidthPercent > 20 && newWidthPercent < 80) {
+                leftPanel.style.flex = `0 0 ${newWidthPercent}%`;
+            }
+        });
+
+        document.addEventListener('mouseup', () => {
+            if (isResizing) {
+                isResizing = false;
+                document.body.style.cursor = 'default';
+                document.body.style.userSelect = 'auto'; 
+            }
+        });
+    </script>
+</body>
+</html>
