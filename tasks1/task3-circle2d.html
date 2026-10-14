@@ -46,7 +46,7 @@
         /* Визуална Зона (Обект) */
         .visualization-workspace { display: flex; flex-direction: column; gap: 15px; flex: 1; }
         
-        .object-panel { background: #2b2b36; border: 2px dashed #555; border-radius: 12px; padding: 20px; display: flex; justify-content: center; align-items: center; position: relative; flex: 1; min-height: 250px;}
+        .object-panel { background: #2b2b36; border: 2px dashed #555; border-radius: 12px; padding: 20px; display: flex; justify-content: center; align-items: flex-end; padding-bottom: 30px; position: relative; flex: 1; min-height: 250px;}
         
         /* Карта на обекта */
         .object-card { background: #fff; color: #2d3436; width: 280px; padding: 15px 20px; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; position: relative; border-top: 8px solid #0984e3; opacity: 0; transform: scale(0.9); transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);}
@@ -57,8 +57,8 @@
         .o-prop { color: #00cec9; font-weight: bold; font-family: Consolas, monospace;}
 
         /* Validation Toast */
-        .validation-toast { position: absolute; top: 15px; left: 50%; transform: translateX(-50%); background: #2d3436; border: 2px solid #fd79a8; color: #fd79a8; padding: 6px 15px; border-radius: 20px; font-family: Consolas, monospace; font-size: 0.85rem; font-weight: bold; opacity: 0; transition: all 0.3s; box-shadow: 0 5px 15px rgba(0,0,0,0.4); z-index: 10;}
-        .validation-toast.show { opacity: 1; top: 25px; }
+        .validation-toast { position: absolute; top: -15px; left: 50%; transform: translateX(-50%); background: #2d3436; border: 2px solid #fd79a8; color: #fd79a8; padding: 6px 15px; border-radius: 20px; font-family: Consolas, monospace; font-size: 0.85rem; font-weight: bold; opacity: 0; transition: all 0.3s; box-shadow: 0 5px 15px rgba(0,0,0,0.4); z-index: 10;}
+        .validation-toast.show { opacity: 1; top: 15px; }
         .validation-toast.error { border-color: #d63031; color: #ff7675; }
 
         /* Конзола */
