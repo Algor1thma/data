@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Задача 1: Продукти за електронен магазин - Algorithma</title>
+    <style>
+        body { margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; height: 100vh; background-color: #1e1e24; color: #e0e0e0; overflow: hidden;}
+        
+        /* Панели */
+        .panel { padding: 25px; overflow-y: auto; box-sizing: border-box; }
+        .left-panel { background-color: #2b2b36; flex: 0 0 50%; box-shadow: inset -5px 0 15px rgba(0,0,0,0.2);}
+        
+        /* Интерактивен плъзгач */
+        .resizer { flex: 0 0 6px; background-color: #333; cursor: col-resize; transition: background-color 0.2s ease; z-index: 100; box-shadow: 0 0 5px rgba(0,0,0,0.5);}
+        .resizer:hover, .resizer.dragging { background-color: #fd79a8; }
+        
+        .right-panel { display: flex; flex-direction: column; gap: 15px; background-color: #1e1e24; flex: 1; position: relative; min-width: 20%;}
+        
+        /* Бутон Назад */
+        .back-to-home { display: inline-block; text-decoration: none; color: #fd79a8; font-weight: bold; font-size: 0.95rem; margin-bottom: 15px; padding: 8px 15px; border: 1px solid #fd79a8; border-radius: 8px; transition: all 0.3s ease; background: transparent; }
+        .back-to-home:hover { background-color: #fd79a8; color: #1e1e24; box-shadow: 0 0 10px rgba(253, 121, 168, 0.5); }
+
+        h1 { color: #ffffff; font-size: 1.7rem; margin-bottom: 5px; text-shadow: 0 2px 4px rgba(0,0,0,0.3);}
+        h2 { color: #fd79a8; font-size: 1.1rem; text-transform: uppercase; margin-top: 0; margin-bottom: 15px; letter-spacing: 1px;}
+        h3 { color: #ffeaa7; border-bottom: 1px solid #444; padding-bottom: 5px; margin-top: 20px; font-size: 1.15rem;}
+        p, ul, li { line-height: 1.5; color: #dcdde1; font-size: 0.95rem; margin-bottom: 8px;}
+        ol { margin-top: 5px; margin-bottom: 10px; padding-left: 20px; line-height: 1.6;}
+        
+        /* Таблици */
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; margin-bottom: 15px; font-size: 0.85rem; background-color: #353b48; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.3);}
+        th, td { border: 1px solid #444; padding: 8px; text-align: left; }
+        th { background-color: #2f3640; color: #fd79a8; font-weight: bold;}
+        
+        /* Примери - Конзолен изглед */
+        .examples-grid { display: flex; flex-direction: column; gap: 10px; margin-top: 15px; margin-bottom: 25px;}
+        .example-box { background-color: #0c0c0c; border: 1px solid #555; border-top: 10px solid #2d3436; border-radius: 6px; padding: 15px; font-family: Consolas, monospace; color: #bdc3c7; font-size: 0.9rem; white-space: pre-wrap; line-height: 1.4;}
+        .err-text { color: #ff7675; }
+
+        /* Вмъкнат код в текста */
+        code { background: #1e1e24; padding: 2px 6px; border-radius: 4px; color: #fd79a8; font-family: Consolas, monospace; border: 1px solid #444;}
+        .block-code { display: block; background: #0c0c0c; padding: 10px; margin: 10px 0; border-left: 4px solid #fd79a8; color: #e0e0e0;}
+
+        /* Специален Раздел ВИЗУАЛИЗАЦИИ */
+        .viz-header { background: linear-gradient(90deg, #e84393, #fd79a8); color: #fff; padding: 10px 20px; border-radius: 8px; text-align: center; font-weight: bold; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 2px; box-shadow: 0 4px 15px rgba(232, 67, 147, 0.4); flex-shrink: 0;}
+
+        /* Визуална Зона (Обект) */
+        .visualization-workspace { display: flex; flex-direction: column; gap: 15px; flex: 1; }
+        
+        .object-panel { background: #2b2b36; border: 2px dashed #555; border-radius: 12px; padding: 20px; display: flex; justify-content: center; align-items: flex-end; padding-bottom: 30px; position: relative; flex: 1; min-height: 250px;}
+        
+        /* Карта на обекта */
+        .object-card { background: #fff; color: #2d3436; width: 280px; padding: 15px 20px; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; position: relative; border-top: 8px solid #0984e3; opacity: 0; transform: scale(0.9); transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);}
+        .object-card.show { opacity: 1; transform: scale(1); }
+        .o-title { text-align: center; font-weight: bold; font-size: 1.1rem; border-bottom: 1px dashed #2d3436; padding-bottom: 10px; margin-bottom: 15px; color: #0984e3;}
+        .o-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.95rem;}
+        .o-val { font-weight: bold; font-family: Consolas, monospace; color: #d63031;}
+        .o-prop { color: #00cec9; font-weight: bold; font-family: Consolas, monospace;}
+
+        /* Validation Toast */
+        .validation-toast { position: absolute; top: -15px; left: 50%; transform: translateX(-50%); background: #2d3436; border: 2px solid #fd79a8; color: #fd79a8; padding: 6px 15px; border-radius: 20px; font-family: Consolas, monospace; font-size: 0.85rem; font-weight: bold; opacity: 0; transition: all 0.3s; box-shadow: 0 5px 15px rgba(0,0,0,0.4); z-index: 10;}
+        .validation-toast.show { opacity: 1; top: 15px; }
+        .validation-toast.error { border-color: #d63031; color: #ff7675; }
+
+        /* Конзола */
+        .console-box { background-color: #000; border: 1px solid #333; border-top: 25px solid #2d3436; border-radius: 8px; padding: 15px; font-family: Consolas, 'Courier New', monospace; font-size: 13px; position: relative; box-shadow: 0 8px 15px rgba(0,0,0,0.5); min-height: 220px; overflow-y: auto; flex-shrink: 0;}
+        .console-box::before { content: "C:\\Windows\\System32\\cmd.exe"; position: absolute; top: -20px; left: 10px; color: #b2bec3; font-size: 11px; font-family: 'Segoe UI', sans-serif;}
+        .console-output { color: #b2bec3; white-space: pre-wrap; line-height: 1.4; }
+
+        /* Контроли */
+        .controls { display: flex; gap: 15px; justify-content: center; align-items: center; background: #2b2b36; padding: 10px; border-radius: 8px; border: 1px solid #444; flex-shrink: 0;}
+        button { padding: 8px 15px; border: none; border-radius: 6px; background: linear-gradient(180deg, #fd79a8, #e84393); color: white; font-size: 13px; font-weight: bold; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.3); text-transform: uppercase;}
+        button:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 10px rgba(253, 121, 168, 0.5); }
+        button:disabled { background: #555; color: #888; cursor: not-allowed; box-shadow: none; transform: none;}
+        .step-indicator { color: #fd79a8; font-weight: bold; font-family: Consolas, monospace; font-size: 0.95rem; width: 140px; text-align: center;}
+        
+        .val-changed { color: #00cec9 !important; animation: pulse 0.5s; }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); text-shadow: 0 0 10px #00cec9; }
+            100% { transform: scale(1); }
+        }
+    </style>
+</head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-YYBQF66CTS"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-YYBQF66CTS');
+</script>
+<body>
+
+    <!-- Ляв панел -->
+    <div class="panel left-panel" id="leftPanel">
+        <a href="../index.html" class="back-to-home">← Начало</a>
+        
+        <!--[cite: 26]-->
+        <h1>Задача 5: Електронен магазин</h1>
+        <h2>Модификатори на достъпа. Свойства на клас (Капсулация)</h2>
+        
+        <p>В софтуера на съвременен онлайн магазин артикулите не са просто сурови данни. За да се предотвратят критични грешки, всички данни трябва да бъдат строго капсулирани в клас <code>Item</code>, а достъпът до тях да се управлява чрез свойства и методи.</p>
+        
+        <h3>Защитени полета (private fields):</h3>
+        <table>
+            <tr><th>Поле</th><th>Тип</th><th>Описание</th></tr>
+            <tr><td>name</td><td>низ</td><td>името на продукта</td></tr>
+            <tr><td>price</td><td>дробно число</td><td>цената на продукта</td></tr>
+            <tr><td>quantity</td><td>цяло число</td><td>наличното количество от този продукт в склада</td></tr>
+        </table>
+
+        <h3>Свойства за достъп (public properties):</h3>
+        <ul>
+            <li><code>Name</code>: В set направете проверка името да не е празен низ <code>(!string.IsNullOrWhiteSpace(value))</code>. В противен случай: <code>ArgumentException("Невалидна стойност за име на продукт")</code>.</li>
+            <li><code>Price</code>: В set валидирайте цената да бъде строго по-голяма от 0. В противен случай: <code>ArgumentException("Цената трябва да е положително число")</code>.</li>
+            <li><code>Quantity</code>: В set гарантирайте, че количеството е неотрицателно. В противен случай: <code>ArgumentException("Количеството трябва да е неотрицателно число")</code>.</li>
+            <li><code>IsAvailable</code>: Свойство само за четене (само get), което връща true, ако Quantity > 0, и false в противен случай.</li>
+        </ul>
+
+        <h3>Конструктор и Методи:</h3>
+        <p>Класът да съдържа публичен конструктор <code>Item(string name, double price, int quantity)</code>.</p>
+        <ol>
+            <li>Метод <code>void Restock(int amount)</code> — зарежда нова стока. Проверява дали <code>amount > 0</code> и го добавя към Quantity. При успех извежда: "Успешно заредени {amount} броя! Наличност: {Quantity}". Иначе: "Грешка: Количеството трябва да е положително число!".</li>
+            <li>Метод <code>void Sell(int amount)</code> — продава бройки. Проверява наличност (<code>amount &lt;= Quantity</code>). При успех: "Успешно продадени {amount} броя! Наличност: {Quantity}". Ако <code>amount &lt;= 0</code>: "Грешка: Количеството трябва...". Ако <code>amount &gt; Quantity</code>: "Грешка: Невъзможна продажба на {amount} броя! Налични са {Quantity} броя!".</li>
+            <li>Метод <code>void ApplyDiscount(double percentage)</code> — прилага отстъпка (между 1% и 50%). Намалява цената и извежда: "Цената на продукта {Name} е намалена с {percentage}% и сега е {Price}". Иначе: "Грешка: Отстъпката трябва да е между 1% и 50%!".</li>
+            <li>Метод <code>double GetTotalInventoryValue()</code> — връща общата стойност (Price * Quantity).</li>
+            <li>Метод <code>void Print()</code> — извежда на екрана:
+<div class="block-code">Продукт: Name
+Цена: Price €
+Наличност: Quantity</div></li>
+        </ol>
+        
+        <h3>Програма (Main метод):</h3>
+        <ul>
+            <li>Създава обект <code>Item("Калкулатор", 12.4, 28)</code> и извежда <code>Print()</code>.</li>
+            <li>Организира демонстрация на защитата (опит за празен низ, 0 цена, -100 количество). Очакват се прекъсвания (Слагат се в коментар след теста).</li>
+            <li>Демонстрира <code>Sell()</code> с отрицателно число, с по-малко от наличността (напр. 17) и с по-голямо (напр. 20).</li>
+            <li>Демонстрира <code>Restock()</code> с отрицателно число и с положително (напр. 55).</li>
+            <li>Демонстрира <code>ApplyDiscount()</code> извън интервала (напр. 60) и в него (напр. 25).</li>
+            <li>Извежда отново <code>Print()</code> и <code>GetTotalInventoryValue()</code> във вида "Обща стойност на наличните бройки: ???.?? €".</li>
+        </ul>
+        <!--[cite: 26, 27]-->
+    </div>
+
+    <!-- Интерактивен разделител -->
+    <div class="resizer" id="dragMe"></div>
+
+    <!-- Десен панел -->
+    <div class="panel right-panel">
+        
+        <div class="viz-header">
+            ⚡ Интерактивен Продукт ⚡
+        </div>
+
+        <div class="visualization-workspace">
+            
+            <div class="object-panel">
+                
+                <div class="validation-toast" id="valToast">
+                    Property Check...
+                </div>
+
+                <!-- Product Card -->
+                <div class="object-card" id="objUI">
+                    <div class="o-title">Обект: item (Item)</div>
+                    <div class="o-row"><span>Поле: <span style="color:#b2bec3;">name</span></span> <span class="o-val" id="oName">---</span></div>
+                    <div class="o-row"><span>Поле: <span style="color:#b2bec3;">price</span></span> <span class="o-val" id="oPrice">---</span></div>
+                    <div class="o-row" style="margin-bottom:15px; border-bottom: 1px dashed #ddd; padding-bottom:8px;"><span>Поле: <span style="color:#b2bec3;">quantity</span></span> <span class="o-val" id="oQty">0</span></div>
+                    
+                    <div class="o-row"><span>Свойство <span class="o-prop">IsAvailable</span>:</span> <span class="o-val" id="oAvail">---</span></div>
+                </div>
+
+            </div>
+
+            <!-- Конзола -->
+            <div class="console-box">
+                <div class="console-output" id="consoleOutput"></div>
+            </div>
+
+        </div>
+
+        <div class="controls">
+            <button id="prevBtn" onclick="prevStep()" disabled>⏪ Назад</button>
+            <div class="step-indicator" id="stepIndicator">Стъпка: 0 / 0</div>
+            <button id="nextBtn" onclick="nextStep()">Напред ⏩</button>
+        </div>
+
+    </div>
+
+    <script>
+        // Логика за Плъзгача (Разделителя)
+        const resizer = document.getElementById('dragMe');
+        const leftPanel = document.getElementById('leftPanel');
+        let isHandlerDragging = false;
+
+        resizer.addEventListener('mousedown', function(e) {
+            isHandlerDragging = true;
+            resizer.classList.add('dragging');
+            document.body.style.cursor = 'col-resize';
+            e.preventDefault(); 
+        });
+
+        document.addEventListener('mousemove', function(e) {
+            if (!isHandlerDragging) return;
+            let newWidth = (e.clientX / window.innerWidth) * 100;
+            if(newWidth < 20) newWidth = 20;
+            if(newWidth > 80) newWidth = 80;
+            leftPanel.style.flex = `0 0 ${newWidth}%`;
+        });
+
+        document.addEventListener('mouseup', function(e) {
+            if (isHandlerDragging) {
+                isHandlerDragging = false;
+                resizer.classList.remove('dragging');
+                document.body.style.cursor = '';
+            }
+        });
+
+
+        // Логика за Симулатора
+        const steps = [
+            { oVis: false, oN: "---", oP: "0.00", oQ: "0", oA: "---", toast: "", tErr: false, con: "" },
+            
+            // Обект (Constructor)
+            { oVis: true, oN: '"Калкулатор"', oP: "12,40 €", oQ: "28", oA: "true", toast: "Обектът е създаден", tErr: false, con: "" },
+            
+            // Print()
+            { oVis: true, oN: '"Калкулатор"', oP: "12,40 €", oQ: "28", oA: "true", toast: "", tErr: false, con: "Продукт: Калкулатор\nЦена: 12,40 €\nНаличност: 28\n\n" },
+            
+            // Грешка Име
+            { oVis: true, oN: '"Калкулатор"', oP: "12,40 €", oQ: "28", oA: "true", toast: "ГРЕШКА: Празно име!", tErr: true, con: "Продукт: Калкулатор\nЦена: 12,40 €\nНаличност: 28\n\n<span class='err-text'>Unhandled exception: Невалидна стойност за име на продукт</span>\n" },
+
+            // Коментиране на грешките
+            { oVis: true, oN: '"Калкулатор"', oP: "12,40 €", oQ: "28", oA: "true", toast: "Грешките са коментирани в кода. Продължаваме...", tErr: false, con: "Продукт: Калкулатор\nЦена: 12,40 €\nНаличност: 28\n\n" },
+
+            // Sell(-5)
+            { oVis: true, oN: '"Калкулатор"', oP: "12,40 €", oQ: "28", oA: "true", toast: "Опит за продажба на -5 бр.", tErr: true, con: "Продукт: Калкулатор\nЦена: 12,40 €\nНаличност: 28\n\nГрешка: Количеството трябва да е положително число!\n" },
+
+            // Sell(17)
+            { oVis: true, oN: '"Калкулатор"', oP: "12,40 €", oQ: "11", oA: "true", toast: "УСПЕХ: Продадени 17 бр.", tErr: false, con: "Продукт: Калкулатор\nЦена: 12,40 €\nНаличност: 28\n\nГрешка: Количеството трябва да е положително число!\nУспешно продадени 17 броя! Наличност: 11\n" },
+
+            // Sell(20)
+            { oVis: true, oN: '"Калкулатор"', oP: "12,40 €", oQ: "11", oA: "true", toast: "Опит за продажба на 20 бр.", tErr: true, con: "Продукт: Калкулатор\nЦена: 12,40 €\nНаличност: 28\n\nГрешка: Количеството трябва да е положително число!\nУспешно продадени 17 броя! Наличност: 11\nГрешка: Невъзможна продажба на 20 броя! Налични са 11 броя!\n" },
+
+            // Restock(-5)
+            { oVis: true, oN: '"Калкулатор"', oP: "12,40 €", oQ: "11", oA: "true", toast: "Опит за зареждане на -5 бр.", tErr: true, con: "Продукт: Калкулатор\nЦена: 12,40 €\nНаличност: 28\n\nГрешка: Количеството трябва да е положително число!\nУспешно продадени 17 броя! Наличност: 11\nГрешка: Невъзможна продажба на 20 броя! Налични са 11 броя!\nГрешка: Количеството трябва да е положително число!\n" },
+
+            // Restock(55)
+            { oVis: true, oN: '"Калкулатор"', oP: "12,40 €", oQ: "66", oA: "true", toast: "УСПЕХ: Заредени 55 бр.", tErr: false, con: "Продукт: Калкулатор\nЦена: 12,40 €\nНаличност: 28\n\nГрешка: Количеството трябва да е положително число!\nУспешно продадени 17 броя! Наличност: 11\nГрешка: Невъзможна продажба на 20 броя! Налични са 11 броя!\nГрешка: Количеството трябва да е положително число!\nУспешно заредени 55 броя! Наличност: 66\n" },
+
+            // ApplyDiscount(60)
+            { oVis: true, oN: '"Калкулатор"', oP: "12,40 €", oQ: "66", oA: "true", toast: "Опит за отстъпка 60%", tErr: true, con: "Продукт: Калкулатор\nЦена: 12,40 €\nНаличност: 28\n\nГрешка: Количеството трябва да е положително число!\nУспешно продадени 17 броя! Наличност: 11\nГрешка: Невъзможна продажба на 20 броя! Налични са 11 броя!\nГрешка: Количеството трябва да е положително число!\nУспешно заредени 55 броя! Наличност: 66\nГрешка: Отстъпката трябва да е между 1% и 50%!\n" },
+
+            // ApplyDiscount(25)
+            { oVis: true, oN: '"Калкулатор"', oP: "9,30 €", oQ: "66", oA: "true", toast: "УСПЕХ: Отстъпка 25%", tErr: false, con: "Продукт: Калкулатор\nЦена: 12,40 €\nНаличност: 28\n\nГрешка: Количеството трябва да е положително число!\nУспешно продадени 17 броя! Наличност: 11\nГрешка: Невъзможна продажба на 20 броя! Налични са 11 броя!\nГрешка: Количеството трябва да е положително число!\nУспешно заредени 55 броя! Наличност: 66\nГрешка: Отстъпката трябва да е между 1% и 50%!\nЦената на продукта Калкулатор е намалена с 25% и сега е 9,30\n" },
+
+            // Print() Again
+            { oVis: true, oN: '"Калкулатор"', oP: "9,30 €", oQ: "66", oA: "true", toast: "Отпечатване на финални данни", tErr: false, con: "Продукт: Калкулатор\nЦена: 12,40 €\nНаличност: 28\n\nГрешка: Количеството трябва да е положително число!\nУспешно продадени 17 броя! Наличност: 11\nГрешка: Невъзможна продажба на 20 броя! Налични са 11 броя!\nГрешка: Количеството трябва да е положително число!\nУспешно заредени 55 броя! Наличност: 66\nГрешка: Отстъпката трябва да е между 1% и 50%!\nЦената на продукта Калкулатор е намалена с 25% и сега е 9,30\n\nПродукт: Калкулатор\nЦена: 9,30 €\nНаличност: 66\n" },
+
+            // GetTotalInventoryValue()
+            { oVis: true, oN: '"Калкулатор"', oP: "9,30 €", oQ: "66", oA: "true", toast: "КРАЙ: Изчисляване на обща стойност", tErr: false, con: "Продукт: Калкулатор\nЦена: 12,40 €\nНаличност: 28\n\nГрешка: Количеството трябва да е положително число!\nУспешно продадени 17 броя! Наличност: 11\nГрешка: Невъзможна продажба на 20 броя! Налични са 11 броя!\nГрешка: Количеството трябва да е положително число!\nУспешно заредени 55 броя! Наличност: 66\nГрешка: Отстъпката трябва да е между 1% и 50%!\nЦената на продукта Калкулатор е намалена с 25% и сега е 9,30\n\nПродукт: Калкулатор\nЦена: 9,30 €\nНаличност: 66\nОбща стойност на наличните бройки: 613,80 €\n" }
+        ];
+
+        let currentStep = -1;
+        let lastVals = { oN: "---", oP: "0.00", oQ: "0", oA: "---" };
+
+        function updateUI() {
+            const objUI = document.getElementById('objUI');
+            const toast = document.getElementById('valToast');
+            const conOut = document.getElementById('consoleOutput');
+            
+            document.querySelectorAll('.val-changed').forEach(el => el.classList.remove('val-changed'));
+
+            if (currentStep >= 0) {
+                const step = steps[currentStep];
+
+                // Object Card UI
+                if (step.oVis) {
+                    objUI.classList.add('show');
+                    
+                    const upd = [
+                        { id: 'oName', val: step.oN, key: 'oN' },
+                        { id: 'oPrice', val: step.oP, key: 'oP' },
+                        { id: 'oQty', val: step.oQ, key: 'oQ' },
+                        { id: 'oAvail', val: step.oA, key: 'oA' }
+                    ];
+
+                    upd.forEach(u => {
+                        const el = document.getElementById(u.id);
+                        if (lastVals[u.key] !== u.val) {
+                            // малък хак за рестартиране на анимацията
+                            void el.offsetWidth;
+                            el.classList.add('val-changed');
+                        }
+                        el.innerText = u.val;
+                        lastVals[u.key] = u.val;
+                    });
+                } else {
+                    objUI.classList.remove('show');
+                }
+
+                // Toast Validation
+                if (step.toast !== "") {
+                    toast.innerText = step.toast;
+                    toast.classList.add('show');
+                    if (step.tErr) toast.classList.add('error');
+                    else toast.classList.remove('error');
+                } else {
+                    toast.classList.remove('show');
+                }
+
+                // Console
+                conOut.innerHTML = step.con;
+                conOut.parentElement.scrollTop = conOut.parentElement.scrollHeight;
+                
+                document.getElementById('stepIndicator').innerText = `Стъпка: ${currentStep + 1} / ${steps.length}`;
+            }
+
+            document.getElementById('prevBtn').disabled = currentStep <= 0;
+            document.getElementById('nextBtn').disabled = currentStep >= steps.length - 1;
+        }
+
+        function nextStep() { if (currentStep < steps.length - 1) { currentStep++; updateUI(); } }
+        function prevStep() { if (currentStep > 0) { currentStep--; updateUI(); } }
+
+        currentStep = 0;
+        window.onload = updateUI;
+    </script>
+</body>
+</html>
