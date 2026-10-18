@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Урок 8: Работа с дата и време - Algorithma</title>
+    <style>
+        body { margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; height: 100vh; background-color: #1e1e24; color: #e0e0e0; overflow: hidden;}
+        
+        /* Панели */
+        .panel { padding: 25px; overflow-y: auto; box-sizing: border-box; }
+        .left-panel { background-color: #2b2b36; flex: 0 0 50%; box-shadow: inset -5px 0 15px rgba(0,0,0,0.2);}
+        
+        /* Интерактивен плъзгач */
+        .resizer { flex: 0 0 6px; background-color: #333; cursor: col-resize; transition: background-color 0.2s ease; z-index: 100; box-shadow: 0 0 5px rgba(0,0,0,0.5);}
+        .resizer:hover, .resizer.dragging { background-color: #fd79a8; }
+
+        .right-panel { display: flex; flex-direction: column; gap: 15px; background-color: #1e1e24; flex: 1; position: relative; overflow: hidden; min-width: 20%;}
+        
+        /* Бутон Назад */
+        .back-to-home { display: inline-block; text-decoration: none; color: #fd79a8; font-weight: bold; font-size: 0.95rem; margin-bottom: 15px; padding: 8px 15px; border: 1px solid #fd79a8; border-radius: 8px; transition: all 0.3s ease; background: transparent; }
+        .back-to-home:hover { background-color: #fd79a8; color: #1e1e24; box-shadow: 0 0 10px rgba(253, 121, 168, 0.5); }
+
+        h1 { color: #ffffff; font-size: 1.7rem; margin-bottom: 5px; text-shadow: 0 2px 4px rgba(0,0,0,0.3);}
+        h2 { color: #fd79a8; font-size: 1.1rem; text-transform: uppercase; margin-top: 0; margin-bottom: 15px; letter-spacing: 1px;}
+        h3 { color: #ffeaa7; border-bottom: 1px solid #444; padding-bottom: 5px; margin-top: 25px; font-size: 1.15rem;}
+        p, ul, li { line-height: 1.5; color: #dcdde1; font-size: 0.95rem; margin-bottom: 8px;}
+        ol { margin-top: 5px; margin-bottom: 10px; padding-left: 20px; line-height: 1.6;}
+        
+        /* Вмъкнат код в текста */
+        code { background: #1e1e24; padding: 2px 6px; border-radius: 4px; color: #fd79a8; font-family: Consolas, monospace; border: 1px solid #444;}
+        .block-code { display: block; background: #0c0c0c; padding: 10px; margin: 10px 0; border-left: 4px solid #fd79a8; color: #e0e0e0; font-family: Consolas, monospace; font-size: 0.85rem;}
+
+        /* Специален Раздел ВИЗУАЛИЗАЦИИ */
+        .viz-header { background: linear-gradient(90deg, #e84393, #fd79a8); color: #fff; padding: 10px 20px; border-radius: 8px; text-align: center; font-weight: bold; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 2px; box-shadow: 0 4px 15px rgba(232, 67, 147, 0.4); flex-shrink: 0;}
+
+        /* Визуална Зона */
+        .visualization-workspace { display: flex; flex-direction: column; gap: 15px; flex: 1; overflow-y: auto; padding-right: 5px; }
+        
+        .machine-panel { background: #2b2b36; border: 2px dashed #555; border-radius: 12px; padding: 15px; display: flex; justify-content: center; align-items: flex-end; padding-bottom: 25px; position: relative; flex-shrink: 0; min-height: 180px;}
+        
+        /* Карта */
+        .dashboard-card { background: #1e272e; color: #fff; width: 340px; padding: 15px 20px; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); font-family: 'Segoe UI', sans-serif; position: relative; border-top: 6px solid #fd79a8; opacity: 0; transform: scale(0.95); transition: all 0.4s;}
+        .dashboard-card.show { opacity: 1; transform: scale(1); }
+        .d-title { text-align: center; font-weight: bold; font-size: 1.1rem; border-bottom: 2px solid #444; padding-bottom: 10px; margin-bottom: 15px; color: #fd79a8; text-transform: uppercase;}
+        .d-stat { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.95rem; background: #2d3436; padding: 6px 12px; border-radius: 4px;}
+        .d-val { font-weight: bold; color: #00cec9; font-family: Consolas, monospace;}
+        
+        /* Validation Toast */
+        .validation-toast { position: absolute; top: -10px; left: 50%; transform: translateX(-50%); background: #2d3436; border: 2px solid #fd79a8; color: #fd79a8; padding: 6px 15px; border-radius: 20px; font-family: Consolas, monospace; font-size: 0.85rem; font-weight: bold; opacity: 0; transition: all 0.3s; box-shadow: 0 5px 15px rgba(0,0,0,0.4); z-index: 10;}
+        .validation-toast.show { opacity: 1; top: -1px; }
+        
+        /* Конзола */
+        .console-box { background-color: #000; border: 1px solid #333; border-top: 25px solid #2d3436; border-radius: 8px; padding: 15px; font-family: Consolas, 'Courier New', monospace; font-size: 13px; position: relative; box-shadow: 0 8px 15px rgba(0,0,0,0.5); height: 110px; overflow-y: auto; flex-shrink: 0;}
+        .console-box::before { content: "C:\\Windows\\System32\\cmd.exe"; position: absolute; top: -20px; left: 10px; color: #b2bec3; font-size: 11px; font-family: 'Segoe UI', sans-serif;}
+        .console-output { color: #ecf0f1; white-space: pre-wrap; line-height: 1.5; }
+
+        /* Зона за код */
+        .code-container { background-color: #282c34; color: #abb2bf; padding: 12px; border-radius: 8px; font-family: Consolas, monospace; font-size: 12px; overflow-y: auto; box-shadow: inset 0 0 10px rgba(0,0,0,0.8); flex-shrink: 0; min-height: 380px; border: 1px solid #444;}
+        .code-line { padding: 2px 8px; margin: 1px 0; border-radius: 4px; transition: background-color 0.3s; white-space: pre; border-left: 3px solid transparent;}
+        .active-line { background-color: #3e4451; border-left: 3px solid #fd79a8; color: #ffffff; font-weight: bold; }
+
+        /* Контроли */
+        .controls { display: flex; gap: 15px; justify-content: center; align-items: center; background: #2b2b36; padding: 10px; border-radius: 8px; border: 1px solid #444; flex-shrink: 0; margin-top: auto;}
+        button { padding: 8px 15px; border: none; border-radius: 6px; background: linear-gradient(180deg, #fd79a8, #e84393); color: white; font-size: 13px; font-weight: bold; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.3); text-transform: uppercase;}
+        button:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 10px rgba(253, 121, 168, 0.5); }
+        button:disabled { background: #555; color: #888; cursor: not-allowed; box-shadow: none; transform: none;}
+        .step-indicator { color: #fd79a8; font-weight: bold; font-family: Consolas, monospace; font-size: 0.95rem; width: 140px; text-align: center;}
+    </style>
+</head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-YYBQF66CTS"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-YYBQF66CTS');
+</script>
+<body>
+
+    <!-- Ляв панел -->
+    <div class="panel left-panel" id="leftPanel">
+        <a href="../index.html" class="back-to-home">← Начало</a>
+        
+        <h1>Работа с дата и време</h1>
+        <h2>Обекти DateTime и TimeSpan</h2>
+        
+        <h3>1. Предназначение и приложение</h3>
+        <p>Понякога се налага да имаме работа със специфични типове данни като дата и време. За тази цел в C# се използват обекти от типа <code>DateTime</code>. Всеки такъв обект съдържа информация за година, месец, ден, часове, минути, секунди и милисекунди.</p>
+
+        <h3>2. Създаване на обект DateTime</h3>
+        <p>Можем да създадем дата по няколко начина чрез конструкторите на класа:</p>
+        <ul>
+            <li><code>new DateTime()</code> – базов конструктор (дава 1.1.0001 г.)</li>
+            <li><code>new DateTime(year, month, day)</code> – задава конкретна дата, часът е 00:00:00.</li>
+            <li><code>new DateTime(year, month, day, hour, minute, second)</code> – задава дата и точен час.</li>
+        </ul>
+
+        <h3>3. Често използвани свойства</h3>
+        <p>Свойства за вземане на текущото време:</p>
+        <ul>
+            <li><code>DateTime.Now</code> – съдържа текущата дата и време.</li>
+            <li><code>DateTime.Today</code> – съдържа само текущата дата (часът е 00:00).</li>
+        </ul>
+        <p>Свойства на самия обект:</p>
+        <span class="block-code">Year, Month, Day, DayOfWeek, Hour, Minute, Second</span>
+        <p>Метод за проверка на високосна година:</p>
+        <span class="block-code">bool isLeap = DateTime.IsLeapYear(year);</span>
+
+        <h3>4. Интервал от време (TimeSpan)</h3>
+        <p>Описва се чрез обект от типа <code>TimeSpan</code>. Има параметричен конструктор, в който се задават часовете, минутите и секундите. Например, <code>new TimeSpan(17, 71, 125)</code> ще се преобразува автоматично в правилни часове и минути.</p>
+
+        <h3>5. Операции с дати</h3>
+        <ul>
+            <li><strong>Добавяне:</strong> <code>dt.Add(ts)</code> добавя TimeSpan към дата.</li>
+            <li><strong>Методи:</strong> <code>AddYears(n)</code>, <code>AddMonths(m)</code>, <code>AddDays(d)</code>. Допускат се отрицателни стойности за връщане назад във времето.</li>
+            <li><strong>Сравняване:</strong> Датите могат да се сравняват с <code>&gt;</code> и <code>&lt;</code>.</li>
+            <li><strong>Разлика:</strong> При изваждане на две дати (<code>newDate - oldDate</code>) се получава обект <code>TimeSpan</code>, от който можем да вземем свойството <code>.Days</code>.</li>
+        </ul>
+
+        <h3>6. Задача: Откриване на петъците</h3>
+        <p>Да се декларира клас <code>FridayDemo</code> с полета <code>year</code> и <code>day</code>. Класът да съдържа конструктор и метод <code>FindFriday()</code>, който извежда конкретния ден за всеки месец от дадената година, <strong>само ако се пада в петък</strong>.</p>
+        <span class="block-code">
+if(dt.DayOfWeek == DayOfWeek.Friday) {
+    Console.WriteLine(dt.ToString("dd MMMM yyyy"));
+}</span>
+    </div>
+
+    <!-- Интерактивен разделител -->
+    <div class="resizer" id="dragMe"></div>
+
+    <!-- Десен панел -->
+    <div class="panel right-panel">
+        
+        <div class="viz-header">
+            ⚡ Интерактивен Анализатор на Дати ⚡
+        </div>
+
+        <div class="visualization-workspace">
+            
+            <div class="machine-panel">
+                <div class="validation-toast" id="valToast">Property Check...</div>
+                
+                <div class="dashboard-card" id="dashUI">
+                    <div class="d-title">Date & Time Monitor</div>
+                    <div class="d-stat"><span>Обект DateTime:</span> <span class="d-val" id="dDate">---</span></div>
+                    <div class="d-stat"><span>Високосна година:</span> <span class="d-val" id="dLeap">---</span></div>
+                    <div class="d-stat" style="border-top: 2px dashed #555; padding-top: 15px; margin-top: 5px;"><span>FridayDemo (Година):</span> <span class="d-val" id="dYear" style="color: #fd79a8;">---</span></div>
+                    <div class="d-stat"><span>FridayDemo (Ден):</span> <span class="d-val" id="dDay">---</span></div>
+                </div>
+            </div>
+
+            <div class="code-container">
+<div class="code-line" id="line-0">class FridayDemo {</div>
+<div class="code-line" id="line-1">    int year, day;</div>
+<div class="code-line" id="line-2">    public FridayDemo(int y, int d) { year = y; day = d; }</div>
+<div class="code-line" id="line-3">    public void FindFriday() {</div>
+<div class="code-line" id="line-4">        Console.WriteLine("Петък:");</div>
+<div class="code-line" id="line-5">        for(int month = 1; month <= 12; month++) {</div>
+<div class="code-line" id="line-6">            DateTime dt = new DateTime(year, month, day);</div>
+<div class="code-line" id="line-7">            if(dt.DayOfWeek == DayOfWeek.Friday)</div>
+<div class="code-line" id="line-8">                Console.WriteLine(dt.ToString("dd MMMM yyyy"));</div>
+<div class="code-line" id="line-9">        }</div>
+<div class="code-line" id="line-10">    }</div>
+<div class="code-line" id="line-11">}</div>
+<div class="code-line" id="line-12">class Program {</div>
+<div class="code-line" id="line-13">    static void Main() {</div>
+<div class="code-line" id="line-14">        DateTime date1 = new DateTime(2020, 10, 5);</div>
+<div class="code-line" id="line-15">        bool isLeap = DateTime.IsLeapYear(date1.Year);</div>
+<div class="code-line" id="line-16">        Console.WriteLine($"Дата: {date1}, Високосна: {isLeap}");</div>
+<div class="code-line" id="line-17">        </div>
+<div class="code-line" id="line-18">        TimeSpan ts = new TimeSpan(25, 20, 55);</div>
+<div class="code-line" id="line-19">        Console.WriteLine($"Добавено време: {date1.Add(ts)}");</div>
+<div class="code-line" id="line-20">        </div>
+<div class="code-line" id="line-21">        FridayDemo fr = new FridayDemo(2020, 13);</div>
+<div class="code-line" id="line-22">        fr.FindFriday();</div>
+<div class="code-line" id="line-23">    }</div>
+<div class="code-line" id="line-24">}</div>
+            </div>
+
+            <div class="console-box">
+                <div class="console-output" id="consoleOutput"></div>
+            </div>
+
+        </div>
+
+        <div class="controls">
+            <button id="prevBtn" onclick="prevStep()" disabled>⏪ Назад</button>
+            <div class="step-indicator" id="stepIndicator">Стъпка: 0 / 0</div>
+            <button id="nextBtn" onclick="nextStep()">Напред ⏩</button>
+        </div>
+
+    </div>
+
+    <script>
+        // Логика за Плъзгача (Разделителя)
+        const resizer = document.getElementById('dragMe');
+        const leftPanel = document.getElementById('leftPanel');
+        let isHandlerDragging = false;
+
+        resizer.addEventListener('mousedown', function(e) {
+            isHandlerDragging = true;
+            resizer.classList.add('dragging');
+            document.body.style.cursor = 'col-resize';
+            e.preventDefault(); 
+        });
+
+        document.addEventListener('mousemove', function(e) {
+            if (!isHandlerDragging) return;
+            let newWidth = (e.clientX / window.innerWidth) * 100;
+            if(newWidth < 20) newWidth = 20;
+            if(newWidth > 80) newWidth = 80;
+            leftPanel.style.flex = `0 0 ${newWidth}%`;
+        });
+
+        document.addEventListener('mouseup', function(e) {
+            if (isHandlerDragging) {
+                isHandlerDragging = false;
+                resizer.classList.remove('dragging');
+                document.body.style.cursor = '';
+            }
+        });
+
+        // Логика за Симулатора
+        const steps = [
+            { lines: [13], dVis: false, dDate: "---", dLeap: "---", dY: "---", dD: "---", toast: "", con: "" },
+            
+            // Създаване на DateTime
+            { lines: [14], dVis: true, dDate: "05.10.2020", dLeap: "---", dY: "---", dD: "---", toast: "УСПЕХ: Обект DateTime създаден", con: "" },
+            
+            // Проверка за високосна
+            { lines: [15, 16], dVis: true, dDate: "05.10.2020", dLeap: "True", dY: "---", dD: "---", toast: "Извикване на статичен метод", con: "Дата: 5.10.2020 г. 0:00:00, Високосна: True\n" },
+            
+            // Създаване и добавяне на TimeSpan
+            { lines: [18, 19], dVis: true, dDate: "05.10.2020", dLeap: "True", dY: "---", dD: "---", toast: "TimeSpan: 25ч 20м 55с", con: "Дата: 5.10.2020 г. 0:00:00, Високосна: True\nДобавено време: 6.10.2020 г. 1:20:55\n" },
+
+            // Създаване на обект FridayDemo
+            { lines: [21, 2], dVis: true, dDate: "05.10.2020", dLeap: "True", dY: "2020", dD: "13", toast: "Обект FridayDemo създаден", con: "Дата: 5.10.2020 г. 0:00:00, Високосна: True\nДобавено време: 6.10.2020 г. 1:20:55\n" },
+            
+            // Изпълнение на FindFriday
+            { lines: [22, 3, 4], dVis: true, dDate: "05.10.2020", dLeap: "True", dY: "2020", dD: "13", toast: "Търсене на петъци...", con: "Дата: 5.10.2020 г. 0:00:00, Високосна: True\nДобавено време: 6.10.2020 г. 1:20:55\nПетък:\n" },
+            
+            // For цикъл резултат
+            { lines: [5, 6, 7, 8], dVis: true, dDate: "05.10.2020", dLeap: "True", dY: "2020", dD: "13", toast: "УСПЕХ: Намерени са 2 съвпадения", con: "Дата: 5.10.2020 г. 0:00:00, Високосна: True\nДобавено време: 6.10.2020 г. 1:20:55\nПетък:\n13 март 2020\n13 ноември 2020\n" }
+        ];
+
+        let currentStep = -1;
+
+        function updateUI() {
+            document.querySelectorAll('.code-line').forEach(el => {
+                el.classList.remove('active-line');
+            });
+            
+            const dash = document.getElementById('dashUI');
+            const toast = document.getElementById('valToast');
+            const conOut = document.getElementById('consoleOutput');
+            
+            if (currentStep >= 0) {
+                const step = steps[currentStep];
+                
+                let firstLine = null;
+                step.lines.forEach(lineNum => {
+                    let el = document.getElementById('line-' + lineNum);
+                    if(el) {
+                        el.classList.add('active-line');
+                        if(!firstLine) firstLine = el;
+                    }
+                });
+                if(firstLine) firstLine.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+                if (step.dVis) {
+                    dash.classList.add('show');
+                    document.getElementById('dDate').innerText = step.dDate;
+                    document.getElementById('dLeap').innerText = step.dLeap;
+                    document.getElementById('dYear').innerText = step.dY;
+                    document.getElementById('dDay').innerText = step.dD;
+                } else dash.classList.remove('show');
+
+                if (step.toast !== "") {
+                    toast.innerText = step.toast;
+                    toast.classList.add('show');
+                } else toast.classList.remove('show');
+
+                conOut.innerHTML = step.con;
+                document.getElementById('stepIndicator').innerText = `Стъпка: ${currentStep + 1} / ${steps.length}`;
+            }
+
+            document.getElementById('prevBtn').disabled = currentStep <= 0;
+            document.getElementById('nextBtn').disabled = currentStep >= steps.length - 1;
+        }
+
+        function nextStep() { if (currentStep < steps.length - 1) { currentStep++; updateUI(); } }
+        function prevStep() { if (currentStep > 0) { currentStep--; updateUI(); } }
+
+        currentStep = 0;
+        window.onload = updateUI;
+    </script>
+</body>
+</html>
