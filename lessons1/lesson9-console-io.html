@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Конзолен вход и изход - Algorithma</title>
+    <style>
+        body { margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; height: 100vh; background-color: #1e1e24; color: #e0e0e0; overflow: hidden;}
+        
+        /* Панели */
+        .panel { padding: 25px; overflow-y: auto; box-sizing: border-box; }
+        .left-panel { background-color: #2b2b36; flex: 0 0 50%; box-shadow: inset -5px 0 15px rgba(0,0,0,0.2);}
+        
+        /* Интерактивен плъзгач */
+        .resizer { flex: 0 0 6px; background-color: #333; cursor: col-resize; transition: background-color 0.2s ease; z-index: 100; box-shadow: 0 0 5px rgba(0,0,0,0.5);}
+        .resizer:hover, .resizer.dragging { background-color: #fd79a8; }
+        
+        /* Десен панел */
+        .right-panel { display: flex; flex-direction: column; gap: 15px; background-color: #1e1e24; flex: 1; position: relative; overflow: hidden; padding-bottom: 95px; min-width: 20%;}
+        
+        /* Бутон Назад */
+        .back-to-home { display: inline-block; text-decoration: none; color: #fd79a8; font-weight: bold; font-size: 0.95rem; margin-bottom: 15px; padding: 8px 15px; border: 1px solid #fd79a8; border-radius: 8px; transition: all 0.3s ease; background: transparent; }
+        .back-to-home:hover { background-color: #fd79a8; color: #1e1e24; box-shadow: 0 0 10px rgba(253, 121, 168, 0.5); }
+
+        h1 { color: #ffffff; font-size: 1.7rem; margin-bottom: 5px; text-shadow: 0 2px 4px rgba(0,0,0,0.3);}
+        h2 { color: #fd79a8; font-size: 1.1rem; text-transform: uppercase; margin-top: 0; margin-bottom: 15px; letter-spacing: 1px;}
+        h3 { color: #00cec9; border-bottom: 1px solid #444; padding-bottom: 5px; margin-top: 20px; font-size: 1.15rem;}
+        p, ul, li { line-height: 1.5; color: #dcdde1; font-size: 0.95rem; margin-bottom: 8px;}
+        ol { margin-top: 5px; margin-bottom: 10px; padding-left: 20px; line-height: 1.6;}
+        
+        /* Информационни кутии */
+        .info-box { background: #353b48; border-left: 4px solid #f1c40f; padding: 15px 20px; border-radius: 0 8px 8px 0; margin: 15px 0;}
+        .info-box strong { color: #f1c40f; }
+
+        /* Вмъкнат код в текста */
+        code { background: #1e1e24; padding: 2px 6px; border-radius: 4px; color: #fd79a8; font-family: Consolas, monospace; border: 1px solid #444;}
+        .block-code { display: block; background: #0c0c0c; padding: 10px; margin: 10px 0; border-left: 4px solid #00cec9; color: #e0e0e0; font-family: Consolas, monospace; font-size: 0.85rem; white-space: pre-wrap;}
+
+        /* Специален Раздел ВИЗУАЛИЗАЦИИ */
+        .viz-header { background: linear-gradient(90deg, #e84393, #fd79a8); color: #fff; padding: 10px 20px; border-radius: 8px; text-align: center; font-weight: bold; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 2px; box-shadow: 0 4px 15px rgba(232, 67, 147, 0.4); flex-shrink: 0;}
+
+        /* Визуална Зона */
+        .visualization-workspace { display: flex; flex-direction: column; gap: 15px; flex: 1; overflow-y: auto; padding-right: 5px;}
+        
+        /* Подравняване на кутията и осигуряване на пространство за toast */
+        .machine-panel { background: #2b2b36; border: 2px dashed #555; border-radius: 12px; padding: 15px; display: flex; justify-content: center; align-items: center; padding-top: 40px; padding-bottom: 20px; position: relative; flex-shrink: 0;}
+        
+        /* Карта на паметта (RAM) */
+        .dashboard-card { background: #1e272e; color: #fff; width: 340px; padding: 20px; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); font-family: 'Segoe UI', sans-serif; position: relative; border-top: 6px solid #fd79a8; opacity: 0; transform: scale(0.95); transition: all 0.4s;}
+        .dashboard-card.show { opacity: 1; transform: scale(1); }
+        .d-title { text-align: center; font-weight: bold; font-size: 1.1rem; border-bottom: 2px solid #444; padding-bottom: 10px; margin-bottom: 15px; color: #fd79a8; text-transform: uppercase;}
+        .d-stat { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 1rem; background: #2d3436; padding: 8px 12px; border-radius: 4px;}
+        .d-val { font-weight: bold; color: #00cec9; font-family: Consolas, monospace;}
+        
+        /* Validation Toast */
+        .validation-toast { position: absolute; top: -30px; left: 50%; transform: translateX(-50%); background: #2d3436; border: 2px solid #fd79a8; color: #fd79a8; padding: 8px 20px; border-radius: 20px; font-family: Consolas, monospace; font-size: 0.9rem; font-weight: bold; opacity: 0; transition: all 0.3s; box-shadow: 0 5px 15px rgba(0,0,0,0.4); z-index: 10; white-space: nowrap;}
+        .validation-toast.show { opacity: 1; top: -10px; }
+
+        /* Конзола */
+        .console-box { background-color: #000; border: 1px solid #333; border-top: 25px solid #2d3436; border-radius: 8px; padding: 15px; font-family: Consolas, 'Courier New', monospace; font-size: 13px; position: relative; box-shadow: 0 8px 15px rgba(0,0,0,0.5); min-height: 150px; overflow-y: auto; flex-shrink: 0;}
+        .console-box::before { content: "C:\\Windows\\System32\\cmd.exe"; position: absolute; top: -20px; left: 10px; color: #b2bec3; font-size: 11px; font-family: 'Segoe UI', sans-serif;}
+        .console-output { color: #ecf0f1; white-space: pre-wrap; line-height: 1.5; }
+
+        /* Зона за код */
+        .code-container { background-color: #282c34; color: #abb2bf; padding: 12px; border-radius: 8px; font-family: Consolas, monospace; font-size: 12px; overflow-y: auto; box-shadow: inset 0 0 10px rgba(0,0,0,0.8); flex: 1; border: 1px solid #444; min-height: 200px; flex-shrink: 0;}
+        .code-line { padding: 2px 8px; margin: 1px 0; border-radius: 4px; transition: background-color 0.3s; white-space: pre; border-left: 3px solid transparent;}
+        .active-line { background-color: #3e4451; border-left: 3px solid #fd79a8; color: #ffffff; font-weight: bold; }
+        .error-line { background-color: rgba(214, 48, 49, 0.2); border-left: 3px solid #d63031; }
+
+        /* КОНТРОЛИ */
+        .controls { position: absolute; bottom: 25px; left: 25px; right: 25px; display: flex; gap: 15px; justify-content: center; align-items: center; background: #2b2b36; padding: 10px; border-radius: 8px; border: 1px solid #444; z-index: 100;}
+        button { padding: 8px 15px; border: none; border-radius: 6px; background: linear-gradient(180deg, #fd79a8, #e84393); color: white; font-size: 13px; font-weight: bold; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.3); text-transform: uppercase;}
+        button:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 10px rgba(253, 121, 168, 0.5); }
+        button:disabled { background: #555; color: #888; cursor: not-allowed; box-shadow: none; transform: none;}
+        .step-indicator { color: #fd79a8; font-weight: bold; font-family: Consolas, monospace; font-size: 0.95rem; width: 140px; text-align: center;}
+    </style>
+</head>
+
+<!-- Google tag (gtag.js) -->
+<script async src="[https://www.googletagmanager.com/gtag/js?id=G-YYBQF66CTS](https://www.googletagmanager.com/gtag/js?id=G-YYBQF66CTS)"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-YYBQF66CTS');
+</script>
+
+<body>
+
+    <div class="panel left-panel" id="leftPanel">
+        <a href="../index.html" class="back-to-home">← Начало</a>
+        
+        <h1>Конзолен вход и изход</h1>
+        <h2>Форматиран изход</h2>
+        
+        <h3>Конзолен вход и изход</h3>
+        <p>Конзолата представлява прозорец на операционната система, през който потребителите могат да си взаимодействат със системните програми или с други конзолни приложения. Взаимодействието се състои от въвеждане на текст от стандартния вход (най-често клавиатурата) или извеждане на текст на стандартния изход (най-често на екрана).</p>
+        <p>Въвеждането и извеждането са известни още като входно-изходни операции. По подразбиране конзолата е свързана с клавиатурата и екрана, но те могат да бъдат пренасочвани към файлове.</p>
+
+        <h3>Класът System.Console</h3>
+        <p>Класът <code>System.Console</code> има различни свойства и методи, които се използват за четене, извеждане и форматиране на текст на конзолата.</p>
+        <ul>
+            <li>Най-популярният метод за въвеждане (прочитане) на данни е <code>Console.ReadLine()</code></li>
+            <li>Най-популярните методи за извеждане на данни са <code>Console.Write()</code> и <code>Console.WriteLine()</code></li>
+        </ul>
+
+        <h3>Конзолен вход – въвеждане на текст</h3>
+        <p>Най-голямо удобство при четене от конзолата предоставя методът <code>Console.ReadLine()</code>. При извикването му програмата преустановява работата си и чака за вход. Потребителят въвежда стринг и натиска [Enter]. Това е сигнал за край, а методът връща като резултат въведения текст.</p>
+        <p>Когато очакваните данни са от текстов тип, резултатът от метода просто се присвоява:</p>
+        <div class="block-code">Console.Write("Please enter your first name: ");
+string firstName = Console.ReadLine();</div>
+
+        <h3>Конзолен вход – въвеждане на числа</h3>
+        <p>Когато очакваните данни са от числов тип, се налага резултатът от метода да бъде преобразуван („парсван“) преди да може да бъде използван за присвояване или изчисления:</p>
+        <div class="block-code">Console.Write("a = ");
+int a = int.Parse(Console.ReadLine());
+
+Console.Write("b = ");
+int b = int.Parse(Console.ReadLine());</div>
+
+        <div class="info-box">
+            <strong>ВНИМАНИЕ: Въвеждане на дроби!!!</strong><br>
+            Разделителят за числата с плаваща запетая зависи от текущите езикови настройки на операционната система. При едни системи за разделител може да се счита символът запетая, при други точка. Въвеждането на точка вместо запетая често предизвиква <code>System.FormatException</code>.
+        </div>
+
+        <h3>Конзолен изход</h3>
+        <p>Методите <code>Write</code> и <code>WriteLine</code> отпечатват на екрана данните, които са им изпратени като параметри. Разликата е в това, че <code>WriteLine(...)</code> добавя и преминаване на нов ред след края на извеждането.</p>
+
+        <h4>Типична грешка при изход:</h4>
+        <div class="block-code">int a = 5;
+int b = 22;
+// ГРЕШНО: Конкатенира (слепва) като текст -> Sum: 522
+Console.WriteLine("Sum: " + a + b);
+
+// ПРАВИЛНО: Чрез интерполиран текст (замества със сбора) -> Sum: 27
+Console.WriteLine($"Sum: {a + b}");</div>
+
+        <h3>Интерполиран текст (Форматиран изход)</h3>
+        <p>За отпечатването на променливи, дълги поредици от елементи или цели изрази, най-често се използва т.нар. <strong>интерполиран текст</strong> (текст със замени).</p>
+        <p>При него пред стринга (кавичките) се поставя символът <code>$</code>, а вътре в къдрави скоби <code>{}</code> се поставят имената на променливите или изразите. При изпълнение на програмата те автоматично се изчисляват и заменят с техните стойности.</p>
+        
+        <div class="block-code">string name = "Христо";
+int age = 17;
+string town = "Варна";
+
+// Чрез интерполиран текст
+Console.WriteLine($"{name} е на {age} години и е от {town}!");</div>
+
+        <h4>Форматен спецификатор</h4>
+        <p>Можем да зададем точност на дробните числа чрез спецификатори като <code>:f3</code> (до 3 знака след десетичния разделител) директно в къдравите скоби след израза:</p>
+        <div class="block-code">double a = 5;
+double b = 22;
+
+Console.WriteLine($"{a} : {b} = {a/b:f3}");</div>
+
+    </div>
+
+    <!-- Интерактивен разделител -->
+    <div class="resizer" id="dragMe"></div>
+
+    <div class="panel right-panel">
+        
+        <div class="viz-header">
+            ⚡ Симулатор: Конзолен вход и изход ⚡
+        </div>
+
+        <div class="visualization-workspace">
+            
+            <div class="machine-panel">
+                <div class="validation-toast" id="valToast">Execution...</div>
+
+                <div class="dashboard-card" id="dashUI">
+                    <div class="d-title">Оперативна памет (RAM)</div>
+                    <div class="d-stat"><span>string firstName:</span> <span class="d-val" id="dName">null</span></div>
+                    <div class="d-stat"><span>int a:</span> <span class="d-val" id="dA">0</span></div>
+                    <div class="d-stat"><span>int b:</span> <span class="d-val" id="dB">0</span></div>
+                    <div class="d-stat" style="border-top: 2px dashed #555; padding-top: 15px; margin-top: 5px;"><span>double f:</span> <span class="d-val" id="dF">0.0</span></div>
+                </div>
+            </div>
+
+            <!-- Код -->
+            <div class="code-container">
+<div class="code-line" id="line-0">class Program {</div>
+<div class="code-line" id="line-1">    static void Main() {</div>
+<div class="code-line" id="line-2">        // 1. Въвеждане на текст</div>
+<div class="code-line" id="line-3">        Console.Write("Please enter your first name: ");</div>
+<div class="code-line" id="line-4">        string firstName = Console.ReadLine();</div>
+<div class="code-line" id="line-5">        </div>
+<div class="code-line" id="line-6">        // 2. Въвеждане на числа с парсване</div>
+<div class="code-line" id="line-7">        Console.Write("a = ");</div>
+<div class="code-line" id="line-8">        int a = int.Parse(Console.ReadLine());</div>
+<div class="code-line" id="line-9">        </div>
+<div class="code-line" id="line-10">        Console.Write("b = ");</div>
+<div class="code-line" id="line-11">        int b = int.Parse(Console.ReadLine());</div>
+<div class="code-line" id="line-12">        </div>
+<div class="code-line" id="line-13">        // 3. Типична грешка при конкатенация</div>
+<div class="code-line" id="line-14">        Console.WriteLine("Sum: " + a + b);     // Грешно!</div>
+<div class="code-line" id="line-15">        Console.WriteLine($"Sum: {a + b}");     // Правилно!</div>
+<div class="code-line" id="line-16">        </div>
+<div class="code-line" id="line-17">        // 4. Форматиран изход и спецификатори</div>
+<div class="code-line" id="line-18">        double f = (double)a / b;</div>
+<div class="code-line" id="line-19">        Console.WriteLine($"{firstName}, {a} : {b} = {f:f3}");</div>
+<div class="code-line" id="line-20">    }</div>
+<div class="code-line" id="line-21">}</div>
+            </div>
+
+            <!-- Конзола -->
+            <div class="console-box">
+                <div class="console-output" id="consoleOutput"></div>
+            </div>
+        </div>
+
+        <!-- Котвата на дъното: Бутоните винаги тук! -->
+        <div class="controls">
+            <button id="prevBtn" onclick="prevStep()" disabled>⏪ Назад</button>
+            <div class="step-indicator" id="stepIndicator">Стъпка: 0 / 0</div>
+            <button id="nextBtn" onclick="nextStep()">Напред ⏩</button>
+        </div>
+
+    </div>
+
+    <script>
+        // Логика за Плъзгача (Разделителя)
+        const resizer = document.getElementById('dragMe');
+        const leftPanel = document.getElementById('leftPanel');
+        let isHandlerDragging = false;
+
+        resizer.addEventListener('mousedown', function(e) {
+            isHandlerDragging = true;
+            resizer.classList.add('dragging');
+            document.body.style.cursor = 'col-resize';
+            e.preventDefault(); 
+        });
+
+        document.addEventListener('mousemove', function(e) {
+            if (!isHandlerDragging) return;
+            let newWidth = (e.clientX / window.innerWidth) * 100;
+            if(newWidth < 20) newWidth = 20;
+            if(newWidth > 80) newWidth = 80;
+            leftPanel.style.flex = `0 0 ${newWidth}%`;
+        });
+
+        document.addEventListener('mouseup', function(e) {
+            if (isHandlerDragging) {
+                isHandlerDragging = false;
+                resizer.classList.remove('dragging');
+                document.body.style.cursor = '';
+            }
+        });
+
+        // Стъпки на симулацията
+        const steps = [
+            { lines: [1], dVis: false, dN: "null", dA: "0", dB: "0", dF: "0.0", toast: "", con: "" },
+            
+            // Въвеждане на текст (Write)
+            { lines: [3], dVis: true, dN: "null", dA: "0", dB: "0", dF: "0.0", toast: "Извеждане на текст", con: "Please enter your first name: " },
+            
+            // Четене на текст (ReadLine)
+            { lines: [4], dVis: true, dN: '"Христо"', dA: "0", dB: "0", dF: "0.0", toast: "УСПЕХ: Прочетен е стринг", con: "Please enter your first name: Христо\n" },
+            
+            // Въвеждане a
+            { lines: [7], dVis: true, dN: '"Христо"', dA: "0", dB: "0", dF: "0.0", toast: "", con: "Please enter your first name: Христо\na = " },
+            
+            // Парсване на a
+            { lines: [8], dVis: true, dN: '"Христо"', dA: "5", dB: "0", dF: "0.0", toast: "УСПЕХ: Успешно парсване до int", con: "Please enter your first name: Христо\na = 5\n" },
+
+            // Въвеждане b
+            { lines: [10], dVis: true, dN: '"Христо"', dA: "5", dB: "0", dF: "0.0", toast: "", con: "Please enter your first name: Христо\na = 5\nb = " },
+
+            // Парсване на b
+            { lines: [11], dVis: true, dN: '"Христо"', dA: "5", dB: "22", dF: "0.0", toast: "УСПЕХ: Успешно парсване до int", con: "Please enter your first name: Христо\na = 5\nb = 22\n" },
+
+            // Типична грешка
+            { lines: [14], dVis: true, dN: '"Христо"', dA: "5", dB: "22", dF: "0.0", toast: "ВНИМАНИЕ: Слепване на текст!", con: "Please enter your first name: Христо\na = 5\nb = 22\nSum: 522\n" },
+
+            // Правилно събиране
+            { lines: [15], dVis: true, dN: '"Христо"', dA: "5", dB: "22", dF: "0.0", toast: "УСПЕХ: Интерполация на израз", con: "Please enter your first name: Христо\na = 5\nb = 22\nSum: 522\nSum: 27\n" },
+
+            // Пресмятане на дроб
+            { lines: [18], dVis: true, dN: '"Христо"', dA: "5", dB: "22", dF: "0.2272727...", toast: "Изчисляване на деление...", con: "Please enter your first name: Христо\na = 5\nb = 22\nSum: 522\nSum: 27\n" },
+
+            // Форматиран изход
+            { lines: [19], dVis: true, dN: '"Христо"', dA: "5", dB: "22", dF: "0.2272727...", toast: "УСПЕХ: Интерполация с :f3", con: "Please enter your first name: Христо\na = 5\nb = 22\nSum: 522\nSum: 27\nХристо, 5 : 22 = 0,227\n" }
+        ];
+
+        let currentStep = -1;
+
+        function updateUI() {
+            document.querySelectorAll('.code-line').forEach(el => {
+                el.classList.remove('active-line');
+                el.classList.remove('error-line');
+            });
+            
+            const dash = document.getElementById('dashUI');
+            const toast = document.getElementById('valToast');
+            const conOut = document.getElementById('consoleOutput');
+            
+            if (currentStep >= 0) {
+                const step = steps[currentStep];
+                
+                let firstLine = null;
+                
+                step.lines.forEach(lineNum => {
+                    let el = document.getElementById('line-' + lineNum);
+                    if (el) {
+                        if (lineNum === 14) {
+                            el.classList.add('error-line');
+                        } else {
+                            el.classList.add('active-line');
+                        }
+                        if (!firstLine) {
+                            firstLine = el;
+                        }
+                    }
+                });
+                
+                if (firstLine) {
+                    firstLine.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+
+                if (step.dVis) {
+                    dash.classList.add('show');
+                    document.getElementById('dName').innerText = step.dN;
+                    document.getElementById('dA').innerText = step.dA;
+                    document.getElementById('dB').innerText = step.dB;
+                    document.getElementById('dF').innerText = step.dF;
+                } else {
+                    dash.classList.remove('show');
+                }
+
+                if (step.toast !== "") {
+                    toast.innerText = step.toast;
+                    toast.classList.add('show');
+                    if (step.toast.includes("ВНИМАНИЕ") || step.toast.includes("ГРЕШКА")) {
+                        toast.style.borderColor = "#ff7675";
+                        toast.style.color = "#ff7675";
+                    } else {
+                        toast.style.borderColor = "#fd79a8";
+                        toast.style.color = "#fd79a8";
+                    }
+                } else {
+                    toast.classList.remove('show');
+                }
+
+                conOut.innerHTML = step.con;
+                conOut.parentElement.scrollTop = conOut.parentElement.scrollHeight;
+                document.getElementById('stepIndicator').innerText = `Стъпка: ${currentStep + 1} / ${steps.length}`;
+            }
+
+            if (currentStep <= 0) {
+                document.getElementById('prevBtn').disabled = true;
+            } else {
+                document.getElementById('prevBtn').disabled = false;
+            }
+
+            if (currentStep >= steps.length - 1) {
+                document.getElementById('nextBtn').disabled = true;
+            } else {
+                document.getElementById('nextBtn').disabled = false;
+            }
+        }
+
+        function nextStep() { 
+            if (currentStep < steps.length - 1) { 
+                currentStep++; 
+                updateUI(); 
+            } 
+        }
+        
+        function prevStep() { 
+            if (currentStep > 0) { 
+                currentStep--; 
+                updateUI(); 
+            } 
+        }
+
+        currentStep = 0;
+        window.onload = updateUI;
+    </script>
+</body>
+</html>
