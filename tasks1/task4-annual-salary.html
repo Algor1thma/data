@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Задача 4: Справка за годишната заплата - Algorithma</title>
+    <style>
+        body { margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; height: 100vh; background-color: #1e1e24; color: #e0e0e0; overflow: hidden;}
+        
+        /* Панели */
+        .panel { padding: 25px; overflow-y: auto; box-sizing: border-box; }
+        .left-panel { background-color: #2b2b36; flex: 0 0 50%; box-shadow: inset -5px 0 15px rgba(0,0,0,0.2);}
+        
+        /* Интерактивен плъзгач */
+        .resizer { flex: 0 0 6px; background-color: #333; cursor: col-resize; transition: background-color 0.2s ease; z-index: 100; box-shadow: 0 0 5px rgba(0,0,0,0.5);}
+        .resizer:hover, .resizer.dragging { background-color: #fd79a8; }
+        
+        /* Десен панел */
+        .right-panel { display: flex; flex-direction: column; gap: 15px; background-color: #1e1e24; flex: 1; position: relative; overflow: hidden; padding-bottom: 95px; min-width: 20%;}
+        
+        /* Бутон Назад */
+        .back-to-home { display: inline-block; text-decoration: none; color: #fd79a8; font-weight: bold; font-size: 0.95rem; margin-bottom: 15px; padding: 8px 15px; border: 1px solid #fd79a8; border-radius: 8px; transition: all 0.3s ease; background: transparent; }
+        .back-to-home:hover { background-color: #fd79a8; color: #1e1e24; box-shadow: 0 0 10px rgba(253, 121, 168, 0.5); }
+
+        h1 { color: #ffffff; font-size: 1.7rem; margin-bottom: 5px; text-shadow: 0 2px 4px rgba(0,0,0,0.3);}
+        h2 { color: #fd79a8; font-size: 1.1rem; text-transform: uppercase; margin-top: 0; margin-bottom: 15px; letter-spacing: 1px;}
+        h3 { color: #00cec9; border-bottom: 1px solid #444; padding-bottom: 5px; margin-top: 20px; font-size: 1.15rem;}
+        p, ul, li { line-height: 1.5; color: #dcdde1; font-size: 0.95rem; margin-bottom: 8px;}
+        ol { margin-top: 5px; margin-bottom: 10px; padding-left: 20px; line-height: 1.6;}
+        
+        /* Таблици */
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; margin-bottom: 15px; font-size: 0.85rem; background-color: #353b48; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.3);}
+        th, td { border: 1px solid #444; padding: 8px; text-align: left; }
+        th { background-color: #2f3640; color: #fd79a8; font-weight: bold;}
+
+        /* Информационни кутии */
+        .info-box { background: #353b48; border-left: 4px solid #f1c40f; padding: 15px 20px; border-radius: 0 8px 8px 0; margin: 15px 0;}
+        .info-box strong { color: #f1c40f; }
+
+        /* Вмъкнат код в текста */
+        code { background: #1e1e24; padding: 2px 6px; border-radius: 4px; color: #fd79a8; font-family: Consolas, monospace; border: 1px solid #444;}
+        .block-code { display: block; background: #0c0c0c; padding: 10px; margin: 10px 0; border-left: 4px solid #00cec9; color: #e0e0e0; font-family: Consolas, monospace; font-size: 0.85rem; white-space: pre-wrap;}
+
+        /* Специален Раздел ВИЗУАЛИЗАЦИИ */
+        .viz-header { background: linear-gradient(90deg, #e84393, #fd79a8); color: #fff; padding: 10px 20px; border-radius: 8px; text-align: center; font-weight: bold; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 2px; box-shadow: 0 4px 15px rgba(232, 67, 147, 0.4); flex-shrink: 0;}
+
+        /* Визуална Зона */
+        .visualization-workspace { display: flex; flex-direction: column; gap: 15px; flex: 1; overflow-y: auto; padding-right: 5px;}
+        
+        .machine-panel { background: #2b2b36; border: 2px dashed #555; border-radius: 12px; padding: 15px; display: flex; justify-content: center; align-items: center; padding-top: 35px; padding-bottom: 25px; position: relative; flex-shrink: 0;}
+        
+        /* Карта на обект */
+        .dashboard-card { background: #1e272e; color: #fff; width: 380px; padding: 20px; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); font-family: 'Segoe UI', sans-serif; position: relative; border-top: 6px solid #fd79a8; opacity: 0; transform: scale(0.95); transition: all 0.4s;}
+        .dashboard-card.show { opacity: 1; transform: scale(1); }
+        .d-title { text-align: center; font-weight: bold; font-size: 1.1rem; border-bottom: 2px solid #444; padding-bottom: 10px; margin-bottom: 15px; color: #fd79a8; text-transform: uppercase;}
+        .d-stat { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.95rem; background: #2d3436; padding: 8px 12px; border-radius: 4px;}
+        .d-val { font-weight: bold; color: #00cec9; font-family: Consolas, monospace;}
+        
+        /* Validation Toast */
+        .validation-toast { position: absolute; top: -30px; left: 50%; transform: translateX(-50%); background: #2d3436; border: 2px solid #fd79a8; color: #fd79a8; padding: 6px 15px; border-radius: 20px; font-family: Consolas, monospace; font-size: 0.85rem; font-weight: bold; opacity: 0; transition: all 0.3s; box-shadow: 0 5px 15px rgba(0,0,0,0.4); z-index: 10; white-space: nowrap;}
+        .validation-toast.show { opacity: 1; top: -10px; }
+
+        /* Обяснителна кутия */
+        .explanation-box { background-color: #282c34; border-left: 4px solid #00cec9; padding: 15px 20px; border-radius: 8px; color: #dcdde1; font-size: 0.95rem; line-height: 1.5; box-shadow: 0 4px 6px rgba(0,0,0,0.3); flex-shrink: 0; border: 1px solid #444;}
+        .exp-title { color: #00cec9; font-weight: bold; margin-bottom: 8px; text-transform: uppercase; font-size: 0.85rem; letter-spacing: 1px;}
+
+        /* Конзола */
+        .console-box { background-color: #000; border: 1px solid #333; border-top: 25px solid #2d3436; border-radius: 8px; padding: 15px; font-family: Consolas, 'Courier New', monospace; font-size: 14px; position: relative; box-shadow: 0 8px 15px rgba(0,0,0,0.5); flex: 1; min-height: 220px; overflow-y: auto; overflow-x: auto;}
+        .console-box::before { content: "C:\\Windows\\System32\\cmd.exe"; position: absolute; top: -20px; left: 10px; color: #b2bec3; font-size: 11px; font-family: 'Segoe UI', sans-serif;}
+        .console-output { color: #ecf0f1; white-space: pre; line-height: 1.5; }
+
+        /* КОНТРОЛИ */
+        .controls { position: absolute; bottom: 25px; left: 25px; right: 25px; display: flex; gap: 15px; justify-content: center; align-items: center; background: #2b2b36; padding: 10px; border-radius: 8px; border: 1px solid #444; z-index: 100;}
+        button { padding: 8px 15px; border: none; border-radius: 6px; background: linear-gradient(180deg, #fd79a8, #e84393); color: white; font-size: 13px; font-weight: bold; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.3); text-transform: uppercase;}
+        button:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 10px rgba(253, 121, 168, 0.5); }
+        button:disabled { background: #555; color: #888; cursor: not-allowed; box-shadow: none; transform: none;}
+        .step-indicator { color: #fd79a8; font-weight: bold; font-family: Consolas, monospace; font-size: 0.95rem; width: 140px; text-align: center;}
+    </style>
+</head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-YYBQF66CTS"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-YYBQF66CTS');
+</script>
+<body>
+
+    <div class="panel left-panel" id="leftPanel">
+        <a href="../index.html" class="back-to-home">← Начало</a>
+        
+        <h1>Задача 4: Справка за годишната заплата</h1>
+        <h2>Форматиран изход</h2>
+        
+        <p>Да се декларира клас <code>AnnualSalaryReference</code>, който подпомага създаването на справка за годишната заплата, като съдържа следните <code>private</code> полета:</p>
+        
+        <table>
+            <tr><th>Поле</th><th>Тип</th><th>Описание</th></tr>
+            <tr><td>year</td><td>цяло число</td><td>годината, за която се прави справката</td></tr>
+            <tr><td>dailyWage</td><td>реално число</td><td>заплащането за един работен ден</td></tr>
+        </table>
+
+        <div class="info-box">
+            Заплатата за един месец се изчислява като произведение от броя на работните дни в този месец и заплащането за един работен ден. <strong>Работни са всички дни от месеца с изключение на съботите и неделите.</strong> Годишната заплата е сумата от месечните заплати.
+        </div>
+
+        <h3>Конструктор</h3>
+        <p>Класът да съдържа публичен конструктор: <code>AnnualSalaryReference(int y, double dw)</code>, който да копира параметрите в съответстващите им полета.</p>
+
+        <h3>Методи</h3>
+        <p>В класа да се дефинират следните методи:</p>
+        <ol>
+            <li>Метод <code>int GetWorkingDays(int month)</code> – изчислява и връща броя на работните дни в рамките на месеца с номер <code>month</code> през годината, записана в полето <code>year</code>.<br>
+            <em>Подсказка:</em> Може да се използва методът <code>DateTime.DaysInMonth(int y, int m)</code>, който връща броя на дните. После може да се обходи в цикъл всяка дата и да се провери какъв ден от седмицата е.</li>
+            <li>Метод <code>void PrintReference()</code> – извежда на екрана справката за годишната заплата.</li>
+        </ol>
+
+        <h4>Изисквания към форматирането на таблицата:</h4>
+        <ul>
+            <li>Първи ред: "Справка за доходите за ??? година"</li>
+            <li>Втори ред: "Дневно заплащане: ??? лв."</li>
+            <li>Ред с 40 символа <code>-</code>.</li>
+            <li>Заглавия: "Месец", "Работни дни", "Заплата".</li>
+            <li>Имената на месеците се разполагат в <strong>17 позиции</strong> с ляво подравняване.</li>
+            <li>Работните дни се разполагат в <strong>8 позиции</strong> с ляво подравняване.</li>
+            <li>Месечните заплати се разполагат в <strong>15 позиции</strong> с дясно подравняване.</li>
+            <li>Сумата за годишната заплата се разполага в <strong>18 позиции</strong> с дясно подравняване.</li>
+        </ul>
+
+        <h3>Пример за изход (2017 г., 50.00 лв.):</h3>
+        <div class="block-code">Справка за доходите за 2017 година
+Дневно заплащане: 50.00 лв.
+----------------------------------------
+Месец            Работни         Заплата
+януари           22           1100.00 лв.
+февруари         20           1000.00 лв.
+март             23           1150.00 лв.
+април            20           1000.00 лв.
+май              23           1150.00 лв.
+юни              22           1100.00 лв.
+юли              21           1050.00 лв.
+август           23           1150.00 лв.
+септември        21           1050.00 лв.
+октомври         22           1100.00 лв.
+ноември          22           1100.00 лв.
+декември         21           1050.00 лв.
+----------------------------------------
+Обща годишна заплата:        13000.00 лв.</div>
+    </div>
+
+    <!-- Интерактивен разделител -->
+    <div class="resizer" id="dragMe"></div>
+
+    <div class="panel right-panel">
+        
+        <div class="viz-header">
+            ⚡ Симулатор: Годишна Заплата ⚡
+        </div>
+
+        <div class="visualization-workspace">
+            
+            <div class="machine-panel">
+                <div class="validation-toast" id="valToast">Execution...</div>
+
+                <div class="dashboard-card" id="dashUI">
+                    <div class="d-title">AnnualSalaryReference</div>
+                    <div class="d-stat"><span>Година:</span> <span class="d-val" id="dYear">---</span></div>
+                    <div class="d-stat"><span>Дневно заплащане:</span> <span class="d-val" id="dWage">---</span></div>
+                    <div class="d-stat"><span>Текущ месец:</span> <span class="d-val" id="dMonth">---</span></div>
+                    <div class="d-stat"><span>Работни дни:</span> <span class="d-val" id="dWork">---</span></div>
+                    <div class="d-stat" style="border-top: 2px dashed #555; padding-top: 10px; margin-top: 5px;"><span>Месечна заплата:</span> <span class="d-val" id="dMonthSal">---</span></div>
+                    <div class="d-stat"><span>Натрупано общо:</span> <span class="d-val" id="dTotal" style="color: #fd79a8;">---</span></div>
+                </div>
+            </div>
+
+            <!-- Обяснителна кутия -->
+            <div class="explanation-box">
+                <div class="exp-title">Обяснение на стъпката</div>
+                <div id="expText">Натиснете "Напред", за да започнете симулацията на програмата.</div>
+            </div>
+
+            <!-- Конзола -->
+            <div class="console-box">
+                <div class="console-output" id="consoleOutput"></div>
+            </div>
+        </div>
+
+        <!-- Котвата на дъното: Бутоните винаги тук! -->
+        <div class="controls">
+            <button id="prevBtn" onclick="prevStep()" disabled>⏪ Назад</button>
+            <div class="step-indicator" id="stepIndicator">Стъпка: 0 / 0</div>
+            <button id="nextBtn" onclick="nextStep()">Напред ⏩</button>
+        </div>
+
+    </div>
+
+    <script>
+        // Логика за Плъзгача (Разделителя)
+        const resizer = document.getElementById('dragMe');
+        const leftPanel = document.getElementById('leftPanel');
+        let isHandlerDragging = false;
+
+        resizer.addEventListener('mousedown', function(e) {
+            isHandlerDragging = true;
+            resizer.classList.add('dragging');
+            document.body.style.cursor = 'col-resize';
+            e.preventDefault(); 
+        });
+
+        document.addEventListener('mousemove', function(e) {
+            if (!isHandlerDragging) return;
+            let newWidth = (e.clientX / window.innerWidth) * 100;
+            if(newWidth < 20) newWidth = 20;
+            if(newWidth > 80) newWidth = 80;
+            leftPanel.style.flex = `0 0 ${newWidth}%`;
+        });
+
+        document.addEventListener('mouseup', function(e) {
+            if (isHandlerDragging) {
+                isHandlerDragging = false;
+                resizer.classList.remove('dragging');
+                document.body.style.cursor = '';
+            }
+        });
+
+        const steps = [
+            { 
+                dVis: false, dYear: "---", dWage: "---", dMonth: "---", dWork: "---", dMonthSal: "---", dTotal: "---", toast: "", con: "", 
+                exp: "Натиснете \"Напред\", за да започнете симулацията. Ще проследим генерирането на справка за 2017 година със заплащане 50 лв. на ден." 
+            },
+            { 
+                dVis: true, dYear: "2017", dWage: "50.00 лв.", dMonth: "---", dWork: "---", dMonthSal: "---", dTotal: "0.00 лв.", toast: "УСПЕХ: Обектът е създаден", con: "", 
+                exp: "Създава се обект чрез конструктора AnnualSalaryReference(2017, 50). Полетата year и dailyWage се инициализират успешно." 
+            },
+            { 
+                dVis: true, dYear: "2017", dWage: "50.00 лв.", dMonth: "---", dWork: "---", dMonthSal: "---", dTotal: "0.00 лв.", toast: "Извеждане на заглавната част", con: "Справка за доходите за 2017 година\nДневно заплащане: 50.00 лв.\n----------------------------------------\nМесец            Работни         Заплата\n", 
+                exp: "Започва изпълнението на метода PrintReference(). Отпечатват се заглавните редове с интерполирани низове и разделителната линия." 
+            },
+            { 
+                dVis: true, dYear: "2017", dWage: "50.00 лв.", dMonth: "януари", dWork: "22", dMonthSal: "1100.00 лв.", dTotal: "1100.00 лв.", toast: "Изчисляване на месец 1", con: "Справка за доходите за 2017 година\nДневно заплащане: 50.00 лв.\n----------------------------------------\nМесец            Работни         Заплата\nянуари           22           1100.00 лв.\n", 
+                exp: "Извиква се GetWorkingDays(1). Месец януари има 22 работни дни (без съботи и недели). Заплатата е 22 * 50 = 1100 лв. Редът се форматира със съответното подравняване." 
+            },
+            { 
+                dVis: true, dYear: "2017", dWage: "50.00 лв.", dMonth: "февруари", dWork: "20", dMonthSal: "1000.00 лв.", dTotal: "2100.00 лв.", toast: "Изчисляване на месец 2", con: "Справка за доходите за 2017 година\nДневно заплащане: 50.00 лв.\n----------------------------------------\nМесец            Работни         Заплата\nянуари           22           1100.00 лв.\nфевруари         20           1000.00 лв.\n", 
+                exp: "За месец февруари GetWorkingDays(2) връща 20 работни дни. Заплатата е 1000 лв., която се добавя към натрупаното общо." 
+            },
+            { 
+                dVis: true, dYear: "2017", dWage: "50.00 лв.", dMonth: "ноември", dWork: "22", dMonthSal: "1100.00 лв.", dTotal: "11950.00 лв.", toast: "Цикъл за следващите месеци", con: "Справка за доходите за 2017 година\nДневно заплащане: 50.00 лв.\n----------------------------------------\nМесец            Работни         Заплата\nянуари           22           1100.00 лв.\nфевруари         20           1000.00 лв.\nмарт             23           1150.00 лв.\nаприл            20           1000.00 лв.\nмай              23           1150.00 лв.\nюни              22           1100.00 лв.\nюли              21           1050.00 лв.\nавгуст           23           1150.00 лв.\nсептември        21           1050.00 лв.\nоктомври         22           1100.00 лв.\nноември          22           1100.00 лв.\n", 
+                exp: "Програмата върти цикъл за месеците от март до ноември, изчислявайки работните дни и месечните суми, които постепенно се добавят към конзолата." 
+            },
+            { 
+                dVis: true, dYear: "2017", dWage: "50.00 лв.", dMonth: "декември", dWork: "21", dMonthSal: "1050.00 лв.", dTotal: "13000.00 лв.", toast: "Изчисляване на месец 12", con: "Справка за доходите за 2017 година\nДневно заплащане: 50.00 лв.\n----------------------------------------\nМесец            Работни         Заплата\nянуари           22           1100.00 лв.\nфевруари         20           1000.00 лв.\nмарт             23           1150.00 лв.\nаприл            20           1000.00 лв.\nмай              23           1150.00 лв.\nюни              22           1100.00 лв.\nюли              21           1050.00 лв.\nавгуст           23           1150.00 лв.\nсептември        21           1050.00 лв.\nоктомври         22           1100.00 лв.\nноември          22           1100.00 лв.\nдекември         21           1050.00 лв.\n", 
+                exp: "Изчислява се последният месец - декември (21 работни дни). Месечната заплата е добавена и общата сума за годината е финализирана." 
+            },
+            { 
+                dVis: true, dYear: "2017", dWage: "50.00 лв.", dMonth: "декември", dWork: "21", dMonthSal: "1050.00 лв.", dTotal: "13000.00 лв.", toast: "УСПЕХ: Справката е завършена", con: "Справка за доходите за 2017 година\nДневно заплащане: 50.00 лв.\n----------------------------------------\nМесец            Работни         Заплата\nянуари           22           1100.00 лв.\nфевруари         20           1000.00 лв.\nмарт             23           1150.00 лв.\nаприл            20           1000.00 лв.\nмай              23           1150.00 лв.\nюни              22           1100.00 лв.\nюли              21           1050.00 лв.\nавгуст           23           1150.00 лв.\nсептември        21           1050.00 лв.\nоктомври         22           1100.00 лв.\nноември          22           1100.00 лв.\nдекември         21           1050.00 лв.\n----------------------------------------\nОбща годишна заплата:        13000.00 лв.\n", 
+                exp: "Отпечатва се долната разделителна линия и се извежда крайната сума с дясно подравняване в 18 позиции ({total,18:f2}). С това симулацията приключва." 
+            }
+        ];
+
+        let currentStep = -1;
+
+        function updateUI() {
+            const dash = document.getElementById('dashUI');
+            const toast = document.getElementById('valToast');
+            const conOut = document.getElementById('consoleOutput');
+            const expText = document.getElementById('expText');
+            
+            if (currentStep >= 0) {
+                const step = steps[currentStep];
+                
+                // Обновяване на обяснението
+                expText.innerText = step.exp;
+
+                if (step.dVis) {
+                    dash.classList.add('show');
+                    document.getElementById('dYear').innerText = step.dYear;
+                    document.getElementById('dWage').innerText = step.dWage;
+                    document.getElementById('dMonth').innerText = step.dMonth;
+                    document.getElementById('dWork').innerText = step.dWork;
+                    document.getElementById('dMonthSal').innerText = step.dMonthSal;
+                    document.getElementById('dTotal').innerText = step.dTotal;
+                } else {
+                    dash.classList.remove('show');
+                }
+
+                if (step.toast !== "") {
+                    toast.innerText = step.toast;
+                    toast.classList.add('show');
+                } else {
+                    toast.classList.remove('show');
+                }
+
+                conOut.innerHTML = step.con;
+                
+                // Автоматично скролиране на конзолата до дъното
+                conOut.parentElement.scrollTop = conOut.parentElement.scrollHeight;
+
+                document.getElementById('stepIndicator').innerText = `Стъпка: ${currentStep + 1} / ${steps.length}`;
+            }
+
+            if (currentStep <= 0) {
+                document.getElementById('prevBtn').disabled = true;
+            } else {
+                document.getElementById('prevBtn').disabled = false;
+            }
+
+            if (currentStep >= steps.length - 1) {
+                document.getElementById('nextBtn').disabled = true;
+            } else {
+                document.getElementById('nextBtn').disabled = false;
+            }
+        }
+
+        function nextStep() { 
+            if (currentStep < steps.length - 1) { 
+                currentStep++; 
+                updateUI(); 
+            } 
+        }
+        
+        function prevStep() { 
+            if (currentStep > 0) { 
+                currentStep--; 
+                updateUI(); 
+            } 
+        }
+
+        currentStep = 0;
+        window.onload = updateUI;
+    </script>
+</body>
+</html>
