@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Задача 3: График на учебните часове - Algorithma</title>
+    <style>
+        body { margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; height: 100vh; background-color: #1e1e24; color: #e0e0e0; overflow: hidden;}
+        
+        /* Панели */
+        .panel { padding: 25px; overflow-y: auto; box-sizing: border-box; }
+        .left-panel { background-color: #2b2b36; flex: 0 0 50%; box-shadow: inset -5px 0 15px rgba(0,0,0,0.2);}
+        
+        /* Интерактивен плъзгач */
+        .resizer { flex: 0 0 6px; background-color: #333; cursor: col-resize; transition: background-color 0.2s ease; z-index: 100; box-shadow: 0 0 5px rgba(0,0,0,0.5);}
+        .resizer:hover, .resizer.dragging { background-color: #fd79a8; }
+        
+        /* Десен панел */
+        .right-panel { display: flex; flex-direction: column; gap: 15px; background-color: #1e1e24; flex: 1; position: relative; overflow: hidden; padding-bottom: 95px; min-width: 20%;}
+        
+        /* Бутон Назад */
+        .back-to-home { display: inline-block; text-decoration: none; color: #fd79a8; font-weight: bold; font-size: 0.95rem; margin-bottom: 15px; padding: 8px 15px; border: 1px solid #fd79a8; border-radius: 8px; transition: all 0.3s ease; background: transparent; }
+        .back-to-home:hover { background-color: #fd79a8; color: #1e1e24; box-shadow: 0 0 10px rgba(253, 121, 168, 0.5); }
+
+        h1 { color: #ffffff; font-size: 1.7rem; margin-bottom: 5px; text-shadow: 0 2px 4px rgba(0,0,0,0.3);}
+        h2 { color: #fd79a8; font-size: 1.1rem; text-transform: uppercase; margin-top: 0; margin-bottom: 15px; letter-spacing: 1px;}
+        h3 { color: #00cec9; border-bottom: 1px solid #444; padding-bottom: 5px; margin-top: 20px; font-size: 1.15rem;}
+        p, ul, li { line-height: 1.5; color: #dcdde1; font-size: 0.95rem; margin-bottom: 8px;}
+        ol { margin-top: 5px; margin-bottom: 10px; padding-left: 20px; line-height: 1.6;}
+        
+        /* Таблици */
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; margin-bottom: 15px; font-size: 0.85rem; background-color: #353b48; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.3);}
+        th, td { border: 1px solid #444; padding: 8px; text-align: left; }
+        th { background-color: #2f3640; color: #fd79a8; font-weight: bold;}
+
+        /* Информационни кутии */
+        .info-box { background: #353b48; border-left: 4px solid #f1c40f; padding: 15px 20px; border-radius: 0 8px 8px 0; margin: 15px 0;}
+        .info-box strong { color: #f1c40f; }
+
+        /* Вмъкнат код в текста */
+        code { background: #1e1e24; padding: 2px 6px; border-radius: 4px; color: #fd79a8; font-family: Consolas, monospace; border: 1px solid #444;}
+        .block-code { display: block; background: #0c0c0c; padding: 10px; margin: 10px 0; border-left: 4px solid #00cec9; color: #e0e0e0; font-family: Consolas, monospace; font-size: 0.85rem; white-space: pre-wrap;}
+
+        /* Специален Раздел ВИЗУАЛИЗАЦИИ */
+        .viz-header { background: linear-gradient(90deg, #e84393, #fd79a8); color: #fff; padding: 10px 20px; border-radius: 8px; text-align: center; font-weight: bold; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 2px; box-shadow: 0 4px 15px rgba(232, 67, 147, 0.4); flex-shrink: 0;}
+
+        /* Визуална Зона */
+        .visualization-workspace { display: flex; flex-direction: column; gap: 15px; flex: 1; overflow-y: auto; padding-right: 5px;}
+        
+        .machine-panel { background: #2b2b36; border: 2px dashed #555; border-radius: 12px; padding: 15px; display: flex; justify-content: center; align-items: center; padding-top: 35px; padding-bottom: 25px; position: relative; flex-shrink: 0;}
+        
+        /* Карта на обект */
+        .dashboard-card { background: #1e272e; color: #fff; width: 380px; padding: 20px; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); font-family: 'Segoe UI', sans-serif; position: relative; border-top: 6px solid #fd79a8; opacity: 0; transform: scale(0.95); transition: all 0.4s;}
+        .dashboard-card.show { opacity: 1; transform: scale(1); }
+        .d-title { text-align: center; font-weight: bold; font-size: 1.1rem; border-bottom: 2px solid #444; padding-bottom: 10px; margin-bottom: 15px; color: #fd79a8; text-transform: uppercase;}
+        .d-stat { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.95rem; background: #2d3436; padding: 8px 12px; border-radius: 4px;}
+        .d-val { font-weight: bold; color: #00cec9; font-family: Consolas, monospace;}
+        
+        /* Validation Toast */
+        .validation-toast { position: absolute; top: -30px; left: 50%; transform: translateX(-50%); background: #2d3436; border: 2px solid #fd79a8; color: #fd79a8; padding: 6px 15px; border-radius: 20px; font-family: Consolas, monospace; font-size: 0.85rem; font-weight: bold; opacity: 0; transition: all 0.3s; box-shadow: 0 5px 15px rgba(0,0,0,0.4); z-index: 10; white-space: nowrap;}
+        .validation-toast.show { opacity: 1; top: -10px; }
+
+        /* Обяснителна кутия */
+        .explanation-box { background-color: #282c34; border-left: 4px solid #00cec9; padding: 15px 20px; border-radius: 8px; color: #dcdde1; font-size: 0.95rem; line-height: 1.5; box-shadow: 0 4px 6px rgba(0,0,0,0.3); flex-shrink: 0; border: 1px solid #444;}
+        .exp-title { color: #00cec9; font-weight: bold; margin-bottom: 8px; text-transform: uppercase; font-size: 0.85rem; letter-spacing: 1px;}
+
+        /* Конзола */
+        .console-box { background-color: #000; border: 1px solid #333; border-top: 25px solid #2d3436; border-radius: 8px; padding: 15px; font-family: Consolas, 'Courier New', monospace; font-size: 14px; position: relative; box-shadow: 0 8px 15px rgba(0,0,0,0.5); flex: 1; min-height: 220px; overflow-y: auto; overflow-x: auto;}
+        .console-box::before { content: "C:\\Windows\\System32\\cmd.exe"; position: absolute; top: -20px; left: 10px; color: #b2bec3; font-size: 11px; font-family: 'Segoe UI', sans-serif;}
+        .console-output { color: #ecf0f1; white-space: pre; line-height: 1.5; }
+
+        /* КОНТРОЛИ */
+        .controls { position: absolute; bottom: 25px; left: 25px; right: 25px; display: flex; gap: 15px; justify-content: center; align-items: center; background: #2b2b36; padding: 10px; border-radius: 8px; border: 1px solid #444; z-index: 100;}
+        button { padding: 8px 15px; border: none; border-radius: 6px; background: linear-gradient(180deg, #fd79a8, #e84393); color: white; font-size: 13px; font-weight: bold; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.3); text-transform: uppercase;}
+        button:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 10px rgba(253, 121, 168, 0.5); }
+        button:disabled { background: #555; color: #888; cursor: not-allowed; box-shadow: none; transform: none;}
+        .step-indicator { color: #fd79a8; font-weight: bold; font-family: Consolas, monospace; font-size: 0.95rem; width: 140px; text-align: center;}
+    </style>
+</head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-YYBQF66CTS"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-YYBQF66CTS');
+</script>
+<body>
+
+    <div class="panel left-panel" id="leftPanel">
+        <a href="../index.html" class="back-to-home">← Начало</a>
+        
+        <h1>Задача 3: График на учебните часове</h1>
+        <h2>Форматиран изход</h2>
+        
+        <p>Да се декларира клас <code>Classes</code>, който описва график на учебните часове, като съдържа следните <code>private</code> полета:</p>
+        
+        <table>
+            <tr><th>Поле</th><th>Тип</th><th>Описание</th></tr>
+            <tr><td>classDuration</td><td>цяло число</td><td>продължителност на един учебен час в минути</td></tr>
+            <tr><td>breakDuration</td><td>цяло число</td><td>продължителност на едно междучасие в минути</td></tr>
+            <tr><td>numOfClasses</td><td>цяло число</td><td>брой на часовете за деня</td></tr>
+        </table>
+
+        <div class="info-box">
+            Първият учебен час винаги започва в 8:00 часа.<br><br>Всички междучасия са еднакви като времетраене, само голямото междучасие (след 3-ти час) е двойно по-дълго от останалите (но не по-малко от 15 минути). Например, ако междучасията са по 10 минути, голямото междучасие е 20 минути; ако междучасията са по 5 минути, голямото междучасие е 15 минути!
+        </div>
+
+        <h3>Конструктор</h3>
+        <p>Класът да съдържа публичен конструктор: <code>Classes(int cd, int bd, int nc)</code>, който да копира параметрите в съответстващите им полета: <code>cd</code> в <code>classDuration</code>, <code>bd</code> в <code>breakDuration</code> и <code>nc</code> в <code>numOfClasses</code>.</p>
+
+        <h3>Методи</h3>
+        <p>В класа да се дефинират следните методи, като се прецени кои да са публични:</p>
+        <ol>
+            <li>Метод <code>DateTime GetStartTimeOfClass(int clsNum)</code> – създава и връща обект от тип DateTime, който показва кога започва учебния час с пореден номер <code>clsNum</code>.</li>
+            <li>Метод <code>void PrintSchedule()</code> – извежда на екрана информация за броя на часовете, продължителността на един час и на едно междучасие, след което извежда графика на часовете в табличен вид. Да се използва методът <code>GetStartTimeOfClass(...)</code>.</li>
+        </ol>
+
+        <h4>Изисквания към форматирането на таблицата:</h4>
+        <ul>
+            <li>Между текстовете "Час" и "Начало в" има точно 3 интервала.</li>
+            <li>Между "Начало в" и "Край в" има точно 4 интервала.</li>
+            <li>Номерата на часовете се показват в 2 позиции, дясно подравнени.</li>
+            <li>Началните часове се показват в 11 позиции, дясно подравнени.</li>
+            <li>Крайните часове се показват в 10 позиции, дясно подравнени.</li>
+        </ul>
+
+        <h3>Пример за изход:</h3>
+        <div class="block-code">Брой часове на ден: 7
+Продължителност на часа: 45
+Продължителност на междучасието: 10
+
+Час   Начало в    Край в
+ 1.       8:00      8:45
+ 2.       8:55      9:40
+ 3.       9:50     10:35
+ 4.      10:55     11:40
+ 5.      11:50     12:35
+ 6.      12:45     13:30
+ 7.      13:40     14:25</div>
+    </div>
+
+    <!-- Интерактивен разделител -->
+    <div class="resizer" id="dragMe"></div>
+
+    <div class="panel right-panel">
+        
+        <div class="viz-header">
+            ⚡ Симулатор: Училищен график ⚡
+        </div>
+
+        <div class="visualization-workspace">
+            
+            <div class="machine-panel">
+                <div class="validation-toast" id="valToast">Execution...</div>
+
+                <div class="dashboard-card" id="dashUI">
+                    <div class="d-title">Classes Object</div>
+                    <div class="d-stat"><span>Брой часове:</span> <span class="d-val" id="dNum">---</span></div>
+                    <div class="d-stat"><span>Продължителност:</span> <span class="d-val" id="dDur">---</span></div>
+                    <div class="d-stat"><span>Малко междучасие:</span> <span class="d-val" id="dBreak">---</span></div>
+                    <div class="d-stat" style="border-top: 2px dashed #555; padding-top: 15px; margin-top: 5px;"><span>Голямо междучасие:</span> <span class="d-val" id="dBigBreak" style="color: #fd79a8;">---</span></div>
+                </div>
+            </div>
+
+            <!-- Обяснителна кутия -->
+            <div class="explanation-box">
+                <div class="exp-title">Обяснение на стъпката</div>
+                <div id="expText">Натиснете "Напред", за да започнете симулацията на програмата.</div>
+            </div>
+
+            <!-- Конзола -->
+            <div class="console-box">
+                <div class="console-output" id="consoleOutput"></div>
+            </div>
+        </div>
+
+        <!-- Котвата на дъното: Бутоните винаги тук! -->
+        <div class="controls">
+            <button id="prevBtn" onclick="prevStep()" disabled>⏪ Назад</button>
+            <div class="step-indicator" id="stepIndicator">Стъпка: 0 / 0</div>
+            <button id="nextBtn" onclick="nextStep()">Напред ⏩</button>
+        </div>
+
+    </div>
+
+    <script>
+        // Логика за Плъзгача (Разделителя)
+        const resizer = document.getElementById('dragMe');
+        const leftPanel = document.getElementById('leftPanel');
+        let isHandlerDragging = false;
+
+        resizer.addEventListener('mousedown', function(e) {
+            isHandlerDragging = true;
+            resizer.classList.add('dragging');
+            document.body.style.cursor = 'col-resize';
+            e.preventDefault(); 
+        });
+
+        document.addEventListener('mousemove', function(e) {
+            if (!isHandlerDragging) return;
+            let newWidth = (e.clientX / window.innerWidth) * 100;
+            if(newWidth < 20) newWidth = 20;
+            if(newWidth > 80) newWidth = 80;
+            leftPanel.style.flex = `0 0 ${newWidth}%`;
+        });
+
+        document.addEventListener('mouseup', function(e) {
+            if (isHandlerDragging) {
+                isHandlerDragging = false;
+                resizer.classList.remove('dragging');
+                document.body.style.cursor = '';
+            }
+        });
+
+        const steps = [
+            { 
+                dVis: false, dN: "---", dD: "---", dB: "---", dBB: "---", toast: "", con: "", 
+                exp: "Натиснете \"Напред\", за да започнете симулацията. Ще проследим генерирането на график с 7 часа по 45 минути и 10 минути междучасие." 
+            },
+            { 
+                dVis: true, dN: "7", dD: "45 мин.", dB: "10 мин.", dBB: "---", toast: "УСПЕХ: Обектът Classes е създаден", con: "", 
+                exp: "Създава се обект от класа Classes чрез конструктора: new Classes(45, 10, 7). Полетата на класа се инициализират с подадените стойности." 
+            },
+            { 
+                dVis: true, dN: "7", dD: "45 мин.", dB: "10 мин.", dBB: "20 мин.", toast: "Изчисляване на голямото междучасие", con: "Брой часове на ден: 7\nПродължителност на часа: 45\nПродължителност на междучасието: 10\n\n", 
+                exp: "Извиква се PrintSchedule(). Първо се отпечатва основната информация. Логиката автоматично пресмята, че голямото междучасие (след 3-ти час) ще бъде Math.Max(15, 10 * 2) = 20 минути." 
+            },
+            { 
+                dVis: true, dN: "7", dD: "45 мин.", dB: "10 мин.", dBB: "20 мин.", toast: "Форматиране на антетката", con: "Брой часове на ден: 7\nПродължителност на часа: 45\nПродължителност на междучасието: 10\n\nЧас   Начало в    Край в\n", 
+                exp: "Отпечатва се заглавният ред на таблицата със стриктно спазени разстояния (3 интервала след 'Час' и 4 интервала след 'Начало в')." 
+            },
+            { 
+                dVis: true, dN: "7", dD: "45 мин.", dB: "10 мин.", dBB: "20 мин.", toast: "Калкулиране на блокове 1 до 3", con: "Брой часове на ден: 7\nПродължителност на часа: 45\nПродължителност на междучасието: 10\n\nЧас   Начало в    Край в\n 1.       8:00      8:45\n 2.       8:55      9:40\n 3.       9:50     10:35\n", 
+                exp: "Чрез метод GetStartTimeOfClass се изчислява времето. Първи час започва в 8:00. Прибавят се 45 мин. за края. За 2-ри и 3-ти час се добавя и стандартното междучасие от 10 минути. Форматирането използва: {num,2}. {start,11:H:mm} {end,10:H:mm}." 
+            },
+            { 
+                dVis: true, dN: "7", dD: "45 мин.", dB: "10 мин.", dBB: "20 мин.", toast: "Добавяне на голямото междучасие", con: "Брой часове на ден: 7\nПродължителност на часа: 45\nПродължителност на междучасието: 10\n\nЧас   Начало в    Край в\n 1.       8:00      8:45\n 2.       8:55      9:40\n 3.       9:50     10:35\n 4.      10:55     11:40\n", 
+                exp: "Преди началото на 4-ти час се натрупва голямото междучасие (20 минути). Затова 4-ти час стартира в 10:55, а не в 10:45." 
+            },
+            { 
+                dVis: true, dN: "7", dD: "45 мин.", dB: "10 мин.", dBB: "20 мин.", toast: "Завършване на графика", con: "Брой часове на ден: 7\nПродължителност на часа: 45\nПродължителност на междучасието: 10\n\nЧас   Начало в    Край в\n 1.       8:00      8:45\n 2.       8:55      9:40\n 3.       9:50     10:35\n 4.      10:55     11:40\n 5.      11:50     12:35\n 6.      12:45     13:30\n 7.      13:40     14:25\n", 
+                exp: "Изчисляват се и се отпечатват останалите часове (5, 6, 7), като отново се използват стандартни междучасия от 10 минути. Графикът е готов." 
+            }
+        ];
+
+        let currentStep = -1;
+
+        function updateUI() {
+            const dash = document.getElementById('dashUI');
+            const toast = document.getElementById('valToast');
+            const conOut = document.getElementById('consoleOutput');
+            const expText = document.getElementById('expText');
+            
+            if (currentStep >= 0) {
+                const step = steps[currentStep];
+                
+                // Обновяване на обяснението
+                expText.innerText = step.exp;
+
+                if (step.dVis) {
+                    dash.classList.add('show');
+                    document.getElementById('dNum').innerText = step.dN;
+                    document.getElementById('dDur').innerText = step.dD;
+                    document.getElementById('dBreak').innerText = step.dB;
+                    document.getElementById('dBigBreak').innerText = step.dBB;
+                } else {
+                    dash.classList.remove('show');
+                }
+
+                if (step.toast !== "") {
+                    toast.innerText = step.toast;
+                    toast.classList.add('show');
+                } else {
+                    toast.classList.remove('show');
+                }
+
+                conOut.innerHTML = step.con;
+                
+                // Автоматично скролиране на конзолата до дъното
+                conOut.parentElement.scrollTop = conOut.parentElement.scrollHeight;
+
+                document.getElementById('stepIndicator').innerText = `Стъпка: ${currentStep + 1} / ${steps.length}`;
+            }
+
+            if (currentStep <= 0) {
+                document.getElementById('prevBtn').disabled = true;
+            } else {
+                document.getElementById('prevBtn').disabled = false;
+            }
+
+            if (currentStep >= steps.length - 1) {
+                document.getElementById('nextBtn').disabled = true;
+            } else {
+                document.getElementById('nextBtn').disabled = false;
+            }
+        }
+
+        function nextStep() { 
+            if (currentStep < steps.length - 1) { 
+                currentStep++; 
+                updateUI(); 
+            } 
+        }
+        
+        function prevStep() { 
+            if (currentStep > 0) { 
+                currentStep--; 
+                updateUI(); 
+            } 
+        }
+
+        currentStep = 0;
+        window.onload = updateUI;
+    </script>
+</body>
+</html>
