@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Задача 2: Да управляваш робот - Algorithma</title>
+    <style>
+        body { margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; height: 100vh; background-color: #1e1e24; color: #e0e0e0; overflow: hidden;}
+        
+        /* Панели */
+        .panel { padding: 25px; overflow-y: auto; box-sizing: border-box; }
+        .left-panel { background-color: #2b2b36; flex: 0 0 50%; box-shadow: inset -5px 0 15px rgba(0,0,0,0.2);}
+        
+        /* Интерактивен плъзгач */
+        .resizer { flex: 0 0 6px; background-color: #333; cursor: col-resize; transition: background-color 0.2s ease; z-index: 100; box-shadow: 0 0 5px rgba(0,0,0,0.5);}
+        .resizer:hover, .resizer.dragging { background-color: #fd79a8; }
+        
+        /* ДЕСЕН ПАНЕЛ */
+        .right-panel { display: flex; flex-direction: column; background-color: #1e1e24; flex: 1; position: relative; overflow: hidden; padding-bottom: 95px;}
+        
+        /* Бутон Назад */
+        .back-to-home { display: inline-block; text-decoration: none; color: #fd79a8; font-weight: bold; font-size: 0.95rem; margin-bottom: 15px; padding: 8px 15px; border: 1px solid #fd79a8; border-radius: 8px; transition: all 0.3s ease; background: transparent; }
+        .back-to-home:hover { background-color: #fd79a8; color: #1e1e24; box-shadow: 0 0 10px rgba(253, 121, 168, 0.5); }
+
+        h1 { color: #ffffff; font-size: 1.7rem; margin-bottom: 5px; text-shadow: 0 2px 4px rgba(0,0,0,0.3);}
+        h2 { color: #fd79a8; font-size: 1.1rem; text-transform: uppercase; margin-top: 0; margin-bottom: 15px; letter-spacing: 1px;}
+        h3 { color: #00cec9; border-bottom: 1px solid #444; padding-bottom: 5px; margin-top: 20px; font-size: 1.15rem;}
+        p, ul, li { line-height: 1.5; color: #dcdde1; font-size: 0.95rem; margin-bottom: 8px;}
+        ol { margin-top: 5px; margin-bottom: 10px; padding-left: 20px; line-height: 1.6;}
+
+        /* Таблици */
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; margin-bottom: 15px; font-size: 0.85rem; background-color: #353b48; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.3);}
+        th, td { border: 1px solid #444; padding: 8px; text-align: left; }
+        th { background-color: #2f3640; color: #fd79a8; font-weight: bold;}
+
+        /* Информационни кутии */
+        .info-box { background: #353b48; border-left: 4px solid #f1c40f; padding: 15px 20px; border-radius: 0 8px 8px 0; margin: 15px 0;}
+        .info-box strong { color: #f1c40f; }
+
+        /* Вмъкнат код в текста */
+        code { background: #1e1e24; padding: 2px 6px; border-radius: 4px; color: #fd79a8; font-family: Consolas, monospace; border: 1px solid #444;}
+        .block-code { display: block; background: #0c0c0c; padding: 10px; margin: 10px 0; border-left: 4px solid #00cec9; color: #e0e0e0; font-family: Consolas, monospace; font-size: 0.85rem; white-space: pre-wrap;}
+
+        /* Специален Раздел ВИЗУАЛИЗАЦИИ */
+        .viz-header { background: linear-gradient(90deg, #e84393, #fd79a8); color: #fff; padding: 10px 20px; border-radius: 8px; text-align: center; font-weight: bold; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 2px; box-shadow: 0 4px 15px rgba(232, 67, 147, 0.4); flex-shrink: 0; margin: 25px 25px 0 25px;}
+
+        /* Фиксирана горна част за RAM */
+        .machine-panel { background: #2b2b36; border-bottom: 2px dashed #555; padding: 15px; display: flex; justify-content: center; align-items: center; padding-top: 30px; padding-bottom: 15px; position: relative; flex-shrink: 0; margin: 15px 25px 0 25px;}
+        
+        /* Скролираща долна част за обяснение и конзола */
+        .viz-content-wrapper { display: flex; flex-direction: column; gap: 15px; flex: 1; overflow-y: auto; padding: 15px 25px;}
+
+        /* Карта на обект - Компактна */
+        .dashboard-card { background: #1e272e; color: #fff; width: 340px; padding: 12px 18px; border-radius: 8px; box-shadow: 0 8px 20px rgba(0,0,0,0.5); font-family: 'Segoe UI', sans-serif; position: relative; border-top: 6px solid #fd79a8; opacity: 0; transform: scale(0.95); transition: all 0.4s;}
+        .dashboard-card.show { opacity: 1; transform: scale(1); }
+        .d-title { text-align: center; font-weight: bold; font-size: 1.05rem; border-bottom: 2px solid #444; padding-bottom: 8px; margin-bottom: 10px; color: #fd79a8; text-transform: uppercase;}
+        .d-stat { display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 0.9rem; background: #2d3436; padding: 6px 10px; border-radius: 4px;}
+        .d-val { font-weight: bold; color: #00cec9; font-family: Consolas, monospace;}
+        
+        /* Validation Toast */
+        .validation-toast { position: absolute; top: -15px; left: 50%; transform: translateX(-50%); background: #2d3436; border: 2px solid #fd79a8; color: #fd79a8; padding: 6px 15px; border-radius: 20px; font-family: Consolas, monospace; font-size: 0.85rem; font-weight: bold; opacity: 0; transition: all 0.3s; box-shadow: 0 5px 15px rgba(0,0,0,0.4); z-index: 10; white-space: nowrap;}
+        .validation-toast.show { opacity: 1; top: 10px; }
+
+        /* Обяснителна кутия */
+        .explanation-box { background-color: #282c34; border-left: 4px solid #00cec9; padding: 15px 20px; border-radius: 8px; color: #dcdde1; font-size: 0.95rem; line-height: 1.5; box-shadow: 0 4px 6px rgba(0,0,0,0.3); flex-shrink: 0; border: 1px solid #444;}
+        .exp-title { color: #00cec9; font-weight: bold; margin-bottom: 8px; text-transform: uppercase; font-size: 0.85rem; letter-spacing: 1px;}
+
+        /* Конзола */
+        .console-box { background-color: #000; border: 1px solid #333; border-top: 25px solid #2d3436; border-radius: 8px; padding: 15px; font-family: Consolas, 'Courier New', monospace; font-size: 13px; position: relative; box-shadow: 0 8px 15px rgba(0,0,0,0.5); flex: 1; min-height: 180px; overflow-y: auto; overflow-x: auto;}
+        .console-box::before { content: "C:\\Windows\\System32\\cmd.exe"; position: absolute; top: -20px; left: 10px; color: #b2bec3; font-size: 11px; font-family: 'Segoe UI', sans-serif;}
+        .console-output { color: #ecf0f1; white-space: pre-wrap; line-height: 1.5; }
+
+        /* КОНТРОЛИ */
+        .controls { position: absolute; bottom: 25px; left: 25px; right: 25px; display: flex; gap: 15px; justify-content: center; align-items: center; background: #2b2b36; padding: 10px; border-radius: 8px; border: 1px solid #444; z-index: 100;}
+        button { padding: 8px 15px; border: none; border-radius: 6px; background: linear-gradient(180deg, #fd79a8, #e84393); color: white; font-size: 13px; font-weight: bold; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.3); text-transform: uppercase;}
+        button:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 10px rgba(253, 121, 168, 0.5); }
+        button:disabled { background: #555; color: #888; cursor: not-allowed; box-shadow: none; transform: none;}
+        .step-indicator { color: #fd79a8; font-weight: bold; font-family: Consolas, monospace; font-size: 0.95rem; width: 140px; text-align: center;}
+    </style>
+</head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-YYBQF66CTS"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-YYBQF66CTS');
+</script>
+<body>
+
+    <div class="panel left-panel" id="leftPanel">
+        <a href="../index.html" class="back-to-home">← Начало</a>
+        
+        <h1>Задача 2: Да управляваш робот</h1>
+        <h2>Оператор switch</h2>
+        
+        <p>Да се декларира клас <code>Robot</code>, който подпомага създаването на софтуер за управляването на един примитивен робот, като съдържа следните <code>private</code> полета:</p>
+        
+        <table>
+            <tr><th>Поле</th><th>Тип</th><th>Описание</th></tr>
+            <tr><td>posX</td><td>цяло число</td><td>х координата на позицията на робота</td></tr>
+            <tr><td>posY</td><td>цяло число</td><td>у координата на позицията на робота</td></tr>
+            <tr><td>lastSessionLog</td><td>текст</td><td>описание на последната сесия (поредица от команди) за преместване на робота на друга позиция</td></tr>
+        </table>
+
+        <h3>Конструктор</h3>
+        <p>Класът да съдържа публичен конструктор: <code>Robot(int x, int y)</code>, който да копира параметрите в съответстващите им полета: <code>x</code> в <code>posX</code>, <code>y</code> в <code>posY</code>. В полето <code>lastSessionLog</code> се записва празен стринг ("").</p>
+
+        <h3>Методи</h3>
+        <p>В класа да се дефинират следните методи, като се прецени кои да са публични:</p>
+        <ol>
+            <li>Метод <code>void MoveNorth()</code> - „премества" робота с 1 стъпка в северна посока, като увеличава стойността на полето <code>posY</code> с 1 и добавя към полето <code>lastSessionLog</code> текст от вида:<br>
+            "Стъпка на север Нова позиция: (хххх; уууу)" и преминаване на нов ред. На местата на хххх и уууу се извеждат стойностите на полетата posX и posY, показани в 4 позиции всяка.<br>
+            За да се добави форматиран текст към текстова променлива може да се използва такъв запис:<br>
+            <code>lastSessionLog += $"{"Стъпка на север",??} Нова позиция ({posX,?}; {posY,?}) {Environment.NewLine}";</code><br>
+            На местата на ?? и ? се поставят числа, определящи в колко позиции да се изведат стойностите.</li>
+            <li>Метод <code>void MoveSouth()</code> - „премества" робота с 1 стъпка в южна посока, като намалява стойността на полето <code>posY</code> с 1 и добавя съответния текст към <code>lastSessionLog</code>.</li>
+            <li>Метод <code>void MoveEast()</code> - „премества" робота с 1 стъпка в източна посока, като увеличава стойността на полето <code>posX</code> с 1 и добавя съответния текст към <code>lastSessionLog</code>.</li>
+            <li>Метод <code>void MoveWest()</code> - „премества" робота с 1 стъпка в западна посока, като намалява стойността на полето <code>posX</code> с 1 и добавя съответния текст към <code>lastSessionLog</code>.</li>
+            <li>Метод <code>bool ReadCommand()</code> организира диалог в конзолата за въвеждане на команда за управление. Извежда на екрана текста "Въведете команда: " и чрез прилагане на <strong>оператор switch</strong> се избира действие по следната схема:
+                <ul>
+                    <li>ако е въведена команда измежду "север"/"юг"/"изток"/"запад" се извиква съответстващ на командата метод и се връща <code>true</code>;</li>
+                    <li>ако е въведена команда "край" направо се връща <code>false</code>;</li>
+                    <li>ако е въведено нещо друго към полето <code>lastSessionLog</code> се добавя съобщението "Невалидна команда! Край на сесията!" и се връща <code>false</code>.</li>
+                </ul>
+            </li>
+            <li>Метод <code>void StartNewCommandSession()</code> извършва следната поредица от действия:
+                <ul>
+                    <li>записва в полето <code>lastSessionLog</code> текста "Начало на нова сесия: [дата и час]" (използвайки <code>Now</code>);</li>
+                    <li>добавя "Начална позиция на робота: (хххх; уууу)";</li>
+                    <li>добавя текст, съставен от 44 символа *, и преминава на нов ред;</li>
+                    <li>извежда на екрана "Валидните команди са: север/юг/изток/запад/край";</li>
+                    <li>повтаря извиквания на метода <code>ReadCommand()</code> до получаване на резултат <code>false</code>:<br>
+                    <code>while (ReadCommand());</code></li>
+                    <li>добавя към <code>lastSessionLog</code> още 44 символа *;</li>
+                    <li>добавя "Край на сесията: [дата и час]";</li>
+                    <li>изчиства екрана (<code>Console.Clear();</code>) и извежда на екрана записа на командите от последната сесия (съдържанието на <code>lastSessionLog</code>).</li>
+                </ul>
+            </li>
+        </ol>
+
+        <p>Като се използва класа Robot, да се напише програма, която създава обект от класа Robot (началната позиция в примера е 1 и 2) и стартира сесия за управление чрез съответния метод.</p>
+
+        <h3>Пример:</h3>
+        <div class="block-code">Валидните команди са: север/юг/изток/запад/край
+Въведете команда: север
+Въведете команда: запад
+Въведете команда: югюг
+Въведете команда: край
+
+Начало на нова сесия: 26 окт 2022 10:31:21
+Начална позиция на робота: (   1;   2)
+********************************************
+Стъпка на север     Нова позиция (   1;   3)
+Стъпка на запад     Нова позиция (   0;   3)
+Невалидна команда! Край на сесията!
+********************************************
+Край на сесията: 26 окт 2022 10:33:44</div>
+    </div>
+
+    <!-- Интерактивен разделител -->
+    <div class="resizer" id="dragMe"></div>
+
+    <div class="panel right-panel">
+        
+        <div class="viz-header">
+            ⚡ Симулатор: Управление на Робот ⚡
+        </div>
+
+        <div class="machine-panel">
+            <div class="validation-toast" id="valToast">Execution...</div>
+
+            <div class="dashboard-card" id="dashUI">
+                <div class="d-title">Обект Robot</div>
+                <div class="d-stat"><span>posX:</span> <span class="d-val" id="dPosX">---</span></div>
+                <div class="d-stat"><span>posY:</span> <span class="d-val" id="dPosY">---</span></div>
+                <div class="d-stat" style="border-top: 2px dashed #555; padding-top: 10px; margin-top: 5px;"><span>Session Log:</span> <span class="d-val" id="dLog" style="color: #f1c40f;">---</span></div>
+            </div>
+        </div>
+
+        <div class="viz-content-wrapper">
+            <!-- Обяснителна кутия -->
+            <div class="explanation-box">
+                <div class="exp-title">Обяснение на стъпката</div>
+                <div id="expText">Натиснете "Напред", за да започнете симулацията на програмата.</div>
+            </div>
+
+            <!-- Конзола -->
+            <div class="console-box">
+                <div class="console-output" id="consoleOutput"></div>
+            </div>
+        </div>
+
+        <!-- Котвата на дъното -->
+        <div class="controls">
+            <button id="prevBtn" onclick="prevStep()" disabled>⏪ Назад</button>
+            <div class="step-indicator" id="stepIndicator">Стъпка: 0 / 0</div>
+            <button id="nextBtn" onclick="nextStep()">Напред ⏩</button>
+        </div>
+
+    </div>
+
+    <script>
+        // Логика за Плъзгача (Разделителя)
+        const resizer = document.getElementById('dragMe');
+        const leftPanel = document.getElementById('leftPanel');
+        let isHandlerDragging = false;
+
+        resizer.addEventListener('mousedown', function(e) {
+            isHandlerDragging = true;
+            resizer.classList.add('dragging');
+            document.body.style.cursor = 'col-resize';
+            e.preventDefault(); 
+        });
+
+        document.addEventListener('mousemove', function(e) {
+            if (!isHandlerDragging) return;
+            let newWidth = (e.clientX / window.innerWidth) * 100;
+            if(newWidth < 20) newWidth = 20;
+            if(newWidth > 80) newWidth = 80;
+            leftPanel.style.flex = `0 0 ${newWidth}%`;
+        });
+
+        document.addEventListener('mouseup', function(e) {
+            if (isHandlerDragging) {
+                isHandlerDragging = false;
+                resizer.classList.remove('dragging');
+                document.body.style.cursor = '';
+            }
+        });
+
+        const steps = [
+            { 
+                dVis: false, dX: "---", dY: "---", dL: "---", toast: "", con: "", 
+                exp: "Натиснете \"Напред\", за да започнете симулацията. Ще създадем робот с координати (1, 2) и ще подадем няколко команди." 
+            },
+            { 
+                dVis: true, dX: "1", dY: "2", dL: "0 знака", toast: "УСПЕХ: Роботът е създаден", con: "", 
+                exp: "Извикан е конструкторът Robot(1, 2). Полетата posX и posY приемат съответните стойности, а lastSessionLog е празен низ." 
+            },
+            { 
+                dVis: true, dX: "1", dY: "2", dL: "115 знака", toast: "Начало на сесия", con: "Валидните команди са: север/юг/изток/запад/край\n", 
+                exp: "Стартира се методът StartNewCommandSession(). В полето lastSessionLog се записват началната дата, час и стартовата позиция. На екрана се изписват възможните команди." 
+            },
+            { 
+                dVis: true, dX: "1", dY: "2", dL: "115 знака", toast: "Очакване на вход", con: "Валидните команди са: север/юг/изток/запад/край\nВъведете команда: север\n", 
+                exp: "Програмата влиза в цикъл while(ReadCommand()). Методът ReadCommand() подканва потребителя за вход. Потребителят въвежда 'север'." 
+            },
+            { 
+                dVis: true, dX: "1", dY: "3", dL: "172 знака", toast: "УСПЕХ: Движение на север", con: "Валидните команди са: север/юг/изток/запад/край\nВъведете команда: север\n", 
+                exp: "В ReadCommand() операторът switch проверява входа. При съвпадение (case 'север') се извиква MoveNorth(). posY се увеличава на 3, а действието се добавя в лога. Връща се true и цикълът продължава." 
+            },
+            { 
+                dVis: true, dX: "1", dY: "3", dL: "172 знака", toast: "Очакване на вход", con: "Валидните команди са: север/юг/изток/запад/край\nВъведете команда: север\nВъведете команда: запад\n", 
+                exp: "Цикълът while продължава. ReadCommand() отново чете от конзолата. Потребителят въвежда 'запад'." 
+            },
+            { 
+                dVis: true, dX: "0", dY: "3", dL: "229 знака", toast: "УСПЕХ: Движение на запад", con: "Валидните команди са: север/юг/изток/запад/край\nВъведете команда: север\nВъведете команда: запад\n", 
+                exp: "switch намира съвпадение за 'запад' и извиква MoveWest(). posX намалява на 0, а логът се допълва. Методът отново връща true." 
+            },
+            { 
+                dVis: true, dX: "0", dY: "3", dL: "229 знака", toast: "Очакване на вход", con: "Валидните команди са: север/юг/изток/запад/край\nВъведете команда: север\nВъведете команда: запад\nВъведете команда: югюг\n", 
+                exp: "Ново завъртане на цикъла. Потребителят без да иска въвежда несъществуващата команда 'югюг'." 
+            },
+            { 
+                dVis: true, dX: "0", dY: "3", dL: "272 знака", toast: "ГРЕШКА: Невалидна команда!", con: "Валидните команди са: север/юг/изток/запад/край\nВъведете команда: север\nВъведете команда: запад\nВъведете команда: югюг\n", 
+                exp: "Операторът switch не намира съвпадение и влиза в 'default'. В лога се записва съобщение за грешка и методът ReadCommand() връща false. Цикълът while приключва." 
+            },
+            { 
+                dVis: true, dX: "0", dY: "3", dL: "360 знака", toast: "Край на сесията и отпечатване", con: "Начало на нова сесия: 25 окт 2026 14:12:00\nНачална позиция на робота: (   1;   2)\n********************************************\nСтъпка на север     Нова позиция (   1;   3)\nСтъпка на запад     Нова позиция (   0;   3)\nНевалидна команда! Край на сесията!\n********************************************\nКрай на сесията: 25 окт 2026 14:12:35\n", 
+                exp: "Сесията се финализира чрез добавяне на крайния час и разделители към лога. Конзолата се изчиства (Console.Clear()) и се отпечатва цялото съдържание на lastSessionLog." 
+            }
+        ];
+
+        let currentStep = -1;
+
+        function updateUI() {
+            const dash = document.getElementById('dashUI');
+            const toast = document.getElementById('valToast');
+            const conOut = document.getElementById('consoleOutput');
+            const expText = document.getElementById('expText');
+            
+            if (currentStep >= 0) {
+                const step = steps[currentStep];
+                
+                // Обновяване на обяснението
+                expText.innerText = step.exp;
+
+                if (step.dVis) {
+                    dash.classList.add('show');
+                    document.getElementById('dPosX').innerText = step.dX;
+                    document.getElementById('dPosY').innerText = step.dY;
+                    document.getElementById('dLog').innerText = step.dL;
+                } else {
+                    dash.classList.remove('show');
+                }
+
+                if (step.toast !== "") {
+                    toast.innerText = step.toast;
+                    toast.classList.add('show');
+                    if (step.toast.includes("ГРЕШКА")) {
+                        toast.style.borderColor = "#ff7675";
+                        toast.style.color = "#ff7675";
+                    } else {
+                        toast.style.borderColor = "#fd79a8";
+                        toast.style.color = "#fd79a8";
+                    }
+                } else {
+                    toast.classList.remove('show');
+                }
+
+                conOut.innerHTML = step.con;
+                document.getElementById('stepIndicator').innerText = `Стъпка: ${currentStep + 1} / ${steps.length}`;
+                
+                // Автоматично скролиране на конзолата
+                conOut.parentElement.scrollTop = conOut.parentElement.scrollHeight;
+            }
+
+            if (currentStep <= 0) {
+                document.getElementById('prevBtn').disabled = true;
+            } else {
+                document.getElementById('prevBtn').disabled = false;
+            }
+
+            if (currentStep >= steps.length - 1) {
+                document.getElementById('nextBtn').disabled = true;
+            } else {
+                document.getElementById('nextBtn').disabled = false;
+            }
+        }
+
+        function nextStep() { 
+            if (currentStep < steps.length - 1) { 
+                currentStep++; 
+                updateUI(); 
+            } 
+        }
+        
+        function prevStep() { 
+            if (currentStep > 0) { 
+                currentStep--; 
+                updateUI(); 
+            } 
+        }
+
+        currentStep = 0;
+        window.onload = updateUI;
+    </script>
+</body>
+</html>
