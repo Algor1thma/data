@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Задача 3: Зодиак - Algorithma</title>
+    <style>
+        body { margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; height: 100vh; background-color: #1e1e24; color: #e0e0e0; overflow: hidden;}
+        
+        /* Панели */
+        .panel { padding: 25px; overflow-y: auto; box-sizing: border-box; }
+        .left-panel { background-color: #2b2b36; flex: 0 0 50%; box-shadow: inset -5px 0 15px rgba(0,0,0,0.2);}
+        
+        /* Интерактивен плъзгач */
+        .resizer { flex: 0 0 6px; background-color: #333; cursor: col-resize; transition: background-color 0.2s ease; z-index: 100; box-shadow: 0 0 5px rgba(0,0,0,0.5);}
+        .resizer:hover, .resizer.dragging { background-color: #fd79a8; }
+        
+        /* ДЕСЕН ПАНЕЛ */
+        .right-panel { display: flex; flex-direction: column; background-color: #1e1e24; flex: 1; position: relative; overflow: hidden; padding-bottom: 95px; min-width: 20%;}
+        
+        /* Бутон Назад */
+        .back-to-home { display: inline-block; text-decoration: none; color: #fd79a8; font-weight: bold; font-size: 0.95rem; margin-bottom: 15px; padding: 8px 15px; border: 1px solid #fd79a8; border-radius: 8px; transition: all 0.3s ease; background: transparent; }
+        .back-to-home:hover { background-color: #fd79a8; color: #1e1e24; box-shadow: 0 0 10px rgba(253, 121, 168, 0.5); }
+
+        h1 { color: #ffffff; font-size: 1.7rem; margin-bottom: 5px; text-shadow: 0 2px 4px rgba(0,0,0,0.3);}
+        h2 { color: #fd79a8; font-size: 1.1rem; text-transform: uppercase; margin-top: 0; margin-bottom: 15px; letter-spacing: 1px;}
+        h3 { color: #00cec9; border-bottom: 1px solid #444; padding-bottom: 5px; margin-top: 20px; font-size: 1.15rem;}
+        p, ul, li { line-height: 1.5; color: #dcdde1; font-size: 0.95rem; margin-bottom: 8px;}
+        ol { margin-top: 5px; margin-bottom: 10px; padding-left: 20px; line-height: 1.6;}
+        
+        /* Таблици */
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; margin-bottom: 15px; font-size: 0.85rem; background-color: #353b48; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.3);}
+        th, td { border: 1px solid #444; padding: 8px; text-align: left; }
+        th { background-color: #2f3640; color: #fd79a8; font-weight: bold;}
+
+        /* Информационни кутии */
+        .info-box { background: #353b48; border-left: 4px solid #f1c40f; padding: 15px 20px; border-radius: 0 8px 8px 0; margin: 15px 0;}
+        .info-box strong { color: #f1c40f; }
+
+        /* Вмъкнат код в текста */
+        code { background: #1e1e24; padding: 2px 6px; border-radius: 4px; color: #fd79a8; font-family: Consolas, monospace; border: 1px solid #444;}
+        .block-code { display: block; background: #0c0c0c; padding: 10px; margin: 10px 0; border-left: 4px solid #00cec9; color: #e0e0e0; font-family: Consolas, monospace; font-size: 0.85rem; white-space: pre-wrap;}
+
+        /* Специален Раздел ВИЗУАЛИЗАЦИИ */
+        .viz-header { background: linear-gradient(90deg, #e84393, #fd79a8); color: #fff; padding: 10px 20px; border-radius: 8px; text-align: center; font-weight: bold; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 2px; box-shadow: 0 4px 15px rgba(232, 67, 147, 0.4); flex-shrink: 0; margin: 25px 25px 0 25px;}
+
+        /* Фиксирана горна част за RAM */
+        .machine-panel { background: #2b2b36; border-bottom: 2px dashed #555; border-radius: 12px; padding: 15px; display: flex; justify-content: center; align-items: center; padding-top: 30px; padding-bottom: 15px; position: relative; flex-shrink: 0; margin: 15px 25px 0 25px;}
+        
+        /* Скролираща долна част за обяснение и конзола */
+        .viz-content-wrapper { display: flex; flex-direction: column; gap: 15px; flex: 1; overflow-y: auto; padding: 15px 25px;}
+
+        /* Карта на обект - Компактна */
+        .dashboard-card { background: #1e272e; color: #fff; width: 340px; padding: 12px 18px; border-radius: 8px; box-shadow: 0 8px 20px rgba(0,0,0,0.5); font-family: 'Segoe UI', sans-serif; position: relative; border-top: 6px solid #fd79a8; opacity: 0; transform: scale(0.95); transition: all 0.4s;}
+        .dashboard-card.show { opacity: 1; transform: scale(1); }
+        .d-title { text-align: center; font-weight: bold; font-size: 1.05rem; border-bottom: 2px solid #444; padding-bottom: 8px; margin-bottom: 10px; color: #fd79a8; text-transform: uppercase;}
+        .d-stat { display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 0.9rem; background: #2d3436; padding: 6px 10px; border-radius: 4px;}
+        .d-val { font-weight: bold; color: #00cec9; font-family: Consolas, monospace;}
+        
+        /* Validation Toast */
+        .validation-toast { position: absolute; top: -15px; left: 50%; transform: translateX(-50%); background: #2d3436; border: 2px solid #fd79a8; color: #fd79a8; padding: 6px 15px; border-radius: 20px; font-family: Consolas, monospace; font-size: 0.85rem; font-weight: bold; opacity: 0; transition: all 0.3s; box-shadow: 0 5px 15px rgba(0,0,0,0.4); z-index: 10; white-space: nowrap;}
+        .validation-toast.show { opacity: 1; top: 10px; }
+
+        /* Обяснителна кутия */
+        .explanation-box { background-color: #282c34; border-left: 4px solid #00cec9; padding: 15px 20px; border-radius: 8px; color: #dcdde1; font-size: 0.95rem; line-height: 1.5; box-shadow: 0 4px 6px rgba(0,0,0,0.3); flex-shrink: 0; border: 1px solid #444;}
+        .exp-title { color: #00cec9; font-weight: bold; margin-bottom: 8px; text-transform: uppercase; font-size: 0.85rem; letter-spacing: 1px;}
+
+        /* Конзола */
+        .console-box { background-color: #000; border: 1px solid #333; border-top: 25px solid #2d3436; border-radius: 8px; padding: 15px; font-family: Consolas, 'Courier New', monospace; font-size: 13px; position: relative; box-shadow: 0 8px 15px rgba(0,0,0,0.5); flex: 1; min-height: 180px; overflow-y: auto; overflow-x: auto;}
+        .console-box::before { content: "C:\\Windows\\System32\\cmd.exe"; position: absolute; top: -20px; left: 10px; color: #b2bec3; font-size: 11px; font-family: 'Segoe UI', sans-serif;}
+        .console-output { color: #ecf0f1; white-space: pre-wrap; line-height: 1.5; }
+
+        /* КОНТРОЛИ */
+        .controls { position: absolute; bottom: 25px; left: 25px; right: 25px; display: flex; gap: 15px; justify-content: center; align-items: center; background: #2b2b36; padding: 10px; border-radius: 8px; border: 1px solid #444; z-index: 100;}
+        button { padding: 8px 15px; border: none; border-radius: 6px; background: linear-gradient(180deg, #fd79a8, #e84393); color: white; font-size: 13px; font-weight: bold; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.3); text-transform: uppercase;}
+        button:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 10px rgba(253, 121, 168, 0.5); }
+        button:disabled { background: #555; color: #888; cursor: not-allowed; box-shadow: none; transform: none;}
+        .step-indicator { color: #fd79a8; font-weight: bold; font-family: Consolas, monospace; font-size: 0.95rem; width: 140px; text-align: center;}
+    </style>
+</head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-YYBQF66CTS"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-YYBQF66CTS');
+</script>
+<body>
+
+    <div class="panel left-panel" id="leftPanel">
+        <a href="../index.html" class="back-to-home">← Начало</a>
+        
+        <h1>Задача 3: Зодиак</h1>
+        <h2>Многовариантен избор (switch)</h2>
+        
+        <p>Да се декларира клас <code>ZodiacSign</code>, който осигурява функционалност за разпознаване на зодиакалния знак по дадени ден и месец в годината. Класът да съдържа следните полета:</p>
+        
+        <table>
+            <tr><th>Поле</th><th>Тип</th><th>Описание</th></tr>
+            <tr><td>d</td><td>цяло число</td><td>ден от месеца</td></tr>
+            <tr><td>m</td><td>цяло число</td><td>месец в годината</td></tr>
+        </table>
+
+        <h3>Конструктор</h3>
+        <p>Класът да съдържа публичен конструктор: <code>ZodiacSign(int day, int month)</code>, който копира параметрите в съответстващите им полета: <code>day</code> в <code>d</code> и <code>month</code> в <code>m</code>.</p>
+
+        <h3>Методи</h3>
+        <p>В класа да се дефинира методът <code>void PrintSign()</code>, който като използва оператор <code>switch...case</code> проверява и извежда зодията, съответстваща на въведената дата (ден и месец). Зодиите са:</p>
+        <ul>
+            <li>„Водолей“ (20.1 – 18.2)</li>
+            <li>„Риби“ (19.2 – 20.3)</li>
+            <li>„Овен“ (21.3 – 19.4)</li>
+            <li>„Телец“ (20.4 – 20.5)</li>
+            <li>„Близнаци“ (21.5 – 21.6)</li>
+            <li>„Рак“ (22.6 – 22.7)</li>
+            <li>„Лъв“ (23.7 – 22.8)</li>
+            <li>„Дева“ (23.8 – 22.9)</li>
+            <li>„Везни“ (23.9 – 22.10)</li>
+            <li>„Скорпион“ (23.10 – 22.11)</li>
+            <li>„Стрелец“ (23.11 – 21.12)</li>
+            <li>„Козирог“ (22.12 – 19.1)</li>
+        </ul>
+
+        <p>Като се използва класът <code>ZodiacSign</code>, да се напише програма, която:</p>
+        <ol>
+            <li>Въвежда от клавиатурата на отделни редове ден и месец по показания модел.</li>
+            <li>Създава обект от класа <code>ZodiacSign</code>, като числовите данни са въведените от клавиатурата.</li>
+            <li>Отпечатва на екрана съответната зодия.</li>
+        </ol>
+
+        <h3>Примери за изход:</h3>
+        <div class="block-code">Въведете ден: 21
+Въведете месец: 4
+Телец
+
+Въведете ден: 26
+Въведете месец: 8
+Дева
+
+Въведете ден: 9
+Въведете месец: 6
+Близнаци</div>
+    </div>
+
+    <!-- Интерактивен разделител -->
+    <div class="resizer" id="dragMe"></div>
+
+    <div class="panel right-panel">
+        
+        <div class="viz-header">
+            ⚡ Симулатор: Зодиакални знаци ⚡
+        </div>
+
+        <div class="machine-panel">
+            <div class="validation-toast" id="valToast">Execution...</div>
+
+            <div class="dashboard-card" id="dashUI">
+                <div class="d-title">ZodiacSign Object</div>
+                <div class="d-stat"><span>Ден (d):</span> <span class="d-val" id="dDay">---</span></div>
+                <div class="d-stat"><span>Месец (m):</span> <span class="d-val" id="dMonth">---</span></div>
+                <div class="d-stat" style="border-top: 2px dashed #555; padding-top: 10px; margin-top: 5px;"><span>Зодия:</span> <span class="d-val" id="dSign" style="color: #fd79a8;">---</span></div>
+            </div>
+        </div>
+
+        <div class="viz-content-wrapper">
+            <!-- Обяснителна кутия -->
+            <div class="explanation-box">
+                <div class="exp-title">Обяснение на стъпката</div>
+                <div id="expText">Натиснете "Напред", за да започнете симулацията на програмата.</div>
+            </div>
+
+            <!-- Конзола -->
+            <div class="console-box">
+                <div class="console-output" id="consoleOutput"></div>
+            </div>
+        </div>
+
+        <!-- Котвата на дъното -->
+        <div class="controls">
+            <button id="prevBtn" onclick="prevStep()" disabled>⏪ Назад</button>
+            <div class="step-indicator" id="stepIndicator">Стъпка: 0 / 0</div>
+            <button id="nextBtn" onclick="nextStep()">Напред ⏩</button>
+        </div>
+
+    </div>
+
+    <script>
+        // Логика за Плъзгача (Разделителя)
+        const resizer = document.getElementById('dragMe');
+        const leftPanel = document.getElementById('leftPanel');
+        let isHandlerDragging = false;
+
+        resizer.addEventListener('mousedown', function(e) {
+            isHandlerDragging = true;
+            resizer.classList.add('dragging');
+            document.body.style.cursor = 'col-resize';
+            e.preventDefault(); 
+        });
+
+        document.addEventListener('mousemove', function(e) {
+            if (!isHandlerDragging) return;
+            let newWidth = (e.clientX / window.innerWidth) * 100;
+            if(newWidth < 20) newWidth = 20;
+            if(newWidth > 80) newWidth = 80;
+            leftPanel.style.flex = `0 0 ${newWidth}%`;
+        });
+
+        document.addEventListener('mouseup', function(e) {
+            if (isHandlerDragging) {
+                isHandlerDragging = false;
+                resizer.classList.remove('dragging');
+                document.body.style.cursor = '';
+            }
+        });
+
+        const steps = [
+            { 
+                dVis: false, dD: "---", dM: "---", dS: "---", toast: "", con: "", 
+                exp: "Натиснете \"Напред\", за да започнете симулацията. Ще проверим зодията за датата 21-ви април (21.4)." 
+            },
+            { 
+                dVis: false, dD: "---", dM: "---", dS: "---", toast: "Въвеждане на ден...", con: "Въведете ден: 21\n", 
+                exp: "Програмата подканва потребителя да въведе ден от месеца. Чрез int.Parse(Console.ReadLine()) въведеният текст се превръща в цяло число (21)." 
+            },
+            { 
+                dVis: false, dD: "---", dM: "---", dS: "---", toast: "Въвеждане на месец...", con: "Въведете ден: 21\nВъведете месец: 4\n", 
+                exp: "По същия начин се въвежда и месецът. Потребителят въвежда 4 (за месец Април)." 
+            },
+            { 
+                dVis: true, dD: "21", dM: "4", dS: "---", toast: "УСПЕХ: Обектът е създаден", con: "Въведете ден: 21\nВъведете месец: 4\n", 
+                exp: "Създава се обект от класа ZodiacSign: new ZodiacSign(21, 4). Стойностите се запазват в полетата d и m на обекта в оперативната памет." 
+            },
+            { 
+                dVis: true, dD: "21", dM: "4", dS: "---", toast: "Старт на PrintSign()", con: "Въведете ден: 21\nВъведете месец: 4\n", 
+                exp: "Извиква се методът PrintSign(). В него се намира операторът switch(m), който ще провери стойността на полето m (месеца)." 
+            },
+            { 
+                dVis: true, dD: "21", dM: "4", dS: "---", toast: "Проверка: case 4", con: "Въведете ден: 21\nВъведете месец: 4\n", 
+                exp: "Тъй като m е 4, операторът switch автоматично скача на етикета 'case 4:'. Там има условие: ако (d <= 20) отпечатай 'Овен', иначе 'Телец'." 
+            },
+            { 
+                dVis: true, dD: "21", dM: "4", dS: "---", toast: "Сравняване на деня (d <= 20)", con: "Въведете ден: 21\nВъведете месец: 4\n", 
+                exp: "Прави се проверката: 21 <= 20. Това е невярно (false), затова програмата преминава към блока else, където е заложена зодия Телец." 
+            },
+            { 
+                dVis: true, dD: "21", dM: "4", dS: "Телец", toast: "УСПЕХ: Зодията е намерена", con: "Въведете ден: 21\nВъведете месец: 4\nТелец\n", 
+                exp: "Отпечатва се 'Телец' в конзолата. След това се среща ключовата дума 'break', която прекратява изпълнението на целия оператор switch." 
+            }
+        ];
+
+        let currentStep = -1;
+
+        function updateUI() {
+            const dash = document.getElementById('dashUI');
+            const toast = document.getElementById('valToast');
+            const conOut = document.getElementById('consoleOutput');
+            const expText = document.getElementById('expText');
+            
+            if (currentStep >= 0) {
+                const step = steps[currentStep];
+                
+                // Обновяване на обяснението
+                expText.innerText = step.exp;
+
+                if (step.dVis) {
+                    dash.classList.add('show');
+                    document.getElementById('dDay').innerText = step.dD;
+                    document.getElementById('dMonth').innerText = step.dM;
+                    document.getElementById('dSign').innerText = step.dS;
+                } else {
+                    dash.classList.remove('show');
+                }
+
+                if (step.toast !== "") {
+                    toast.innerText = step.toast;
+                    toast.classList.add('show');
+                } else {
+                    toast.classList.remove('show');
+                }
+
+                conOut.innerHTML = step.con;
+                
+                // Автоматично скролиране на конзолата до дъното
+                conOut.parentElement.scrollTop = conOut.parentElement.scrollHeight;
+
+                document.getElementById('stepIndicator').innerText = `Стъпка: ${currentStep + 1} / ${steps.length}`;
+            }
+
+            if (currentStep <= 0) {
+                document.getElementById('prevBtn').disabled = true;
+            } else {
+                document.getElementById('prevBtn').disabled = false;
+            }
+
+            if (currentStep >= steps.length - 1) {
+                document.getElementById('nextBtn').disabled = true;
+            } else {
+                document.getElementById('nextBtn').disabled = false;
+            }
+        }
+
+        function nextStep() { 
+            if (currentStep < steps.length - 1) { 
+                currentStep++; 
+                updateUI(); 
+            } 
+        }
+        
+        function prevStep() { 
+            if (currentStep > 0) { 
+                currentStep--; 
+                updateUI(); 
+            } 
+        }
+
+        currentStep = 0;
+        window.onload = updateUI;
+    </script>
+</body>
+</html>
