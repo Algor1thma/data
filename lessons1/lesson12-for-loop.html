@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Оператор за повторения for - Algorithma</title>
+    <style>
+        body { margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; height: 100vh; background-color: #1e1e24; color: #e0e0e0; overflow: hidden;}
+        
+        /* Панели */
+        .panel { padding: 25px; overflow-y: auto; box-sizing: border-box; }
+        .left-panel { background-color: #2b2b36; flex: 0 0 50%; box-shadow: inset -5px 0 15px rgba(0,0,0,0.2);}
+        
+        /* Интерактивен плъзгач */
+        .resizer { flex: 0 0 6px; background-color: #333; cursor: col-resize; transition: background-color 0.2s ease; z-index: 100; box-shadow: 0 0 5px rgba(0,0,0,0.5);}
+        .resizer:hover, .resizer.dragging { background-color: #fd79a8; }
+        
+        /* ДЕСЕН ПАНЕЛ */
+        .right-panel { display: flex; flex-direction: column; background-color: #1e1e24; flex: 1; position: relative; overflow: hidden; padding-bottom: 95px;}
+        
+        /* Бутон Назад */
+        .back-to-home { display: inline-block; text-decoration: none; color: #fd79a8; font-weight: bold; font-size: 0.95rem; margin-bottom: 15px; padding: 8px 15px; border: 1px solid #fd79a8; border-radius: 8px; transition: all 0.3s ease; background: transparent; }
+        .back-to-home:hover { background-color: #fd79a8; color: #1e1e24; box-shadow: 0 0 10px rgba(253, 121, 168, 0.5); }
+
+        h1 { color: #ffffff; font-size: 1.7rem; margin-bottom: 5px; text-shadow: 0 2px 4px rgba(0,0,0,0.3);}
+        h2 { color: #fd79a8; font-size: 1.1rem; text-transform: uppercase; margin-top: 0; margin-bottom: 15px; letter-spacing: 1px;}
+        h3 { color: #00cec9; border-bottom: 1px solid #444; padding-bottom: 5px; margin-top: 20px; font-size: 1.15rem;}
+        p, ul, li { line-height: 1.5; color: #dcdde1; font-size: 0.95rem; margin-bottom: 8px;}
+        ol { margin-top: 5px; margin-bottom: 10px; padding-left: 20px; line-height: 1.6;}
+
+        /* Информационни кутии */
+        .info-box { background: #353b48; border-left: 4px solid #f1c40f; padding: 15px 20px; border-radius: 0 8px 8px 0; margin: 15px 0;}
+        .info-box strong { color: #f1c40f; }
+
+        /* Вмъкнат код в текста */
+        code { background: #1e1e24; padding: 2px 6px; border-radius: 4px; color: #fd79a8; font-family: Consolas, monospace; border: 1px solid #444;}
+        .block-code { display: block; background: #0c0c0c; padding: 10px; margin: 10px 0; border-left: 4px solid #00cec9; color: #e0e0e0; font-family: Consolas, monospace; font-size: 0.85rem; white-space: pre-wrap;}
+
+        /* Специален Раздел ВИЗУАЛИЗАЦИИ */
+        .viz-header { background: linear-gradient(90deg, #e84393, #fd79a8); color: #fff; padding: 10px 20px; border-radius: 8px; text-align: center; font-weight: bold; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 2px; box-shadow: 0 4px 15px rgba(232, 67, 147, 0.4); flex-shrink: 0; margin: 25px 25px 0 25px;}
+
+        /* Фиксирана горна част за RAM (Намалена височина) */
+        .machine-panel { background: #2b2b36; border-bottom: 2px dashed #555; border-radius: 12px; padding: 15px; display: flex; justify-content: center; align-items: center; padding-top: 25px; padding-bottom: 10px; position: relative; flex-shrink: 0; margin: 15px 25px 0 25px;}
+        
+        /* Скролираща долна част за кода и конзолата */
+        .viz-content-wrapper { display: flex; flex-direction: column; gap: 15px; flex: 1; overflow-y: auto; padding: 15px 25px;}
+
+        /* Карта на обект - Компактна */
+        .dashboard-card { background: #1e272e; color: #fff; width: 340px; padding: 10px 15px; border-radius: 8px; box-shadow: 0 8px 20px rgba(0,0,0,0.5); font-family: 'Segoe UI', sans-serif; position: relative; border-top: 6px solid #fd79a8; opacity: 0; transform: scale(0.95); transition: all 0.4s;}
+        .dashboard-card.show { opacity: 1; transform: scale(1); }
+        .d-title { text-align: center; font-weight: bold; font-size: 1.05rem; border-bottom: 2px solid #444; padding-bottom: 8px; margin-bottom: 10px; color: #fd79a8; text-transform: uppercase;}
+        .d-stat { display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 0.9rem; background: #2d3436; padding: 6px 10px; border-radius: 4px;}
+        .d-val { font-weight: bold; color: #00cec9; font-family: Consolas, monospace;}
+        
+        /* Validation Toast */
+        .validation-toast { position: absolute; top: -15px; left: 50%; transform: translateX(-50%); background: #2d3436; border: 2px solid #fd79a8; color: #fd79a8; padding: 6px 15px; border-radius: 20px; font-family: Consolas, monospace; font-size: 0.85rem; font-weight: bold; opacity: 0; transition: all 0.3s; box-shadow: 0 5px 15px rgba(0,0,0,0.4); z-index: 10;}
+        .validation-toast.show { opacity: 1; top: 5px; }
+
+        /* Конзола (Намалена височина) */
+        .console-box { background-color: #000; border: 1px solid #333; border-top: 25px solid #2d3436; border-radius: 8px; padding: 12px; font-family: Consolas, 'Courier New', monospace; font-size: 13px; position: relative; box-shadow: 0 8px 15px rgba(0,0,0,0.5); height: 110px; overflow-y: auto; overflow-x: auto; flex-shrink: 0;}
+        .console-box::before { content: "C:\\Windows\\System32\\cmd.exe"; position: absolute; top: -20px; left: 10px; color: #b2bec3; font-size: 11px; font-family: 'Segoe UI', sans-serif;}
+        .console-output { color: #ecf0f1; white-space: pre-wrap; line-height: 1.5; }
+
+        /* Зона за код (Увеличена височина) */
+        .code-container { background-color: #282c34; color: #abb2bf; padding: 12px; border-radius: 8px; font-family: Consolas, monospace; font-size: 12px; overflow-y: auto; box-shadow: inset 0 0 10px rgba(0,0,0,0.8); flex: 1; border: 1px solid #444; min-height: 250px; flex-shrink: 0;}
+        .code-line { padding: 2px 8px; margin: 1px 0; border-radius: 4px; transition: background-color 0.3s; white-space: pre; border-left: 3px solid transparent;}
+        .active-line { background-color: #3e4451; border-left: 3px solid #fd79a8; color: #ffffff; font-weight: bold; }
+
+        /* КОНТРОЛИ */
+        .controls { position: absolute; bottom: 25px; left: 25px; right: 25px; display: flex; gap: 15px; justify-content: center; align-items: center; background: #2b2b36; padding: 10px; border-radius: 8px; border: 1px solid #444; z-index: 100;}
+        button { padding: 8px 15px; border: none; border-radius: 6px; background: linear-gradient(180deg, #fd79a8, #e84393); color: white; font-size: 13px; font-weight: bold; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.3); text-transform: uppercase;}
+        button:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 10px rgba(253, 121, 168, 0.5); }
+        button:disabled { background: #555; color: #888; cursor: not-allowed; box-shadow: none; transform: none;}
+        .step-indicator { color: #fd79a8; font-weight: bold; font-family: Consolas, monospace; font-size: 0.95rem; width: 140px; text-align: center;}
+    </style>
+</head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-YYBQF66CTS"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-YYBQF66CTS');
+</script>
+<body>
+
+    <div class="panel left-panel" id="leftPanel">
+        <a href="../index.html" class="back-to-home">← Начало</a>
+        
+        <h1>Оператор за повторения</h1>
+        <h2>Цикъл for</h2>
+        
+        <p>Операторът за повторения <code>for</code> е най-удобен за използване, когато е необходим фиксиран брой повторения.</p>
+        
+        <h3>Запис на цикъла</h3>
+        <div class="block-code">for(инициализация; условие; обновяване)
+{
+    // тяло на цикъла (оператори);
+}</div>
+
+        <p><strong>Пример:</strong></p>
+        <div class="block-code">for(int i = 1; i <= 10; i++)
+{
+    Console.WriteLine("I love summer!");
+}</div>
+
+        <h3>Начин на действие:</h3>
+        <ol>
+            <li>Изпълняват се командите от частта <strong>„инициализация“</strong>.</li>
+            <li>Проверява се <strong>„условие“</strong>. При резултат <code>false</code> повторенията спират (край на for). При резултат <code>true</code> се продължава нататък.</li>
+            <li>Изпълняват се командите от <strong>„тяло“</strong>.</li>
+            <li>Изпълнява се <strong>„обновяване“</strong>.</li>
+            <li>Преминава се отново към стъпка 2.</li>
+        </ol>
+
+        <hr style="border-color: #444; margin: 25px 0;">
+
+        <h3>Пример 1: Отпечатване на серия от числа</h3>
+        <p>Да се създаде приложение, което прочита от конзолата две цели числа: начало и край на числов интервал, а след това отпечатва числата от интервала едно след друго, разделени от по един интервал.</p>
+        <div class="block-code">public static void Main(string[] args)
+{
+    int a, b;
+    Console.Write("a: ");
+    a = int.Parse(Console.ReadLine());
+    Console.Write("b: ");
+    b = int.Parse(Console.ReadLine());
+    
+    for (int i = a; i <= b; i++)
+    {
+        Console.Write($"{i} ");
+    }
+    Console.WriteLine();
+}</div>
+
+        <h3>Пример 2: Повторения на текст</h3>
+        <p>В конзолата се въвеждат текст и естествено число n. Да се създаде програма, която да извежда този текст n пъти един след друг.</p>
+        <div class="block-code">public static void Main(string[] args)
+{
+    Console.WriteLine("Повтарящ се текст");
+    Console.Write("Въведете текст: ");
+    string txt = Console.ReadLine();
+    Console.Write("Колко пъти да се повтори: ");
+    int rep = int.Parse(Console.ReadLine());
+    
+    for (int i = 1; i <= rep; i++)
+    {
+        Console.Write(txt);
+    }
+    Console.WriteLine();
+}</div>
+
+        <h3>Пример 3: Поредица от намаляващи числа</h3>
+        <p>Да се изведат всички положителни числа, започващи от въведено от клавиатурата число, в намаляващ ред със стъпка 3.</p>
+        <div class="info-box">
+            <strong>Упътване:</strong> Началната стойност на брояча е въведеното число, защото това е най-голямото число (числата ще се нареждат в намаляващ ред).
+        </div>
+        <div class="block-code">public static void Main(string[] args)
+{
+    Console.Write("Въведете положително число: ");
+    int a = int.Parse(Console.ReadLine());
+    
+    for (int i = a; i > 0; i = i - 3)
+    {
+        Console.Write($"{i} ");
+    }
+    Console.WriteLine();
+}</div>
+
+        <h3>Пример 4: Кратни на 5</h3>
+        <p>Да се създаде програма, в която от клавиатурата се въвежда естествено число n. Програмата да извежда на екрана всички числа между 1 и n, които са кратни на 5.</p>
+        <div class="block-code">public static void Main(string[] args)
+{
+    Console.Write("n = ");
+    int n = int.Parse(Console.ReadLine());
+    
+    for (int i = 5; i <= n; i++)
+    {
+        if(i % 5 == 0)
+        {
+            Console.Write($"{i} ");
+        }
+    }
+    Console.WriteLine();
+}</div>
+
+        <hr style="border-color: #444; margin: 25px 0;">
+
+        <h3>Особености на цикъла for</h3>
+        <p>Цикълът <code>for</code> е изключително гъвкав. Можем да пропуснем някои (или всички) от неговите елементи, стига да запазим разделителите <code>;</code>.</p>
+        
+        <h4>1. С повече от една променлива</h4>
+        <p>Можем да инициализираме и обновяваме няколко променливи едновременно, разделени със запетая:</p>
+        <div class="block-code">int n = int.Parse(Console.ReadLine());
+for (int i = 1, j = n; i <= j; i++, j--)
+{
+    Console.WriteLine($"i={i}, j={j}");
+}</div>
+        <p><em>Пример с вход и изход:</em></p>
+        <div class="block-code">Вход: 5
+Изход:
+i=1, j=5
+i=2, j=4
+i=3, j=3</div>
+
+        <h4>2. Без инициализация</h4>
+        <p>Ако променливата вече е декларирана и инициализирана преди цикъла, първата част може да остане празна:</p>
+        <div class="block-code">int k = int.Parse(Console.ReadLine());
+for (; k <= 3; k++)
+{
+    Console.WriteLine(k);
+}</div>
+        <p><em>Пример с вход и изход:</em></p>
+        <div class="block-code">Вход: 1
+Изход:
+1
+2
+3</div>
+
+        <h4>3. Без стъпка (обновяване)</h4>
+        <p>Обновяването на брояча може да се случи вътре в самото тяло на цикъла:</p>
+        <div class="block-code">int max = int.Parse(Console.ReadLine());
+for (int p = 1; p <= max; )
+{
+    Console.Write($"{p} ");
+    p++;
+}</div>
+        <p><em>Пример с вход и изход:</em></p>
+        <div class="block-code">Вход: 4
+Изход: 1 2 3 4</div>
+
+        <h4>4. Без начало и стъпка</h4>
+        <p>Подобен запис работи абсолютно идентично на цикъла <code>while</code>:</p>
+        <div class="block-code">int m = int.Parse(Console.ReadLine());
+for (; m > 0; )
+{
+    Console.Write($"{m} ");
+    m--;
+}</div>
+        <p><em>Пример с вход и изход:</em></p>
+        <div class="block-code">Вход: 3
+Изход: 3 2 1</div>
+
+        <h4>5. Безкраен цикъл</h4>
+        <p>Ако пропуснем всички елементи, получаваме безкраен цикъл. Той трябва да бъде прекъснат ръчно вътре в тялото чрез <code>break</code>:</p>
+        <div class="block-code">for (;;)
+{
+    string input = Console.ReadLine();
+    if (input == "stop") 
+    {
+        Console.WriteLine("Спряно!");
+        break; // спираме го принудително
+    }
+    Console.WriteLine("Продължава...");
+}</div>
+        <p><em>Пример с вход и изход:</em></p>
+        <div class="block-code">Вход:
+test
+stop
+
+Изход:
+Продължава...
+Спряно!</div>
+
+    </div>
+
+    <!-- Интерактивен разделител -->
+    <div class="resizer" id="dragMe"></div>
+
+    <div class="panel right-panel">
+        
+        <div class="viz-header">
+            ⚡ Симулатор: Цикъл for ⚡
+        </div>
+
+        <div class="machine-panel">
+            <div class="validation-toast" id="valToast">Execution...</div>
+
+            <div class="dashboard-card" id="dashUI">
+                <div class="d-title">Текущи Стойности (RAM)</div>
+                <div class="d-stat"><span>int a (начало):</span> <span class="d-val" id="dA">---</span></div>
+                <div class="d-stat"><span>int b (край):</span> <span class="d-val" id="dB">---</span></div>
+                <div class="d-stat" style="border-top: 2px dashed #555; padding-top: 10px; margin-top: 5px;"><span>int i (брояч):</span> <span class="d-val" id="dI" style="color: #f1c40f;">---</span></div>
+            </div>
+        </div>
+
+        <div class="viz-content-wrapper">
+            <!-- Код (Пример 1) -->
+            <div class="code-container">
+<div class="code-line" id="line-0">class Program {</div>
+<div class="code-line" id="line-1">    static void Main() {</div>
+<div class="code-line" id="line-2">        Console.Write("a: ");</div>
+<div class="code-line" id="line-3">        int a = int.Parse(Console.ReadLine());</div>
+<div class="code-line" id="line-4">        Console.Write("b: ");</div>
+<div class="code-line" id="line-5">        int b = int.Parse(Console.ReadLine());</div>
+<div class="code-line" id="line-6">        </div>
+<div class="code-line" id="line-7">        for (int i = a; i <= b; i++) {</div>
+<div class="code-line" id="line-8">            Console.Write($"{i} ");</div>
+<div class="code-line" id="line-9">        }</div>
+<div class="code-line" id="line-10">        Console.WriteLine();</div>
+<div class="code-line" id="line-11">    }</div>
+<div class="code-line" id="line-12">}</div>
+            </div>
+
+            <!-- Конзола -->
+            <div class="console-box">
+                <div class="console-output" id="consoleOutput"></div>
+            </div>
+        </div>
+
+        <!-- Котвата на дъното -->
+        <div class="controls">
+            <button id="prevBtn" onclick="prevStep()" disabled>⏪ Назад</button>
+            <div class="step-indicator" id="stepIndicator">Стъпка: 0 / 0</div>
+            <button id="nextBtn" onclick="nextStep()">Напред ⏩</button>
+        </div>
+
+    </div>
+
+    <script>
+        // Логика за Плъзгача (Разделителя)
+        const resizer = document.getElementById('dragMe');
+        const leftPanel = document.getElementById('leftPanel');
+        let isHandlerDragging = false;
+
+        resizer.addEventListener('mousedown', function(e) {
+            isHandlerDragging = true;
+            resizer.classList.add('dragging');
+            document.body.style.cursor = 'col-resize';
+            e.preventDefault(); 
+        });
+
+        document.addEventListener('mousemove', function(e) {
+            if (!isHandlerDragging) return;
+            let newWidth = (e.clientX / window.innerWidth) * 100;
+            if(newWidth < 20) newWidth = 20;
+            if(newWidth > 80) newWidth = 80;
+            leftPanel.style.flex = `0 0 ${newWidth}%`;
+        });
+
+        document.addEventListener('mouseup', function(e) {
+            if (isHandlerDragging) {
+                isHandlerDragging = false;
+                resizer.classList.remove('dragging');
+                document.body.style.cursor = '';
+            }
+        });
+
+        const steps = [
+            { lines: [1], dVis: false, dA: "---", dB: "---", dI: "---", toast: "", con: "" },
+            
+            { lines: [2, 3], dVis: true, dA: "3", dB: "---", dI: "---", toast: "Въвеждане на начало на интервала", con: "a: 3\n" },
+            
+            { lines: [4, 5], dVis: true, dA: "3", dB: "5", dI: "---", toast: "Въвеждане на край на интервала", con: "a: 3\nb: 5\n" },
+
+            { lines: [7], dVis: true, dA: "3", dB: "5", dI: "3", toast: "1. Инициализация и Проверка (3 <= 5)", con: "a: 3\nb: 5\n" },
+            
+            { lines: [8], dVis: true, dA: "3", dB: "5", dI: "3", toast: "2. Тяло на цикъла: Отпечатва 3", con: "a: 3\nb: 5\n3 " },
+
+            { lines: [7], dVis: true, dA: "3", dB: "5", dI: "4", toast: "3. Обновяване (i++) и Проверка (4 <= 5)", con: "a: 3\nb: 5\n3 " },
+
+            { lines: [8], dVis: true, dA: "3", dB: "5", dI: "4", toast: "2. Тяло на цикъла: Отпечатва 4", con: "a: 3\nb: 5\n3 4 " },
+
+            { lines: [7], dVis: true, dA: "3", dB: "5", dI: "5", toast: "3. Обновяване (i++) и Проверка (5 <= 5)", con: "a: 3\nb: 5\n3 4 " },
+            
+            { lines: [8], dVis: true, dA: "3", dB: "5", dI: "5", toast: "2. Тяло на цикъла: Отпечатва 5", con: "a: 3\nb: 5\n3 4 5 " },
+
+            { lines: [7], dVis: true, dA: "3", dB: "5", dI: "6", toast: "3. Обновяване (i++) и Проверка (6 <= 5) -> КРАЙ", con: "a: 3\nb: 5\n3 4 5 " },
+
+            { lines: [10], dVis: true, dA: "3", dB: "5", dI: "6", toast: "УСПЕХ: Цикълът приключи. Нов ред.", con: "a: 3\nb: 5\n3 4 5 \n" }
+        ];
+
+        let currentStep = -1;
+
+        function updateUI() {
+            document.querySelectorAll('.code-line').forEach(el => {
+                el.classList.remove('active-line');
+            });
+            
+            const dash = document.getElementById('dashUI');
+            const toast = document.getElementById('valToast');
+            const conOut = document.getElementById('consoleOutput');
+            
+            if (currentStep >= 0) {
+                const step = steps[currentStep];
+                
+                let firstLine = null;
+                
+                step.lines.forEach(lineNum => {
+                    let el = document.getElementById('line-' + lineNum);
+                    if (el) {
+                        el.classList.add('active-line');
+                        if (!firstLine) {
+                            firstLine = el;
+                        }
+                    }
+                });
+                
+                if (firstLine) {
+                    firstLine.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+
+                if (step.dVis) {
+                    dash.classList.add('show');
+                    document.getElementById('dA').innerText = step.dA;
+                    document.getElementById('dB').innerText = step.dB;
+                    document.getElementById('dI').innerText = step.dI;
+                } else {
+                    dash.classList.remove('show');
+                }
+
+                if (step.toast !== "") {
+                    toast.innerText = step.toast;
+                    toast.classList.add('show');
+                    if(step.toast.includes("КРАЙ")) {
+                         toast.style.borderColor = "#f1c40f";
+                         toast.style.color = "#f1c40f";
+                    } else {
+                         toast.style.borderColor = "#fd79a8";
+                         toast.style.color = "#fd79a8";
+                    }
+                } else {
+                    toast.classList.remove('show');
+                }
+
+                conOut.innerHTML = step.con;
+                
+                // Автоматично скролиране на конзолата
+                conOut.parentElement.scrollTop = conOut.parentElement.scrollHeight;
+
+                document.getElementById('stepIndicator').innerText = `Стъпка: ${currentStep + 1} / ${steps.length}`;
+            }
+
+            if (currentStep <= 0) {
+                document.getElementById('prevBtn').disabled = true;
+            } else {
+                document.getElementById('prevBtn').disabled = false;
+            }
+
+            if (currentStep >= steps.length - 1) {
+                document.getElementById('nextBtn').disabled = true;
+            } else {
+                document.getElementById('nextBtn').disabled = false;
+            }
+        }
+
+        function nextStep() { 
+            if (currentStep < steps.length - 1) { 
+                currentStep++; 
+                updateUI(); 
+            } 
+        }
+        
+        function prevStep() { 
+            if (currentStep > 0) { 
+                currentStep--; 
+                updateUI(); 
+            } 
+        }
+
+        currentStep = 0;
+        window.onload = updateUI;
+    </script>
+</body>
+</html>
