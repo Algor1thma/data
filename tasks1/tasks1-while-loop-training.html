@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Приложение на оператор while - Algorithma</title>
+    <style>
+        body { margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; height: 100vh; background-color: #1e1e24; color: #e0e0e0; overflow: hidden;}
+        
+        /* Панели */
+        .panel { padding: 25px; overflow-y: auto; box-sizing: border-box; }
+        .left-panel { background-color: #2b2b36; flex: 0 0 50%; box-shadow: inset -5px 0 15px rgba(0,0,0,0.2);}
+        
+        /* Интерактивен плъзгач */
+        .resizer { flex: 0 0 6px; background-color: #333; cursor: col-resize; transition: background-color 0.2s ease; z-index: 100; box-shadow: 0 0 5px rgba(0,0,0,0.5);}
+        .resizer:hover, .resizer.dragging { background-color: #fd79a8; }
+        
+        /* ДЕСЕН ПАНЕЛ */
+        .right-panel { display: flex; flex-direction: column; background-color: #1e1e24; flex: 1; position: relative; overflow: hidden; padding-bottom: 95px;}
+        
+        /* Бутон Назад */
+        .back-to-home { display: inline-block; text-decoration: none; color: #fd79a8; font-weight: bold; font-size: 0.95rem; margin-bottom: 15px; padding: 8px 15px; border: 1px solid #fd79a8; border-radius: 8px; transition: all 0.3s ease; background: transparent; }
+        .back-to-home:hover { background-color: #fd79a8; color: #1e1e24; box-shadow: 0 0 10px rgba(253, 121, 168, 0.5); }
+
+        h1 { color: #ffffff; font-size: 1.7rem; margin-bottom: 5px; text-shadow: 0 2px 4px rgba(0,0,0,0.3);}
+        h2 { color: #fd79a8; font-size: 1.1rem; text-transform: uppercase; margin-top: 0; margin-bottom: 15px; letter-spacing: 1px;}
+        h3 { color: #00cec9; border-bottom: 1px solid #444; padding-bottom: 5px; margin-top: 25px; font-size: 1.15rem;}
+        p, ul, li { line-height: 1.5; color: #dcdde1; font-size: 0.95rem; margin-bottom: 8px;}
+
+        /* Информационни кутии */
+        .info-box { background: #353b48; border-left: 4px solid #f1c40f; padding: 15px 20px; border-radius: 0 8px 8px 0; margin: 15px 0;}
+        .info-box strong { color: #f1c40f; }
+
+        /* Вмъкнат код в текста */
+        code { background: #1e1e24; padding: 2px 6px; border-radius: 4px; color: #fd79a8; font-family: Consolas, monospace; border: 1px solid #444;}
+        .block-code { display: block; background: #0c0c0c; padding: 10px; margin: 10px 0; border-left: 4px solid #00cec9; color: #e0e0e0; font-family: Consolas, monospace; font-size: 0.85rem; white-space: pre-wrap;}
+
+        /* ТАБОВЕ ЗА ЗАДАЧИ */
+        .tabs { display: flex; flex-wrap: wrap; gap: 8px; margin: 15px 25px 5px 25px; flex-shrink: 0; justify-content: center;}
+        .tab-btn { background: #353b48; border: 1px solid #555; color: #b2bec3; padding: 6px 12px; border-radius: 6px; cursor: pointer; transition: 0.3s; font-size: 0.85rem; font-weight: bold;}
+        .tab-btn.active { background: #00cec9; color: #1e1e24; border-color: #00cec9; box-shadow: 0 0 8px rgba(0, 206, 201, 0.5);}
+        .tab-btn:hover:not(.active) { background: #4a5463;}
+
+        /* Специален Раздел ВИЗУАЛИЗАЦИИ */
+        .viz-header { background: linear-gradient(90deg, #e84393, #fd79a8); color: #fff; padding: 10px 20px; border-radius: 8px; text-align: center; font-weight: bold; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 2px; box-shadow: 0 4px 15px rgba(232, 67, 147, 0.4); flex-shrink: 0; margin: 25px 25px 0 25px;}
+
+        /* Фиксирана горна част за RAM (Компактна) */
+        .machine-panel { background: #2b2b36; border-bottom: 2px dashed #555; border-radius: 12px; padding: 15px; display: flex; justify-content: center; align-items: center; position: relative; flex-shrink: 0; margin: 5px 25px 0 25px; padding-top: 25px; padding-bottom: 10px;}
+        
+        /* Карта на паметта (RAM) */
+        .dashboard-card { background: #1e272e; color: #fff; width: 340px; padding: 10px 15px; border-radius: 8px; box-shadow: 0 8px 20px rgba(0,0,0,0.5); font-family: 'Segoe UI', sans-serif; position: relative; border-top: 6px solid #fd79a8; opacity: 1; transition: all 0.4s;}
+        .d-title { text-align: center; font-weight: bold; font-size: 1.05rem; border-bottom: 2px solid #444; padding-bottom: 8px; margin-bottom: 10px; color: #fd79a8; text-transform: uppercase;}
+        .d-stat { display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 0.9rem; background: #2d3436; padding: 6px 10px; border-radius: 4px;}
+        .d-val { font-weight: bold; color: #00cec9; font-family: Consolas, monospace;}
+        
+        /* Validation Toast */
+        .validation-toast { position: absolute; top: -15px; left: 50%; transform: translateX(-50%); background: #2d3436; border: 2px solid #fd79a8; color: #fd79a8; padding: 6px 15px; border-radius: 20px; font-family: Consolas, monospace; font-size: 0.85rem; font-weight: bold; opacity: 0; transition: all 0.3s; box-shadow: 0 5px 15px rgba(0,0,0,0.4); z-index: 10; white-space: nowrap;}
+        .validation-toast.show { opacity: 1; top: 5px; }
+
+        /* Скролираща долна част за кода и конзолата */
+        .viz-content-wrapper { display: flex; flex-direction: column; gap: 15px; flex: 1; overflow-y: auto; padding: 15px 25px;}
+
+        /* Обяснителна кутия */
+        .explanation-box { background-color: #282c34; border-left: 4px solid #00cec9; padding: 15px 20px; border-radius: 8px; color: #dcdde1; font-size: 0.95rem; line-height: 1.5; box-shadow: 0 4px 6px rgba(0,0,0,0.3); flex-shrink: 0; border: 1px solid #444;}
+        .exp-title { color: #00cec9; font-weight: bold; margin-bottom: 8px; text-transform: uppercase; font-size: 0.85rem; letter-spacing: 1px;}
+
+        /* Зона за код */
+        .code-container { background-color: #282c34; color: #abb2bf; padding: 12px; border-radius: 8px; font-family: Consolas, monospace; font-size: 12px; overflow-y: auto; box-shadow: inset 0 0 10px rgba(0,0,0,0.8); border: 1px solid #444; min-height: 200px; flex-shrink: 0;}
+        .code-line { padding: 2px 8px; margin: 1px 0; border-radius: 4px; transition: background-color 0.3s; white-space: pre; border-left: 3px solid transparent;}
+        .active-line { background-color: #3e4451; border-left: 3px solid #fd79a8; color: #ffffff; font-weight: bold; }
+
+        /* Конзола (Увеличена височина) */
+        .console-box { background-color: #000; border: 1px solid #333; border-top: 25px solid #2d3436; border-radius: 8px; padding: 12px; font-family: Consolas, 'Courier New', monospace; font-size: 13px; position: relative; box-shadow: 0 8px 15px rgba(0,0,0,0.5); flex: 1; min-height: 150px; overflow-y: auto; overflow-x: auto;}
+        .console-box::before { content: "C:\\Windows\\System32\\cmd.exe"; position: absolute; top: -20px; left: 10px; color: #b2bec3; font-size: 11px; font-family: 'Segoe UI', sans-serif;}
+        .console-output { color: #ecf0f1; white-space: pre-wrap; line-height: 1.5; }
+
+        /* КОНТРОЛИ */
+        .controls { position: absolute; bottom: 25px; left: 25px; right: 25px; display: flex; gap: 15px; justify-content: center; align-items: center; background: #2b2b36; padding: 10px; border-radius: 8px; border: 1px solid #444; z-index: 100;}
+        button.nav-btn { padding: 8px 15px; border: none; border-radius: 6px; background: linear-gradient(180deg, #fd79a8, #e84393); color: white; font-size: 13px; font-weight: bold; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.3); text-transform: uppercase;}
+        button.nav-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 10px rgba(253, 121, 168, 0.5); }
+        button.nav-btn:disabled { background: #555; color: #888; cursor: not-allowed; box-shadow: none; transform: none;}
+        .step-indicator { color: #fd79a8; font-weight: bold; font-family: Consolas, monospace; font-size: 0.95rem; width: 140px; text-align: center;}
+    </style>
+</head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-YYBQF66CTS"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-YYBQF66CTS');
+</script>
+<body>
+
+    <div class="panel left-panel" id="leftPanel">
+        <a href="../index.html" class="back-to-home">← Начало</a>
+        
+        <h1>Поредица от задачи</h1>
+        <h2>Приложение на оператора while</h2>
+        
+        <h3>Задача 1: Сума на дроби</h3>
+        <p>Напишете програма, която въвежда реално число a (гарантирано е, че a > 1). Програмата да намира и извежда няй-малкото цяло число k (пореден номер), за което сумата <code>1 + 1/2 + ... + 1/k</code> ще бъде по-голяма или равна на a, а също и самата сума.</p>
+        <p><em>Например: при a = 1.46115, сумата 1 + 1/2 = 1.5, т.е. намерената сума, за която е изпълнено условието е 1.5, а k = 2.</em></p>
+        <div class="block-code">Въведете стойност за a: 1.4
+k = 2
+sum = 1.5</div>
+
+        <h3>Задача 2: Банка</h3>
+        <p>Първоначалният влог в банка е 1000 EUR. След всеки месец размерът на депозита се увеличава с p процента от наличната сума (p – реално число, гарантирано е 0 &lt; p &lt; 5). Да се напише програма, която по въведен (от клавиатурата) процент p да пресмята и да извежда съобщение след колко месеца размерът на вложената сума ще надвиши 1500 EUR.</p>
+        <p>Съобщението да има вида: <code>След м месеца сумата по влога ще бъде хххх.хх EUR</code></p>
+        <div class="block-code">Въведете лихвен процент: 2.5
+След 17 месеца сумата ще бъде 1521.62 EUR</div>
+
+        <h3>Задача 3: Скиор</h3>
+        <p>Скиор започнал пробега си, като през първия ден пробягал 10 км. През всеки следващ ден той увеличавал разстоянието на пробега с p процента от този в предишния ден (p – реално число, гарантирано е, че 0 &lt; p &lt; 50). Напишете програма, която въвежда от клавиатурата процента p и намира след кой ден общият пробег на скиора ще надвиши 200 км.</p>
+        <p>Програмата да извежда съобщение, съдържащо намерения брой дни (цяло число) и общия пробег (реално число с 3 знака след десетичния разделител) по модела: <code>За д дни скиорът ще измине ххх.ххх км</code></p>
+        <div class="block-code">Въведете процент за удължаване на пробега: 7
+За 13 дни скиорът ще измине 201.406 км</div>
+    </div>
+
+    <!-- Интерактивен разделител -->
+    <div class="resizer" id="dragMe"></div>
+
+    <div class="panel right-panel">
+        
+        <div class="viz-header">
+            ⚡ Симулатор: Цикъл while ⚡
+        </div>
+
+        <div class="tabs" id="taskTabs">
+            <!-- Бутоните се генерират динамично от JS -->
+        </div>
+
+        <!-- Фиксирана горна част за RAM -->
+        <div class="machine-panel">
+            <div class="validation-toast" id="valToast">Execution...</div>
+
+            <div class="dashboard-card" id="dashUI">
+                <!-- Променливите се генерират динамично -->
+            </div>
+        </div>
+
+        <div class="viz-content-wrapper">
+            <!-- Обяснителна кутия -->
+            <div class="explanation-box">
+                <div class="exp-title">Обяснение на стъпката</div>
+                <div id="expText">Натиснете "Напред", за да започнете симулацията на програмата.</div>
+            </div>
+
+            <!-- Код -->
+            <div class="code-container" id="codeContainer">
+                <!-- Кодът се генерира динамично (Само за Зад. 1) -->
+            </div>
+
+            <!-- Конзола -->
+            <div class="console-box" id="consoleBox">
+                <div class="console-output" id="consoleOutput"></div>
+            </div>
+        </div>
+
+        <!-- Котвата на дъното -->
+        <div class="controls">
+            <button class="nav-btn" id="prevBtn" onclick="prevStep()" disabled>⏪ Назад</button>
+            <div class="step-indicator" id="stepIndicator">Стъпка: 0 / 0</div>
+            <button class="nav-btn" id="nextBtn" onclick="nextStep()">Напред ⏩</button>
+        </div>
+
+    </div>
+
+    <script>
+        // Логика за Плъзгача (Разделителя)
+        const resizer = document.getElementById('dragMe');
+        const leftPanel = document.getElementById('leftPanel');
+        let isHandlerDragging = false;
+
+        resizer.addEventListener('mousedown', function(e) {
+            isHandlerDragging = true;
+            resizer.classList.add('dragging');
+            document.body.style.cursor = 'col-resize';
+            e.preventDefault(); 
+        });
+
+        document.addEventListener('mousemove', function(e) {
+            if (!isHandlerDragging) return;
+            let newWidth = (e.clientX / window.innerWidth) * 100;
+            if(newWidth < 20) newWidth = 20;
+            if(newWidth > 80) newWidth = 80;
+            leftPanel.style.flex = `0 0 ${newWidth}%`;
+        });
+
+        document.addEventListener('mouseup', function(e) {
+            if (isHandlerDragging) {
+                isHandlerDragging = false;
+                resizer.classList.remove('dragging');
+                document.body.style.cursor = '';
+            }
+        });
+
+        const tasksData = {
+            1: {
+                title: "Зад. 1: Дроби",
+                code: `class Program {
+    static void Main() {
+        Console.Write("Въведете стойност за a: ");
+        double a = double.Parse(Console.ReadLine());
+        double sum = 0;
+        int k = 0;
+        while (sum < a) {
+            k++;
+            sum += 1.0 / k;
+        }
+        Console.WriteLine($"k = {k}");
+        Console.WriteLine($"sum = {sum}");
+    }
+}`,
+                vars: [{id: 'dA', name: 'double a'}, {id: 'dSum', name: 'double sum'}, {id: 'dK', name: 'int k'}],
+                steps: [
+                    { lines: [2, 3], state: {dA: "1.4", dSum: "0", dK: "0"}, toast: "Въвеждане на цел (a)", con: "Въведете стойност за a: 1.4\n", exp: "Потребителят въвежда стойност 1.4. Програмата прочита текста и го конвертира в реално число (double)." },
+                    { lines: [4, 5], state: {dA: "1.4", dSum: "0", dK: "0"}, toast: "Инициализация", con: "Въведете стойност за a: 1.4\n", exp: "Инициализират се началните стойности. Сумата (sum) е 0, а поредният номер (k) започва от 0." },
+                    { lines: [6], state: {dA: "1.4", dSum: "0", dK: "0"}, toast: "Проверка: 0 < 1.4 (True)", con: "Въведете стойност за a: 1.4\n", exp: "Операторът while проверява дали текущата сума (0) е по-малка от въведеното число a (1.4). Условието е вярно (True)." },
+                    { lines: [7], state: {dA: "1.4", dSum: "0", dK: "1"}, toast: "Увеличаваме k = 1", con: "Въведете стойност за a: 1.4\n", exp: "Влизаме в тялото на цикъла. Първо се увеличава броячът k на 1." },
+                    { lines: [8], state: {dA: "1.4", dSum: "1.0", dK: "1"}, toast: "sum += 1/1", con: "Въведете стойност за a: 1.4\n", exp: "Към сумата се добавя 1/1 (тоест 1.0). Текущата сума става 1.0." },
+                    { lines: [6], state: {dA: "1.4", dSum: "1.0", dK: "1"}, toast: "Проверка: 1.0 < 1.4 (True)", con: "Въведете стойност за a: 1.4\n", exp: "Нова проверка: 1.0 все още е по-малко от 1.4. Продължаваме цикъла." },
+                    { lines: [7], state: {dA: "1.4", dSum: "1.0", dK: "2"}, toast: "Увеличаваме k = 2", con: "Въведете стойност за a: 1.4\n", exp: "Увеличаваме k на 2." },
+                    { lines: [8], state: {dA: "1.4", dSum: "1.5", dK: "2"}, toast: "sum += 1/2", con: "Въведете стойност за a: 1.4\n", exp: "Към сумата се добавя 1/2 (тоест 0.5). Текущата сума става 1.5." },
+                    { lines: [6], state: {dA: "1.4", dSum: "1.5", dK: "2"}, toast: "Проверка: 1.5 < 1.4 (False!)", con: "Въведете стойност за a: 1.4\n", exp: "Нова проверка: 1.5 НЕ е по-малко от 1.4. Условието е False и цикълът приключва." },
+                    { lines: [10, 11], state: {dA: "1.4", dSum: "1.5", dK: "2"}, toast: "КРАЙ: Извеждане на резултата", con: "Въведете стойност за a: 1.4\nk = 2\nsum = 1.5\n", exp: "Извеждаме на екрана крайните стойности: k = 2 и сума = 1.5." }
+                ]
+            },
+            2: {
+                title: "Зад. 2: Банка",
+                code: ``, // Скрит код
+                vars: [{id: 'dP', name: 'double p'}, {id: 'dSum', name: 'double sum'}, {id: 'dM', name: 'int m'}],
+                steps: [
+                    { state: {dP: "2.5", dSum: "---", dM: "---"}, toast: "Въвеждане на процент", con: "Въведете лихвен процент: 2.5\n", exp: "Потребителят въвежда месечния лихвен процент (2.5%)." },
+                    { state: {dP: "2.5", dSum: "1000", dM: "0"}, toast: "Начален капитал: 1000", con: "Въведете лихвен процент: 2.5\n", exp: "Задава се началният капитал (sum = 1000 EUR) и броячът за месеци (m = 0)." },
+                    { state: {dP: "2.5", dSum: "1000", dM: "0"}, toast: "Проверка: 1000 <= 1500", con: "Въведете лихвен процент: 2.5\n", exp: "Цикълът while проверява дали сумата е по-малка или равна на 1500. Условието е True." },
+                    { state: {dP: "2.5", dSum: "1025.00", dM: "1"}, toast: "Месец 1", con: "Въведете лихвен процент: 2.5\n", exp: "Изчислява се лихвата за месец 1. Сумата се увеличава с 2.5% от 1000. Новата сума е 1025.00 EUR." },
+                    { state: {dP: "2.5", dSum: "1050.63", dM: "2"}, toast: "Месец 2", con: "Въведете лихвен процент: 2.5\n", exp: "Сумата отново е <= 1500. Изчислява се лихвата за месец 2. Сумата се увеличава с 2.5% от 1025. Новата сума е 1050.63 EUR." },
+                    { state: {dP: "2.5", dSum: "1484.50", dM: "16"}, toast: "Бързо превъртане... Месец 16", con: "Въведете лихвен процент: 2.5\n", exp: "Цикълът продължава да трупа лихва всеки месец върху новата сума. Стигаме до месец 16, където сумата е 1484.50 EUR." },
+                    { state: {dP: "2.5", dSum: "1521.62", dM: "17"}, toast: "Месец 17: Сумата надвишава 1500", con: "Въведете лихвен процент: 2.5\n", exp: "В месец 17 сумата достига 1521.62 EUR." },
+                    { state: {dP: "2.5", dSum: "1521.62", dM: "17"}, toast: "Проверка: 1521.62 <= 1500 (False)", con: "Въведете лихвен процент: 2.5\n", exp: "При следващата проверка на while (1521.62 <= 1500), резултатът е False. Цикълът приключва." },
+                    { state: {dP: "2.5", dSum: "1521.62", dM: "17"}, toast: "КРАЙ", con: "Въведете лихвен процент: 2.5\nСлед 17 месеца сумата ще бъде 1521.62 EUR\n", exp: "Отпечатва се крайният резултат - след 17 месеца сумата надвишава 1500 EUR." }
+                ]
+            },
+            3: {
+                title: "Зад. 3: Скиор",
+                code: ``, // Скрит код
+                vars: [{id: 'dP', name: 'double p'}, {id: 'dDaily', name: 'double daily'}, {id: 'dTotal', name: 'double total'}, {id: 'dD', name: 'int days'}],
+                steps: [
+                    { state: {dP: "10", dDaily: "---", dTotal: "---", dD: "---"}, toast: "Въвеждане на процент", con: "Въведете процент: 10\n", exp: "Потребителят въвежда с колко процента ще се увеличава пробегът всеки ден (напр. 10%)." },
+                    { state: {dP: "10", dDaily: "10", dTotal: "10", dD: "1"}, toast: "Ден 1", con: "Въведете процент: 10\n", exp: "Задава се начален дневен пробег (daily = 10 км) и общо изминато разстояние (total = 10 км) за Ден 1." },
+                    { state: {dP: "10", dDaily: "10", dTotal: "10", dD: "1"}, toast: "Проверка: 10 <= 200 (True)", con: "Въведете процент: 10\n", exp: "Цикълът while проверява дали общият пробег е <= 200 км. Условието е изпълнено." },
+                    { state: {dP: "10", dDaily: "11", dTotal: "21", dD: "2"}, toast: "Ден 2", con: "Въведете процент: 10\n", exp: "Дневният пробег се увеличава с 10% (става 11 км). Добавя се към общия (total = 21 км). Отчитаме Ден 2." },
+                    { state: {dP: "10", dDaily: "12.1", dTotal: "33.1", dD: "3"}, toast: "Ден 3", con: "Въведете процент: 10\n", exp: "Дневният пробег се увеличава пак с 10% (става 12.1 км). Добавя се към общия (total = 33.1 км). Отчитаме Ден 3." },
+                    { state: {dP: "10", dDaily: "25.9", dTotal: "185.3", dD: "11"}, toast: "Бързо превъртане... Ден 11", con: "Въведете процент: 10\n", exp: "Процесът се повтаря. В Ден 11 общият пробег достига 185.3 км." },
+                    { state: {dP: "10", dDaily: "28.53", dTotal: "213.84", dD: "12"}, toast: "Ден 12: Целта от 200 е надмината!", con: "Въведете процент: 10\n", exp: "В Ден 12 общият пробег достига 213.84 км, което е над 200." },
+                    { state: {dP: "10", dDaily: "28.53", dTotal: "213.84", dD: "12"}, toast: "Проверка: 213.84 <= 200 (False)", con: "Въведете процент: 10\n", exp: "Условието на цикъла while вече е False и той се прекратява." },
+                    { state: {dP: "10", dDaily: "28.53", dTotal: "213.84", dD: "12"}, toast: "КРАЙ", con: "Въведете процент: 10\nЗа 12 дни ще измине 213.843 км\n", exp: "Отпечатваме отговора: За 12 дни скиорът е изминал общо 213.843 км." }
+                ]
+            }
+        };
+
+        let currentTaskId = 1;
+        let currentStep = -1;
+
+        function initTabs() {
+            const tabsContainer = document.getElementById('taskTabs');
+            for (let i = 1; i <= 3; i++) {
+                const btn = document.createElement('button');
+                btn.className = `tab-btn ${i === 1 ? 'active' : ''}`;
+                btn.innerText = tasksData[i].title;
+                btn.onclick = () => loadTask(i, btn);
+                tabsContainer.appendChild(btn);
+            }
+        }
+
+        function loadTask(id, btnElement = null) {
+            currentTaskId = id;
+            currentStep = -1;
+            const task = tasksData[id];
+
+            if (btnElement) {
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                btnElement.classList.add('active');
+            }
+
+            // Рендериране на променливите
+            const dash = document.getElementById('dashUI');
+            dash.innerHTML = '<div class="d-title">Стойности (RAM) - ' + task.title.split(":")[0] + '</div>';
+            task.vars.forEach(v => {
+                const stat = document.createElement('div');
+                stat.className = 'd-stat';
+                stat.innerHTML = `<span>${v.name}:</span> <span class="d-val" id="${v.id}">---</span>`;
+                dash.appendChild(stat);
+            });
+
+            // Управление на панела с код
+            const codeCont = document.getElementById('codeContainer');
+            
+            if (id === 1) {
+                codeCont.style.display = 'block';
+                // Рендериране на кода
+                codeCont.innerHTML = '';
+                const lines = task.code.split('\n');
+                lines.forEach((line, idx) => {
+                    const div = document.createElement('div');
+                    div.className = 'code-line';
+                    div.id = `line-${idx}`;
+                    div.textContent = line;
+                    codeCont.appendChild(div);
+                });
+            } else {
+                codeCont.style.display = 'none';
+            }
+
+            updateUI();
+        }
+
+        function updateUI() {
+            const task = tasksData[currentTaskId];
+            const steps = task.steps;
+
+            document.querySelectorAll('.code-line').forEach(el => {
+                el.classList.remove('active-line');
+            });
+            
+            const toast = document.getElementById('valToast');
+            const conOut = document.getElementById('consoleOutput');
+            const expText = document.getElementById('expText');
+            
+            if (currentStep >= 0) {
+                const step = steps[currentStep];
+                
+                // Обновяване на обяснението
+                if (step.exp) {
+                    expText.innerText = step.exp;
+                }
+                
+                if (currentTaskId === 1 && step.lines) {
+                    let firstLine = null;
+                    step.lines.forEach(lineNum => {
+                        let el = document.getElementById('line-' + lineNum);
+                        if (el) {
+                            el.classList.add('active-line');
+                            if (!firstLine) firstLine = el;
+                        }
+                    });
+                    
+                    if (firstLine) {
+                        firstLine.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                }
+
+                // Обновяване на променливите
+                for (let key in step.state) {
+                    let el = document.getElementById(key);
+                    if (el) el.innerText = step.state[key];
+                }
+
+                if (step.toast !== "") {
+                    toast.innerText = step.toast;
+                    toast.classList.add('show');
+                    if (step.toast.includes("КРАЙ")) {
+                        toast.style.borderColor = "#00cec9";
+                        toast.style.color = "#00cec9";
+                    } else if (step.toast.includes("False")) {
+                        toast.style.borderColor = "#f1c40f";
+                        toast.style.color = "#f1c40f";
+                    } else {
+                        toast.style.borderColor = "#fd79a8";
+                        toast.style.color = "#fd79a8";
+                    }
+                } else {
+                    toast.classList.remove('show');
+                }
+
+                conOut.innerHTML = step.con;
+                document.getElementById('stepIndicator').innerText = `Стъпка: ${currentStep + 1} / ${steps.length}`;
+            } else {
+                expText.innerText = "Натиснете \"Напред\", за да започнете симулацията на програмата.";
+                toast.classList.remove('show');
+                conOut.innerHTML = "";
+                document.getElementById('stepIndicator').innerText = `Стъпка: 0 / ${steps.length}`;
+                
+                // Reset vars
+                task.vars.forEach(v => {
+                    let el = document.getElementById(v.id);
+                    if (el) el.innerText = "---";
+                });
+            }
+
+            document.getElementById('prevBtn').disabled = currentStep <= -1;
+            document.getElementById('nextBtn').disabled = currentStep >= steps.length - 1;
+        }
+
+        function nextStep() { 
+            const steps = tasksData[currentTaskId].steps;
+            if (currentStep < steps.length - 1) { 
+                currentStep++; 
+                updateUI(); 
+            } 
+        }
+        
+        function prevStep() { 
+            if (currentStep > -1) { 
+                currentStep--; 
+                updateUI(); 
+            } 
+        }
+
+        window.onload = () => {
+            initTabs();
+            loadTask(1);
+        };
+    </script>
+</body>
+</html>
