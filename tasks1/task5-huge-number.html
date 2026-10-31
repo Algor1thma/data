@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Задача: Огромно число - Algorithma</title>
+    <style>
+        body { margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; height: 100vh; background-color: #1e1e24; color: #e0e0e0; overflow: hidden;}
+        
+        /* Панели */
+        .panel { padding: 25px; overflow-y: auto; box-sizing: border-box; }
+        .left-panel { background-color: #2b2b36; flex: 0 0 50%; box-shadow: inset -5px 0 15px rgba(0,0,0,0.2);}
+        
+        /* Интерактивен плъзгач */
+        .resizer { flex: 0 0 6px; background-color: #333; cursor: col-resize; transition: background-color 0.2s ease; z-index: 100; box-shadow: 0 0 5px rgba(0,0,0,0.5);}
+        .resizer:hover, .resizer.dragging { background-color: #fd79a8; }
+        
+        /* ДЕСЕН ПАНЕЛ */
+        .right-panel { display: flex; flex-direction: column; background-color: #1e1e24; flex: 1; position: relative; overflow: hidden; padding-bottom: 95px;}
+        
+        /* Бутон Назад */
+        .back-to-home { display: inline-block; text-decoration: none; color: #fd79a8; font-weight: bold; font-size: 0.95rem; margin-bottom: 15px; padding: 8px 15px; border: 1px solid #fd79a8; border-radius: 8px; transition: all 0.3s ease; background: transparent; }
+        .back-to-home:hover { background-color: #fd79a8; color: #1e1e24; box-shadow: 0 0 10px rgba(253, 121, 168, 0.5); }
+
+        h1 { color: #ffffff; font-size: 1.7rem; margin-bottom: 5px; text-shadow: 0 2px 4px rgba(0,0,0,0.3);}
+        h2 { color: #fd79a8; font-size: 1.1rem; text-transform: uppercase; margin-top: 0; margin-bottom: 15px; letter-spacing: 1px;}
+        h3 { color: #00cec9; border-bottom: 1px solid #444; padding-bottom: 5px; margin-top: 25px; font-size: 1.15rem;}
+        p, ul, li { line-height: 1.5; color: #dcdde1; font-size: 0.95rem; margin-bottom: 8px;}
+
+        /* Информационни кутии */
+        .info-box { background: #353b48; border-left: 4px solid #f1c40f; padding: 15px 20px; border-radius: 0 8px 8px 0; margin: 15px 0;}
+        .info-box strong { color: #f1c40f; }
+
+        /* Вмъкнат код в текста */
+        code { background: #1e1e24; padding: 2px 6px; border-radius: 4px; color: #fd79a8; font-family: Consolas, monospace; border: 1px solid #444;}
+        .block-code { display: block; background: #0c0c0c; padding: 10px; margin: 10px 0; border-left: 4px solid #00cec9; color: #e0e0e0; font-family: Consolas, monospace; font-size: 0.85rem; white-space: pre-wrap; word-break: break-all;}
+
+        /* Специален Раздел ВИЗУАЛИЗАЦИИ */
+        .viz-header { background: linear-gradient(90deg, #e84393, #fd79a8); color: #fff; padding: 10px 20px; border-radius: 8px; text-align: center; font-weight: bold; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 2px; box-shadow: 0 4px 15px rgba(232, 67, 147, 0.4); flex-shrink: 0; margin: 25px 25px 0 25px;}
+
+        /* Фиксирана горна част за RAM (Малка и компактна) */
+        .machine-panel { background: #2b2b36; border-bottom: 2px dashed #555; border-radius: 12px; padding: 15px; display: flex; justify-content: center; align-items: center; position: relative; flex-shrink: 0; margin: 5px 25px 0 25px; padding-top: 25px; padding-bottom: 10px;}
+        
+        /* Карта на паметта (RAM) */
+        .dashboard-card { background: #1e272e; color: #fff; width: 340px; padding: 10px 15px; border-radius: 8px; box-shadow: 0 8px 20px rgba(0,0,0,0.5); font-family: 'Segoe UI', sans-serif; position: relative; border-top: 6px solid #fd79a8; opacity: 1; transition: all 0.4s;}
+        .d-title { text-align: center; font-weight: bold; font-size: 1.05rem; border-bottom: 2px solid #444; padding-bottom: 8px; margin-bottom: 10px; color: #fd79a8; text-transform: uppercase;}
+        .d-stat { display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 0.9rem; background: #2d3436; padding: 6px 10px; border-radius: 4px;}
+        .d-val { font-weight: bold; color: #00cec9; font-family: Consolas, monospace;}
+        
+        /* Validation Toast */
+        .validation-toast { position: absolute; top: -15px; left: 50%; transform: translateX(-50%); background: #2d3436; border: 2px solid #fd79a8; color: #fd79a8; padding: 6px 15px; border-radius: 20px; font-family: Consolas, monospace; font-size: 0.85rem; font-weight: bold; opacity: 0; transition: all 0.3s; box-shadow: 0 5px 15px rgba(0,0,0,0.4); z-index: 10; white-space: nowrap;}
+        .validation-toast.show { opacity: 1; top: 5px; }
+
+        /* Скролираща долна част за обяснение и конзола */
+        .viz-content-wrapper { display: flex; flex-direction: column; gap: 15px; flex: 1; overflow-y: auto; padding: 15px 25px;}
+
+        /* Обяснителна кутия */
+        .explanation-box { background-color: #282c34; border-left: 4px solid #00cec9; padding: 15px 20px; border-radius: 8px; color: #dcdde1; font-size: 0.95rem; line-height: 1.5; box-shadow: 0 4px 6px rgba(0,0,0,0.3); flex-shrink: 0; border: 1px solid #444;}
+        .exp-title { color: #00cec9; font-weight: bold; margin-bottom: 8px; text-transform: uppercase; font-size: 0.85rem; letter-spacing: 1px;}
+
+        /* Конзола (Гъвкава и компактна) */
+        .console-box { background-color: #000; border: 1px solid #333; border-top: 25px solid #2d3436; border-radius: 8px; padding: 12px; font-family: Consolas, 'Courier New', monospace; font-size: 13px; position: relative; box-shadow: 0 8px 15px rgba(0,0,0,0.5); flex: 1; min-height: 150px; overflow-y: auto; overflow-x: auto;}
+        .console-box::before { content: "C:\\Windows\\System32\\cmd.exe"; position: absolute; top: -20px; left: 10px; color: #b2bec3; font-size: 11px; font-family: 'Segoe UI', sans-serif;}
+        .console-output { color: #ecf0f1; white-space: pre-wrap; line-height: 1.5; }
+
+        /* КОНТРОЛИ */
+        .controls { position: absolute; bottom: 25px; left: 25px; right: 25px; display: flex; gap: 15px; justify-content: center; align-items: center; background: #2b2b36; padding: 10px; border-radius: 8px; border: 1px solid #444; z-index: 100;}
+        button.nav-btn { padding: 8px 15px; border: none; border-radius: 6px; background: linear-gradient(180deg, #fd79a8, #e84393); color: white; font-size: 13px; font-weight: bold; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.3); text-transform: uppercase;}
+        button.nav-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 10px rgba(253, 121, 168, 0.5); }
+        button.nav-btn:disabled { background: #555; color: #888; cursor: not-allowed; box-shadow: none; transform: none;}
+        .step-indicator { color: #fd79a8; font-weight: bold; font-family: Consolas, monospace; font-size: 0.95rem; width: 140px; text-align: center;}
+    </style>
+</head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-YYBQF66CTS"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-YYBQF66CTS');
+</script>
+<body>
+
+    <div class="panel left-panel" id="leftPanel">
+        <a href="../index.html" class="back-to-home">← Начало</a>
+        
+        <h1>Задача: Огромно число</h1>
+        <h2>Приложение на оператора while</h2>
+        
+        <p>В скуката, породена от забраната за излизане навън, Иван се опитал да си представи какво число ще се получи, ако запише едно до друго числата 1, 2, 3, 4, 5, 6, ...</p>
+        <p>Е, получило се нещо ето такова:</p>
+        <div class="block-code">123456789101112131415161718...</div>
+        
+        <p>После, тъй като му станало интересно, Иван си задал такъв въпрос: <strong>Коя ще бъде М-тата цифра от това гигантско число и при долепянето на кое поредно естествено число се получава това?</strong></p>
+        
+        <p>Опитал при M=20 и установил, че в „огромното число“ цифрата с №20 е 1 и тази цифра се достига при „долепянето“ на числото 15.</p>
+        <div class="block-code">1234567891011121314151617181920212223242526272829303132...</div>
+        
+        <p>После опитал при M=111 и установил, макар и след доста броене, че в „огромното число“ цифрата с №111 е 0 и тази цифра се достига при „долепянето“ на числото 60.</p>
+        
+        <p><strong>Съставете програма</strong>, която прочита от клавиатурата едно естествено число М (гарантирано е, че М &lt;= 1 000 000 000) и извежда на екрана стойността на М-тата поред цифра от „огромното число“, както и числото, при чието „долепяне“ се достига тази М-та цифра.</p>
+
+        <h3>Примери:</h3>
+        <div class="block-code">Въведете M: 20
+Цифрата с номер 20 е 1
+Образува се при долепянето на 15
+
+Въведете M: 111
+Цифрата с номер 111 е 0
+Образува се при долепянето на 60
+
+Въведете M: 1001
+Цифрата с номер 1001 e 7
+Образува се при долепянето на 370</div>
+
+        <div class="info-box">
+            <strong>Упътване:</strong><br><br>
+            <strong>Вариант 1 (Симулация):</strong> Най-напред се опитайте да симулирате процеса на „долепянето“ и така да намерите правилно поредното число, при което броят на цифрите на „огромното число“ достига или надвишава М. Едва след това се опитайте да определите и коя е търсената цифра.<br><br>
+            <strong>Вариант 2 (Формула):</strong> Опитайте се да съставите математическа логика, която да ви позволява да разберете колко цифри трябва да има последното долепено число, а след това да откриете и кое е то. Накрая остава само да се разбере коя е търсената цифра.
+        </div>
+    </div>
+
+    <!-- Интерактивен разделител -->
+    <div class="resizer" id="dragMe"></div>
+
+    <div class="panel right-panel">
+        
+        <div class="viz-header">
+            ⚡ Симулатор: Огромно число (Вариант 1) ⚡
+        </div>
+
+        <!-- Фиксирана горна част за RAM -->
+        <div class="machine-panel">
+            <div class="validation-toast" id="valToast">Execution...</div>
+
+            <div class="dashboard-card" id="dashUI">
+                <div class="d-title">Стойности (RAM)</div>
+                <div class="d-stat"><span>Търсена позиция (M):</span> <span class="d-val" id="dM">---</span></div>
+                <div class="d-stat"><span>Текущо число (num):</span> <span class="d-val" id="dNum">---</span></div>
+                <div class="d-stat" style="border-top: 2px dashed #555; padding-top: 10px; margin-top: 5px;"><span>Обща дължина (len):</span> <span class="d-val" id="dLen" style="color: #f1c40f;">---</span></div>
+            </div>
+        </div>
+
+        <div class="viz-content-wrapper">
+            <!-- Обяснителна кутия -->
+            <div class="explanation-box">
+                <div class="exp-title">Обяснение на стъпката</div>
+                <div id="expText">Натиснете "Напред", за да започнете симулацията. Ще проследим логиката за M = 20.</div>
+            </div>
+
+            <!-- Конзола -->
+            <div class="console-box" id="consoleBox">
+                <div class="console-output" id="consoleOutput"></div>
+            </div>
+        </div>
+
+        <!-- Котвата на дъното -->
+        <div class="controls">
+            <button class="nav-btn" id="prevBtn" onclick="prevStep()" disabled>⏪ Назад</button>
+            <div class="step-indicator" id="stepIndicator">Стъпка: 0 / 0</div>
+            <button class="nav-btn" id="nextBtn" onclick="nextStep()">Напред ⏩</button>
+        </div>
+
+    </div>
+
+    <script>
+        // Логика за Плъзгача (Разделителя)
+        const resizer = document.getElementById('dragMe');
+        const leftPanel = document.getElementById('leftPanel');
+        let isHandlerDragging = false;
+
+        resizer.addEventListener('mousedown', function(e) {
+            isHandlerDragging = true;
+            resizer.classList.add('dragging');
+            document.body.style.cursor = 'col-resize';
+            e.preventDefault(); 
+        });
+
+        document.addEventListener('mousemove', function(e) {
+            if (!isHandlerDragging) return;
+            let newWidth = (e.clientX / window.innerWidth) * 100;
+            if(newWidth < 20) newWidth = 20;
+            if(newWidth > 80) newWidth = 80;
+            leftPanel.style.flex = `0 0 ${newWidth}%`;
+        });
+
+        document.addEventListener('mouseup', function(e) {
+            if (isHandlerDragging) {
+                isHandlerDragging = false;
+                resizer.classList.remove('dragging');
+                document.body.style.cursor = '';
+            }
+        });
+
+        const steps = [
+            { 
+                state: {dM: "---", dNum: "---", dLen: "---"}, 
+                toast: "Готовност за старт", 
+                con: "", 
+                exp: "Натиснете \"Напред\", за да започнете симулацията. Ще проследим изпълнението на програмата за позиция M = 20." 
+            },
+            { 
+                state: {dM: "20", dNum: "0", dLen: "0"}, 
+                toast: "Инициализация", 
+                con: "Въведете M: 20\n", 
+                exp: "Потребителят въвежда желаната позиция (M = 20). Програмата инициализира променливата за текущо число (num = 0) и натрупаната дължина (len = 0)." 
+            },
+            { 
+                state: {dM: "20", dNum: "1", dLen: "1"}, 
+                toast: "Долепяне на първото число", 
+                con: "Въведете M: 20\n", 
+                exp: "Влизаме в цикъла while (len < M). Увеличаваме num на 1. Тъй като числото 1 има само 1 цифра, добавяме 1 към общата дължина (len става 1)." 
+            },
+            { 
+                state: {dM: "20", dNum: "9", dLen: "9"}, 
+                toast: "Превъртане до 9", 
+                con: "Въведете M: 20\n", 
+                exp: "Цикълът продължава да върти. Долепяме едноцифрените числа от 2 до 9. При num = 9, общата дължина на 'огромното число' вече е точно 9 символа." 
+            },
+            { 
+                state: {dM: "20", dNum: "10", dLen: "11"}, 
+                toast: "Първо двуцифрено число", 
+                con: "Въведете M: 20\n", 
+                exp: "Долепяме следващото число: 10. То има 2 цифри. Текущата дължина се увеличава с 2 и става 11 (9 + 2 = 11). Условието 11 < 20 е вярно." 
+            },
+            { 
+                state: {dM: "20", dNum: "14", dLen: "19"}, 
+                toast: "Превъртане до 14", 
+                con: "Въведете M: 20\n", 
+                exp: "Цикълът стига до num = 14. Дължината се е увеличила с още 4 по 2 цифри (8). Така len става 19. Проверката while(19 < 20) е вярна." 
+            },
+            { 
+                state: {dM: "20", dNum: "15", dLen: "21"}, 
+                toast: "Надхвърляне на M", 
+                con: "Въведете M: 20\n", 
+                exp: "Долепяме 15. Дължината се увеличава с 2 и става 21. Тъй като 21 вече НЕ е по-малко от 20, условието на цикъла става False и той приключва." 
+            },
+            { 
+                state: {dM: "20", dNum: "15", dLen: "21"}, 
+                toast: "Изчисляване на точната позиция", 
+                con: "Въведете M: 20\n", 
+                exp: "Вече знаем, че търсената цифра се намира в числото 15. Преди да долепим 15, дължината е била 19. Търсим 20-тата цифра, следователно ни трябва 1-вата цифра на '15'." 
+            },
+            { 
+                state: {dM: "20", dNum: "15", dLen: "21"}, 
+                toast: "Идентифициране на цифрата", 
+                con: "Въведете M: 20\n", 
+                exp: "Първата цифра на числото 15 е '1'. Програмата извлича този символ и се подготвя да го отпечата на екрана." 
+            },
+            { 
+                state: {dM: "20", dNum: "15", dLen: "21"}, 
+                toast: "КРАЙ: Изход на резултата", 
+                con: "Въведете M: 20\nЦифрата с номер 20 е 1\nОбразува се при долепянето на 15\n", 
+                exp: "Резултатите се отпечатват в конзолата точно според изискванията на условието. Симулацията завърши успешно!" 
+            }
+        ];
+
+        let currentStep = -1;
+
+        function updateUI() {
+            const dash = document.getElementById('dashUI');
+            const toast = document.getElementById('valToast');
+            const conOut = document.getElementById('consoleOutput');
+            const expText = document.getElementById('expText');
+            
+            if (currentStep >= 0) {
+                const step = steps[currentStep];
+                
+                // Обновяване на обяснението
+                expText.innerText = step.exp;
+
+                // Обновяване на променливите
+                for (let key in step.state) {
+                    let el = document.getElementById(key);
+                    if (el) el.innerText = step.state[key];
+                }
+
+                if (step.toast !== "") {
+                    toast.innerText = step.toast;
+                    toast.classList.add('show');
+                    if (step.toast.includes("КРАЙ")) {
+                        toast.style.borderColor = "#00cec9";
+                        toast.style.color = "#00cec9";
+                    } else if (step.toast.includes("Надхвърляне")) {
+                        toast.style.borderColor = "#f1c40f";
+                        toast.style.color = "#f1c40f";
+                    } else {
+                        toast.style.borderColor = "#fd79a8";
+                        toast.style.color = "#fd79a8";
+                    }
+                } else {
+                    toast.classList.remove('show');
+                }
+
+                conOut.innerHTML = step.con;
+                document.getElementById('stepIndicator').innerText = `Стъпка: ${currentStep + 1} / ${steps.length}`;
+            } else {
+                expText.innerText = "Натиснете \"Напред\", за да започнете симулацията. Ще проследим логиката за M = 20.";
+                toast.classList.remove('show');
+                conOut.innerHTML = "";
+                document.getElementById('stepIndicator').innerText = `Стъпка: 0 / ${steps.length}`;
+                
+                // Reset vars
+                document.getElementById('dM').innerText = "---";
+                document.getElementById('dNum').innerText = "---";
+                document.getElementById('dLen').innerText = "---";
+            }
+
+            document.getElementById('prevBtn').disabled = currentStep <= -1;
+            document.getElementById('nextBtn').disabled = currentStep >= steps.length - 1;
+        }
+
+        function nextStep() { 
+            if (currentStep < steps.length - 1) { 
+                currentStep++; 
+                updateUI(); 
+            } 
+        }
+        
+        function prevStep() { 
+            if (currentStep > -1) { 
+                currentStep--; 
+                updateUI(); 
+            } 
+        }
+
+        window.onload = () => {
+            updateUI();
+        };
+    </script>
+</body>
+</html>
