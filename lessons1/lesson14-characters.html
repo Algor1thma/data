@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Знаков тип данни (char) - Algorithma</title>
+    <style>
+        body { margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; height: 100vh; background-color: #1e1e24; color: #e0e0e0; overflow: hidden;}
+        
+        /* Панели */
+        .panel { padding: 25px; overflow-y: auto; box-sizing: border-box; }
+        .left-panel { background-color: #2b2b36; flex: 0 0 50%; box-shadow: inset -5px 0 15px rgba(0,0,0,0.2);}
+        
+        /* Интерактивен плъзгач */
+        .resizer { flex: 0 0 6px; background-color: #333; cursor: col-resize; transition: background-color 0.2s ease; z-index: 100; box-shadow: 0 0 5px rgba(0,0,0,0.5);}
+        .resizer:hover, .resizer.dragging { background-color: #fd79a8; }
+        
+        /* ДЕСЕН ПАНЕЛ */
+        .right-panel { display: flex; flex-direction: column; background-color: #1e1e24; flex: 1; position: relative; overflow: hidden; padding-bottom: 85px; min-width: 25%;}
+        
+        /* Бутон Назад */
+        .back-to-home { display: inline-block; text-decoration: none; color: #fd79a8; font-weight: bold; font-size: 0.95rem; margin-bottom: 15px; padding: 8px 15px; border: 1px solid #fd79a8; border-radius: 8px; transition: all 0.3s ease; background: transparent; }
+        .back-to-home:hover { background-color: #fd79a8; color: #1e1e24; box-shadow: 0 0 10px rgba(253, 121, 168, 0.5); }
+
+        h1 { color: #ffffff; font-size: 1.7rem; margin-bottom: 5px; text-shadow: 0 2px 4px rgba(0,0,0,0.3);}
+        h2 { color: #fd79a8; font-size: 1.1rem; text-transform: uppercase; margin-top: 0; margin-bottom: 15px; letter-spacing: 1px;}
+        h3 { color: #00cec9; border-bottom: 1px solid #444; padding-bottom: 5px; margin-top: 25px; font-size: 1.15rem;}
+        h4 { color: #f1c40f; margin-top: 18px; margin-bottom: 6px; font-size: 1rem;}
+        p, ul, li { line-height: 1.5; color: #dcdde1; font-size: 0.95rem; margin-bottom: 8px;}
+        ol { margin-top: 5px; margin-bottom: 10px; padding-left: 20px; line-height: 1.6;}
+        
+        /* Таблици */
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; margin-bottom: 15px; font-size: 0.85rem; background-color: #353b48; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.3);}
+        th, td { border: 1px solid #444; padding: 8px; text-align: left; }
+        th { background-color: #2f3640; color: #fd79a8; font-weight: bold;}
+
+        /* Информационни кутии */
+        .info-box { background: #353b48; border-left: 4px solid #f1c40f; padding: 15px 20px; border-radius: 0 8px 8px 0; margin: 15px 0;}
+        .info-box strong { color: #f1c40f; }
+
+        /* Акцентна секция за практически приложения */
+        .practical-accent { background: linear-gradient(135deg, rgba(0, 206, 201, 0.12), rgba(253, 121, 168, 0.08)); border: 1px solid #00cec9; border-left: 5px solid #00cec9; border-radius: 8px; padding: 18px 20px; margin-top: 25px; box-shadow: 0 4px 12px rgba(0,0,0,0.25);}
+        .practical-accent h3 { margin-top: 0; border-bottom-color: rgba(0, 206, 201, 0.3);}
+
+        /* Вмъкнат код в текста */
+        code { background: #1e1e24; padding: 2px 6px; border-radius: 4px; color: #fd79a8; font-family: Consolas, monospace; border: 1px solid #444;}
+        .block-code { display: block; background: #0c0c0c; padding: 10px; margin: 10px 0; border-left: 4px solid #00cec9; color: #e0e0e0; font-family: Consolas, monospace; font-size: 0.85rem; white-space: pre-wrap;}
+
+        /* Специален Раздел ВИЗУАЛИЗАЦИИ */
+        .viz-header { background: linear-gradient(90deg, #e84393, #fd79a8); color: #fff; padding: 8px 18px; border-radius: 8px; text-align: center; font-weight: bold; font-size: 1.05rem; text-transform: uppercase; letter-spacing: 2px; box-shadow: 0 4px 15px rgba(232, 67, 147, 0.4); flex-shrink: 0; margin: 20px 25px 0 25px;}
+
+        /* Фиксирана и компактна горна част за RAM */
+        .machine-panel { background: #2b2b36; border-bottom: 2px dashed #555; border-radius: 10px; padding: 22px 12px 10px 12px; display: flex; justify-content: center; align-items: center; position: relative; flex-shrink: 0; margin: 8px 25px 0 25px;}
+        
+        /* Карта на паметта (RAM) - Свита и компактна в 2 колони */
+        .dashboard-card { background: #1e272e; color: #fff; width: 100%; max-width: 440px; padding: 8px 14px; border-radius: 8px; box-shadow: 0 6px 15px rgba(0,0,0,0.5); font-family: 'Segoe UI', sans-serif; position: relative; border-top: 4px solid #fd79a8; opacity: 1; transition: all 0.4s;}
+        .d-title { text-align: center; font-weight: bold; font-size: 0.9rem; border-bottom: 1px solid #444; padding-bottom: 5px; margin-bottom: 8px; color: #fd79a8; text-transform: uppercase; letter-spacing: 1px;}
+        .d-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+        .d-stat { display: flex; justify-content: space-between; align-items: center; font-size: 0.82rem; background: #2d3436; padding: 4px 10px; border-radius: 4px;}
+        .d-val { font-weight: bold; color: #00cec9; font-family: Consolas, monospace; font-size: 0.9rem;}
+        
+        /* Validation Toast */
+        .validation-toast { position: absolute; top: -10px; left: 50%; transform: translateX(-50%); background: #2d3436; border: 2px solid #fd79a8; color: #fd79a8; padding: 3px 12px; border-radius: 20px; font-family: Consolas, monospace; font-size: 0.8rem; font-weight: bold; opacity: 0; transition: all 0.3s; box-shadow: 0 5px 15px rgba(0,0,0,0.4); z-index: 10; white-space: nowrap;}
+        .validation-toast.show { opacity: 1; top: 3px; }
+
+        /* Скролираща долна част за кода и конзолата */
+        .viz-content-wrapper { display: flex; flex-direction: column; gap: 12px; flex: 1; overflow-y: auto; padding: 12px 25px;}
+
+        /* Зона за код (Максимално увеличена) */
+        .code-container { background-color: #282c34; color: #abb2bf; padding: 14px; border-radius: 8px; font-family: Consolas, monospace; font-size: 13px; overflow-y: auto; box-shadow: inset 0 0 10px rgba(0,0,0,0.8); flex: 1; border: 1px solid #444; min-height: 290px;}
+        .code-line { padding: 3px 8px; margin: 1px 0; border-radius: 4px; transition: background-color 0.3s; white-space: pre; border-left: 3px solid transparent;}
+        .active-line { background-color: #3e4451; border-left: 3px solid #fd79a8; color: #ffffff; font-weight: bold; }
+
+        /* Конзола (Компактна) */
+        .console-box { background-color: #000; border: 1px solid #333; border-top: 22px solid #2d3436; border-radius: 8px; padding: 10px 12px; font-family: Consolas, 'Courier New', monospace; font-size: 13px; position: relative; box-shadow: 0 8px 15px rgba(0,0,0,0.5); height: 85px; flex-shrink: 0; overflow-y: auto; overflow-x: auto;}
+        .console-box::before { content: "C:\\Windows\\System32\\cmd.exe"; position: absolute; top: -18px; left: 10px; color: #b2bec3; font-size: 10.5px; font-family: 'Segoe UI', sans-serif;}
+        .console-output { color: #ecf0f1; white-space: pre-wrap; line-height: 1.4; }
+
+        /* КОНТРОЛИ */
+        .controls { position: absolute; bottom: 20px; left: 25px; right: 25px; display: flex; gap: 15px; justify-content: center; align-items: center; background: #2b2b36; padding: 8px 10px; border-radius: 8px; border: 1px solid #444; z-index: 100;}
+        button.nav-btn { padding: 8px 15px; border: none; border-radius: 6px; background: linear-gradient(180deg, #fd79a8, #e84393); color: white; font-size: 13px; font-weight: bold; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.3); text-transform: uppercase;}
+        button.nav-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 10px rgba(253, 121, 168, 0.5); }
+        button.nav-btn:disabled { background: #555; color: #888; cursor: not-allowed; box-shadow: none; transform: none;}
+        .step-indicator { color: #fd79a8; font-weight: bold; font-family: Consolas, monospace; font-size: 0.95rem; width: 140px; text-align: center;}
+    </style>
+</head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-YYBQF66CTS"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-YYBQF66CTS');
+</script>
+<body>
+
+    <div class="panel left-panel" id="leftPanel">
+        <a href="../index.html" class="back-to-home">← Начало</a>
+        
+        <h1>Знаков тип данни</h1>
+        <h2>Символи</h2>
+        
+        <h3>Данни от знаков тип</h3>
+        <p>За този тип се употребява названието <code>char</code> – съкращение от англ. дума “character” (знак). Ето пример за определяне на променлива от този тип:</p>
+        <div class="block-code">char c;</div>
+        <p>Променлива от тип <code>char</code> съхранява стойности, които са единични знаци. Такива могат да бъдат например буквите от латинската или българската азбука, цифрите, както и препинателните знаци.</p>
+
+        <h3>Типът char и Unicode</h3>
+        <p>В езика C# знаците се представят с поредния си номер в двубайтовата таблица Unicode (2^16 = 65 536 знака). Стандартът Unicode е създаден с цел съхраняването на текстови данни на различни езици.</p>
+
+        <div class="info-box">
+            <strong>Знакова стойност</strong><br>
+            Присвояването на знакова стойност става чрез заграждането ѝ в единични кавички (апострофи):<br>
+            <code>char c = 'x';</code><br>
+            За променлива от този тип може да се употреби метода <code>ReadLine()</code> (напр. <code>c = char.Parse(Console.ReadLine());</code>) и метода <code>WriteLine(…)</code>.
+        </div>
+
+        <h3>Номер на знак и преобразуване</h3>
+        <p>На всеки знак се съпоставя еднозначно номер. Например главната буква ‘A’ има номер 65, а знакът ‘@’ е с номер 64. В програма може да отпечатаме номера на един знак чрез кастване:</p>
+        <div class="block-code">char c = 'A';
+Console.WriteLine((int)c); // отпечатва 65</div>
+
+        <p>Получаването на числовата стойност от цифра (например '9') става чрез изваждане на символа '0':</p>
+        <div class="block-code">char c = '9';
+int i = c - '0'; // i съхранява числото 9</div>
+
+        <h3>Достъп до знаците в символен низ</h3>
+        <p>Тъй като всеки от знаците на даден низ е елемент на масив, той има позиция в низа и тя е индексът му в масива (започвайки от 0). Посредством индексиране може да се <strong>четат</strong> отделните знаци, но те <strong>не могат да се променят</strong> по този начин.</p>
+
+        <h3>Важни методи на класа Char</h3>
+        <table>
+            <tr><th>Метод</th><th>Връща</th><th>Действие</th><th>Пример</th></tr>
+            <tr><td><code>IsDigit(char)</code></td><td>bool</td><td>Проверява дали знакът е цифра</td><td><code>Char.IsDigit('8')</code> -> True</td></tr>
+            <tr><td><code>IsLetter(char)</code></td><td>bool</td><td>Проверява дали знакът е буква</td><td><code>Char.IsLetter('8')</code> -> False</td></tr>
+            <tr><td><code>IsPunctuation(char)</code></td><td>bool</td><td>Проверява дали знакът е пунктуационен</td><td><code>Char.IsPunctuation('.')</code> -> True</td></tr>
+            <tr><td><code>IsSymbol(char)</code></td><td>bool</td><td>Проверява дали знакът е символ</td><td><code>Char.IsSymbol('+')</code> -> True</td></tr>
+            <tr><td><code>IsUpper(char)</code></td><td>bool</td><td>Проверява дали знакът е главна буква</td><td><code>Char.IsUpper('c')</code> -> False</td></tr>
+            <tr><td><code>IsLower(char)</code></td><td>bool</td><td>Проверява дали знакът е малка буква</td><td><code>Char.IsLower('c')</code> -> True</td></tr>
+            <tr><td><code>IsWhiteSpace(char)</code></td><td>bool</td><td>Проверява дали знакът е интервал</td><td><code>Char.IsWhiteSpace(' ')</code> -> True</td></tr>
+        </table>
+        
+        <p>За преобразуване на регистъра се използват:<br>
+        <code>Char.ToLower(c)</code> – преобразува в малка буква.<br>
+        <code>Char.ToUpper(c)</code> – преобразува в главна буква.</p>
+
+        <!-- АКЦЕНТ: Практически приложения -->
+        <div class="practical-accent">
+            <h3>💡 Практически приложения</h3>
+            <p>Обработката на отделни символи стои в основата на почти всяка реална софтуерна система – от формите за регистрация до защитата на данни.</p>
+
+            <h4>1. Проверка за сигурност на парола (Валидация)</h4>
+            <p>При регистрация в уебсайт системата обхожда въведената парола символ по символ, за да провери дали съдържа поне една главна буква и поне една цифра:</p>
+            <div class="block-code">string pass = Console.ReadLine();
+bool hasUpper = false, hasDigit = false;
+
+for (int i = 0; i < pass.Length; i++)
+{
+    if (Char.IsUpper(pass[i])) hasUpper = true;
+    if (Char.IsDigit(pass[i])) hasDigit = true;
+}
+
+if (hasUpper && hasDigit) Console.WriteLine("Сигурна парола!");
+else Console.WriteLine("Слаба парола!");</div>
+            <div class="block-code">Вход: Secr3t
+Изход: Сигурна парола!</div>
+
+            <h4>2. Криптиране на съобщения (Шифър на Цезар)</h4>
+            <p>Тъй като зад всеки <code>char</code> стои код от таблицата Unicode, можем да изместваме буквите с определен брой позиции напред, за да скрием текста от чужди очи:</p>
+            <div class="block-code">string word = Console.ReadLine();
+string encrypted = "";
+
+for (int i = 0; i < word.Length; i++)
+{
+    char shifted = (char)(word[i] + 3); // изместване с 3 позиции
+    encrypted += shifted;
+}
+Console.WriteLine($"Криптиран текст: {encrypted}");</div>
+            <div class="block-code">Вход: ABC
+Изход: Криптиран текст: DEF</div>
+
+            <h4>3. Извличане и сумиране на цифри от текст</h4>
+            <p>Когато получаваме данни от баркод, ЕГН или сериен номер като текст, използваме изваждане на <code>'0'</code>, за да превърнем символите в реални числа за математически изчисления:</p>
+            <div class="block-code">string code = Console.ReadLine();
+int sum = 0;
+
+for (int i = 0; i < code.Length; i++)
+{
+    if (Char.IsDigit(code[i]))
+    {
+        sum += code[i] - '0';
+    }
+}
+Console.WriteLine($"Сума на цифрите: {sum}");</div>
+            <div class="block-code">Вход: BG-409-X2
+Изход: Сума на цифрите: 15</div>
+
+            <h4>4. Статистика и анализ на текст</h4>
+            <p>Текстовите редактори (като MS Word) анализират документа знак по знак, за да преброят буквите, цифрите и интервалите:</p>
+            <div class="block-code">string text = Console.ReadLine();
+int letters = 0, spaces = 0;
+
+for (int i = 0; i < text.Length; i++)
+{
+    if (Char.IsLetter(text[i])) letters++;
+    else if (Char.IsWhiteSpace(text[i])) spaces++;
+}
+Console.WriteLine($"Букви: {letters}, Интервали: {spaces}");</div>
+            <div class="block-code">Вход: Аз обичам C#!
+Изход: Букви: 9, Интервали: 2</div>
+        </div>
+    </div>
+
+    <!-- Интерактивен разделител -->
+    <div class="resizer" id="dragMe"></div>
+
+    <div class="panel right-panel">
+        
+        <div class="viz-header">
+            ⚡ Симулатор: Знаков тип данни ⚡
+        </div>
+
+        <!-- Фиксирана и компактна горна част за RAM -->
+        <div class="machine-panel">
+            <div class="validation-toast" id="valToast">Execution...</div>
+
+            <div class="dashboard-card" id="dashUI">
+                <div class="d-title">Текущи Стойности (RAM)</div>
+                <div class="d-grid">
+                    <div class="d-stat"><span>string a:</span> <span class="d-val" id="dA">---</span></div>
+                    <div class="d-stat"><span>string b:</span> <span class="d-val" id="dB">---</span></div>
+                    <div class="d-stat"><span>int i:</span> <span class="d-val" id="dI">---</span></div>
+                    <div class="d-stat"><span>знак a[i]:</span> <span class="d-val" id="dChar" style="color: #f1c40f;">---</span></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="viz-content-wrapper">
+            <!-- Код (Максимално увеличен) -->
+            <div class="code-container" id="codeContainer">
+<div class="code-line" id="line-0">class Program {</div>
+<div class="code-line" id="line-1">    static void Main() {</div>
+<div class="code-line" id="line-2">        Console.Write("Enter the code: ");</div>
+<div class="code-line" id="line-3">        string a = Console.ReadLine();</div>
+<div class="code-line" id="line-4">        string b = "";</div>
+<div class="code-line" id="line-5">        </div>
+<div class="code-line" id="line-6">        // Метод 1: Чрез стойностите в Unicode</div>
+<div class="code-line" id="line-7">        // if (a[i] >= '0' && a[i] <= '9') { b += a[i]; }</div>
+<div class="code-line" id="line-8">        </div>
+<div class="code-line" id="line-9">        // Метод 2: Чрез вградения метод IsDigit</div>
+<div class="code-line" id="line-10">        for (int i = 0; i < a.Length; i++) {</div>
+<div class="code-line" id="line-11">            if (Char.IsDigit(a[i])) {</div>
+<div class="code-line" id="line-12">                b = b + a[i];</div>
+<div class="code-line" id="line-13">            }</div>
+<div class="code-line" id="line-14">        }</div>
+<div class="code-line" id="line-15">        </div>
+<div class="code-line" id="line-16">        Console.WriteLine($"The number is: {b}");</div>
+<div class="code-line" id="line-17">    }</div>
+<div class="code-line" id="line-18">}</div>
+            </div>
+
+            <!-- Конзола -->
+            <div class="console-box">
+                <div class="console-output" id="consoleOutput"></div>
+            </div>
+        </div>
+
+        <!-- Котвата на дъното -->
+        <div class="controls">
+            <button class="nav-btn" id="prevBtn" onclick="prevStep()" disabled>⏪ Назад</button>
+            <div class="step-indicator" id="stepIndicator">Стъпка: 0 / 0</div>
+            <button class="nav-btn" id="nextBtn" onclick="nextStep()">Напред ⏩</button>
+        </div>
+
+    </div>
+
+    <script>
+        // Логика за Плъзгача (Разделителя)
+        const resizer = document.getElementById('dragMe');
+        const leftPanel = document.getElementById('leftPanel');
+        let isHandlerDragging = false;
+
+        resizer.addEventListener('mousedown', function(e) {
+            isHandlerDragging = true;
+            resizer.classList.add('dragging');
+            document.body.style.cursor = 'col-resize';
+            e.preventDefault(); 
+        });
+
+        document.addEventListener('mousemove', function(e) {
+            if (!isHandlerDragging) return;
+            let newWidth = (e.clientX / window.innerWidth) * 100;
+            if(newWidth < 20) newWidth = 20;
+            if(newWidth > 80) newWidth = 80;
+            leftPanel.style.flex = `0 0 ${newWidth}%`;
+        });
+
+        document.addEventListener('mouseup', function(e) {
+            if (isHandlerDragging) {
+                isHandlerDragging = false;
+                resizer.classList.remove('dragging');
+                document.body.style.cursor = '';
+            }
+        });
+
+        const steps = [
+            { lines: [2], state: {dA: "---", dB: "---", dI: "---", dChar: "---"}, toast: "Старт на програмата", con: "" },
+            
+            { lines: [3], state: {dA: '"a5x"', dB: "---", dI: "---", dChar: "---"}, toast: "Въвеждане на код", con: "Enter the code: a5x\n" },
+            
+            { lines: [4], state: {dA: '"a5x"', dB: '""', dI: "---", dChar: "---"}, toast: "Инициализация на празен низ b", con: "Enter the code: a5x\n" },
+
+            { lines: [10], state: {dA: '"a5x"', dB: '""', dI: "0", dChar: "'a'"}, toast: "Старт на цикъл for (i = 0)", con: "Enter the code: a5x\n" },
+            
+            { lines: [11], state: {dA: '"a5x"', dB: '""', dI: "0", dChar: "'a'"}, toast: "Проверка: IsDigit('a') -> False", con: "Enter the code: a5x\n" },
+
+            { lines: [10], state: {dA: '"a5x"', dB: '""', dI: "1", dChar: "'5'"}, toast: "i++, преминаваме на следващ знак", con: "Enter the code: a5x\n" },
+
+            { lines: [11], state: {dA: '"a5x"', dB: '""', dI: "1", dChar: "'5'"}, toast: "Проверка: IsDigit('5') -> True!", con: "Enter the code: a5x\n" },
+
+            { lines: [12], state: {dA: '"a5x"', dB: '"5"', dI: "1", dChar: "'5'"}, toast: "Добавяме '5' към резултата b", con: "Enter the code: a5x\n" },
+
+            { lines: [10], state: {dA: '"a5x"', dB: '"5"', dI: "2", dChar: "'x'"}, toast: "i++, преминаваме на следващ знак", con: "Enter the code: a5x\n" },
+
+            { lines: [11], state: {dA: '"a5x"', dB: '"5"', dI: "2", dChar: "'x'"}, toast: "Проверка: IsDigit('x') -> False", con: "Enter the code: a5x\n" },
+
+            { lines: [10], state: {dA: '"a5x"', dB: '"5"', dI: "3", dChar: "---"}, toast: "i = 3. Край на низа (a.Length). Излизаме от цикъла.", con: "Enter the code: a5x\n" },
+
+            { lines: [16], state: {dA: '"a5x"', dB: '"5"', dI: "3", dChar: "---"}, toast: "КРАЙ: Отпечатване на резултата", con: "Enter the code: a5x\nThe number is: 5\n" }
+        ];
+
+        let currentStep = -1;
+
+        function updateUI() {
+            document.querySelectorAll('.code-line').forEach(el => {
+                el.classList.remove('active-line');
+            });
+            
+            const toast = document.getElementById('valToast');
+            const conOut = document.getElementById('consoleOutput');
+            
+            if (currentStep >= 0) {
+                const step = steps[currentStep];
+                
+                let firstLine = null;
+                step.lines.forEach(lineNum => {
+                    let el = document.getElementById('line-' + lineNum);
+                    if (el) {
+                        el.classList.add('active-line');
+                        if (!firstLine) firstLine = el;
+                    }
+                });
+                
+                if (firstLine) {
+                    firstLine.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+
+                // Обновяване на променливите
+                for (let key in step.state) {
+                    let el = document.getElementById(key);
+                    if (el) el.innerText = step.state[key];
+                }
+
+                if (step.toast !== "") {
+                    toast.innerText = step.toast;
+                    toast.classList.add('show');
+                    if (step.toast.includes("КРАЙ")) {
+                        toast.style.borderColor = "#00cec9";
+                        toast.style.color = "#00cec9";
+                    } else if (step.toast.includes("False")) {
+                        toast.style.borderColor = "#ff7675";
+                        toast.style.color = "#ff7675";
+                    } else {
+                        toast.style.borderColor = "#fd79a8";
+                        toast.style.color = "#fd79a8";
+                    }
+                } else {
+                    toast.classList.remove('show');
+                }
+
+                conOut.innerHTML = step.con;
+                conOut.parentElement.scrollTop = conOut.parentElement.scrollHeight;
+                document.getElementById('stepIndicator').innerText = `Стъпка: ${currentStep + 1} / ${steps.length}`;
+            } else {
+                toast.classList.remove('show');
+                conOut.innerHTML = "";
+                document.getElementById('stepIndicator').innerText = `Стъпка: 0 / ${steps.length}`;
+                
+                // Reset vars
+                document.getElementById('dA').innerText = "---";
+                document.getElementById('dB').innerText = "---";
+                document.getElementById('dI').innerText = "---";
+                document.getElementById('dChar').innerText = "---";
+            }
+
+            document.getElementById('prevBtn').disabled = currentStep <= -1;
+            document.getElementById('nextBtn').disabled = currentStep >= steps.length - 1;
+        }
+
+        function nextStep() { 
+            if (currentStep < steps.length - 1) { 
+                currentStep++; 
+                updateUI(); 
+            } 
+        }
+        
+        function prevStep() { 
+            if (currentStep > -1) { 
+                currentStep--; 
+                updateUI(); 
+            } 
+        }
+
+        window.onload = updateUI;
+    </script>
+</body>
+</html>
