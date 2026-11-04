@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Задача: Броячи на знаци - Algorithma</title>
+    <style>
+        body { margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; height: 100vh; background-color: #1e1e24; color: #e0e0e0; overflow: hidden;}
+        
+        /* Панели */
+        .panel { padding: 25px; overflow-y: auto; box-sizing: border-box; }
+        .left-panel { background-color: #2b2b36; flex: 0 0 50%; box-shadow: inset -5px 0 15px rgba(0,0,0,0.2);}
+        
+        /* Интерактивен плъзгач */
+        .resizer { flex: 0 0 6px; background-color: #333; cursor: col-resize; transition: background-color 0.2s ease; z-index: 100; box-shadow: 0 0 5px rgba(0,0,0,0.5);}
+        .resizer:hover, .resizer.dragging { background-color: #fd79a8; }
+        
+        /* ДЕСЕН ПАНЕЛ */
+        .right-panel { display: flex; flex-direction: column; background-color: #1e1e24; flex: 1; position: relative; overflow: hidden; padding-bottom: 85px;}
+        
+        /* Бутон Назад */
+        .back-to-home { display: inline-block; text-decoration: none; color: #fd79a8; font-weight: bold; font-size: 0.95rem; margin-bottom: 15px; padding: 8px 15px; border: 1px solid #fd79a8; border-radius: 8px; transition: all 0.3s ease; background: transparent; }
+        .back-to-home:hover { background-color: #fd79a8; color: #1e1e24; box-shadow: 0 0 10px rgba(253, 121, 168, 0.5); }
+
+        h1 { color: #ffffff; font-size: 1.7rem; margin-bottom: 5px; text-shadow: 0 2px 4px rgba(0,0,0,0.3);}
+        h2 { color: #fd79a8; font-size: 1.1rem; text-transform: uppercase; margin-top: 0; margin-bottom: 15px; letter-spacing: 1px;}
+        h3 { color: #00cec9; border-bottom: 1px solid #444; padding-bottom: 5px; margin-top: 25px; font-size: 1.15rem;}
+        p, ul, li { line-height: 1.5; color: #dcdde1; font-size: 0.95rem; margin-bottom: 8px;}
+        ol { margin-top: 5px; margin-bottom: 10px; padding-left: 20px; line-height: 1.6;}
+        
+        /* Таблици */
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; margin-bottom: 15px; font-size: 0.85rem; background-color: #353b48; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.3);}
+        th, td { border: 1px solid #444; padding: 8px; text-align: left; }
+        th { background-color: #2f3640; color: #fd79a8; font-weight: bold;}
+
+        /* Информационни кутии */
+        .info-box { background: #353b48; border-left: 4px solid #f1c40f; padding: 15px 20px; border-radius: 0 8px 8px 0; margin: 15px 0;}
+        .info-box strong { color: #f1c40f; }
+
+        /* Вмъкнат код в текста */
+        code { background: #1e1e24; padding: 2px 6px; border-radius: 4px; color: #fd79a8; font-family: Consolas, monospace; border: 1px solid #444;}
+        .block-code { display: block; background: #0c0c0c; padding: 10px; margin: 10px 0; border-left: 4px solid #00cec9; color: #e0e0e0; font-family: Consolas, monospace; font-size: 0.85rem; white-space: pre-wrap;}
+
+        /* Акцентна секция за практически приложения */
+        .practical-accent { background: linear-gradient(135deg, rgba(0, 206, 201, 0.12), rgba(253, 121, 168, 0.08)); border: 1px solid #00cec9; border-left: 5px solid #00cec9; border-radius: 8px; padding: 18px 20px; margin-top: 25px; box-shadow: 0 4px 12px rgba(0,0,0,0.25);}
+        .practical-accent h3 { margin-top: 0; border-bottom-color: rgba(0, 206, 201, 0.3);}
+        .practical-accent h4 { color: #f1c40f; margin-top: 15px; margin-bottom: 5px; font-size: 1rem; }
+
+        /* Специален Раздел ВИЗУАЛИЗАЦИИ */
+        .viz-header { background: linear-gradient(90deg, #e84393, #fd79a8); color: #fff; padding: 8px 18px; border-radius: 8px; text-align: center; font-weight: bold; font-size: 1.05rem; text-transform: uppercase; letter-spacing: 2px; box-shadow: 0 4px 15px rgba(232, 67, 147, 0.4); flex-shrink: 0; margin: 20px 25px 0 25px;}
+
+        /* Фиксирана и компактна горна част за RAM */
+        .machine-panel { background: #2b2b36; border-bottom: 2px dashed #555; border-radius: 10px; padding: 15px; display: flex; justify-content: center; align-items: center; position: relative; flex-shrink: 0; margin: 8px 25px 0 25px; padding-top: 25px; padding-bottom: 12px;}
+        
+        /* Карта на паметта (RAM) - Свита и компактна в 2 колони */
+        .dashboard-card { background: #1e272e; color: #fff; width: 100%; max-width: 480px; padding: 10px 15px; border-radius: 8px; box-shadow: 0 6px 15px rgba(0,0,0,0.5); font-family: 'Segoe UI', sans-serif; position: relative; border-top: 4px solid #fd79a8; opacity: 0; transform: scale(0.95); transition: all 0.4s;}
+        .dashboard-card.show { opacity: 1; transform: scale(1); }
+        .d-title { text-align: center; font-weight: bold; font-size: 0.95rem; border-bottom: 1px solid #444; padding-bottom: 5px; margin-bottom: 8px; color: #fd79a8; text-transform: uppercase; letter-spacing: 1px;}
+        .d-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+        .d-stat { display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; background: #2d3436; padding: 4px 10px; border-radius: 4px;}
+        .d-val { font-weight: bold; color: #00cec9; font-family: Consolas, monospace; font-size: 0.9rem;}
+        
+        /* Validation Toast */
+        .validation-toast { position: absolute; top: -10px; left: 50%; transform: translateX(-50%); background: #2d3436; border: 2px solid #fd79a8; color: #fd79a8; padding: 4px 15px; border-radius: 20px; font-family: Consolas, monospace; font-size: 0.85rem; font-weight: bold; opacity: 0; transition: all 0.3s; box-shadow: 0 5px 15px rgba(0,0,0,0.4); z-index: 10; white-space: nowrap;}
+        .validation-toast.show { opacity: 1; top: 5px; }
+
+        /* Скролираща долна част за кода и конзолата */
+        .viz-content-wrapper { display: flex; flex-direction: column; gap: 15px; flex: 1; overflow-y: auto; padding: 15px 25px;}
+
+        /* Зона за код (Увеличена максимално) */
+        .code-container { background-color: #282c34; color: #abb2bf; padding: 12px; border-radius: 8px; font-family: Consolas, monospace; font-size: 13px; overflow-y: auto; box-shadow: inset 0 0 10px rgba(0,0,0,0.8); flex: 1; border: 1px solid #444; min-height: 250px;}
+        .code-line { padding: 3px 8px; margin: 1px 0; border-radius: 4px; transition: background-color 0.3s; white-space: pre; border-left: 3px solid transparent;}
+        .active-line { background-color: #3e4451; border-left: 3px solid #fd79a8; color: #ffffff; font-weight: bold; }
+
+        /* Конзола (Свита) */
+        .console-box { background-color: #000; border: 1px solid #333; border-top: 22px solid #2d3436; border-radius: 8px; padding: 12px; font-family: Consolas, 'Courier New', monospace; font-size: 13px; position: relative; box-shadow: 0 8px 15px rgba(0,0,0,0.5); height: 140px; flex-shrink: 0; overflow-y: auto; overflow-x: auto;}
+        .console-box::before { content: "C:\\Windows\\System32\\cmd.exe"; position: absolute; top: -18px; left: 10px; color: #b2bec3; font-size: 10.5px; font-family: 'Segoe UI', sans-serif;}
+        .console-output { color: #ecf0f1; white-space: pre-wrap; line-height: 1.5; }
+
+        /* КОНТРОЛИ */
+        .controls { position: absolute; bottom: 20px; left: 25px; right: 25px; display: flex; gap: 15px; justify-content: center; align-items: center; background: #2b2b36; padding: 10px; border-radius: 8px; border: 1px solid #444; z-index: 100;}
+        button { padding: 8px 15px; border: none; border-radius: 6px; background: linear-gradient(180deg, #fd79a8, #e84393); color: white; font-size: 13px; font-weight: bold; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.3); text-transform: uppercase;}
+        button:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 10px rgba(253, 121, 168, 0.5); }
+        button:disabled { background: #555; color: #888; cursor: not-allowed; box-shadow: none; transform: none;}
+        .step-indicator { color: #fd79a8; font-weight: bold; font-family: Consolas, monospace; font-size: 0.95rem; width: 140px; text-align: center;}
+    </style>
+</head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-YYBQF66CTS"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-YYBQF66CTS');
+</script>
+<body>
+
+    <div class="panel left-panel" id="leftPanel">
+        <a href="../index.html" class="back-to-home">← Начало</a>
+        
+        <h1>Задача 1: Броячи на знаци</h1>
+        <h2>Символи и форматиране</h2>
+        
+        <p>Да се декларира клас <code>CharCounter</code>, който да подпомага създаването на програма за работа с текстови данни. Класът да съдържа следното поле:</p>
+        
+        <table>
+            <tr><th>Поле</th><th>Тип</th><th>Описание</th></tr>
+            <tr><td>str</td><td>текст</td><td>текст, в който ще се търси</td></tr>
+        </table>
+
+        <h3>Конструктор</h3>
+        <p>Класът да съдържа публичен конструктор: <code>CharCounter(string s)</code>, който копира параметъра в съответстващото му поле.</p>
+
+        <h3>Методи</h3>
+        <p>В класа да се дефинират следните методи, като се прецени кои да са публични:</p>
+        <ol>
+            <li>Метод <code>int CountUppers()</code> – преброява и връща броя на главните букви в текста.</li>
+            <li>Метод <code>int CountLetters()</code> – преброява и връща броя на всички букви в текста.</li>
+            <li>Метод <code>int CountSymbols()</code> – преброява и връща броя на символите.</li>
+            <li>Метод <code>int CountSpaces()</code> – преброява и връща броя на интервалите.</li>
+            <li>Метод <code>void PrintCounter()</code> – отпечатва броя на всички главни букви, букви, символи и интервали в табличен вид. На първия ред се извежда текстът <strong>"Лексикографска справка"</strong>.</li>
+        </ol>
+
+        <h3>Оформление на таблицата</h3>
+        <p>Заглавният ред трябва да се оформи със следните подравнявания: <em>"Главни букви"</em> (без), <em>"Букви"</em> (дясно, 10), <em>"Символи"</em> (дясно, 12), <em>"Интервали"</em> (дясно, 14).</p>
+        <p>Брой на тиретата под заглавието и в края: <strong>48</strong>.</p>
+        <p>Числови данни: за 1-ва колона (дясно, 6), 2-ра колона (дясно, 14), 3-та колона (дясно, 11), 4-та колона (дясно, 13).</p>
+
+        <p>Като се използва класът CharCounter, да се напише програма (<code>Main</code>), която: създава обект чрез въвеждане от клавиатурата и извежда информацията на екрана.</p>
+
+        <h3>Пример:</h3>
+        <div class="block-code">Въведете символен низ: c3h + (3Hl8 Zv = lWU)
+
+Лексикографска справка:
+
+Главни букви     Букви     Символи     Интервали
+------------------------------------------------
+     5             9          2            5
+------------------------------------------------</div>
+
+        <!-- АКЦЕНТ: Практически приложения -->
+        <div class="practical-accent">
+            <h3>💡 Практически приложения</h3>
+            <p>Методи, подобни на тези в класа <code>CharCounter</code>, са в основата на много реални софтуерни решения.</p>
+
+            <h4>1. Валидация на потребителски пароли</h4>
+            <p>При създаване на акаунт системите изискват "сложна парола". За да проверят дали паролата е силна, те използват броячи за поне една главна буква, една малка буква, една цифра и един специален символ. Ако броячът върне 0 за някое от тези изисквания, паролата се отхвърля.</p>
+
+            <h4>2. Ограничения в социалните мрежи (Twitter/X)</h4>
+            <p>Платформи като X (Twitter) имат стриктен лимит от 280 символа на публикация. Те използват символни броячи в реално време, които променят цвета си в червено, когато потребителят надхвърли лимита.</p>
+
+            <h4>3. SEO анализ на текстове (Copywriting)</h4>
+            <p>Текстовите редактори и SEO инструментите (като Grammarly или Yoast) постоянно броят думите, интервалите и символите в текста. Тези метрики определят дали дадена статия е достатъчно дълга, за да се класира добре в Google.</p>
+        </div>
+    </div>
+
+    <!-- Интерактивен разделител -->
+    <div class="resizer" id="dragMe"></div>
+
+    <div class="panel right-panel">
+        
+        <div class="viz-header">
+            ⚡ Симулатор: Брояч на знаци ⚡
+        </div>
+
+        <!-- Фиксирана и компактна горна част за RAM -->
+        <div class="machine-panel">
+            <div class="validation-toast" id="valToast">Execution...</div>
+
+            <div class="dashboard-card" id="dashUI">
+                <div class="d-title">Обект CharCounter</div>
+                <div class="d-grid">
+                    <div class="d-stat"><span style="color: #b2bec3;">Поле str:</span> <span class="d-val" id="dStr" style="font-size: 0.8rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:80px;">---</span></div>
+                    <div class="d-stat"><span style="color: #b2bec3;">Главни:</span> <span class="d-val" id="dUppers" style="color: #f1c40f;">---</span></div>
+                    <div class="d-stat"><span style="color: #b2bec3;">Букви:</span> <span class="d-val" id="dLetters" style="color: #f1c40f;">---</span></div>
+                    <div class="d-stat"><span style="color: #b2bec3;">Символи:</span> <span class="d-val" id="dSymbols" style="color: #f1c40f;">---</span></div>
+                    <div class="d-stat" style="grid-column: span 2;"><span style="color: #b2bec3;">Интервали:</span> <span class="d-val" id="dSpaces" style="color: #f1c40f;">---</span></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Скролираща долна част за кода и конзолата -->
+        <div class="viz-content-wrapper">
+            <!-- Код (Увеличен до максимум) -->
+            <div class="code-container">
+<div class="code-line" id="line-0">class CharCounter {</div>
+<div class="code-line" id="line-1">    string str;</div>
+<div class="code-line" id="line-2">    public CharCounter(string s) { str = s; }</div>
+<div class="code-line" id="line-3">    </div>
+<div class="code-line" id="line-4">    int CountUppers() {</div>
+<div class="code-line" id="line-5">        int k = 0;</div>
+<div class="code-line" id="line-6">        for(int i = 0; i < str.Length; i++)</div>
+<div class="code-line" id="line-7">            if (Char.IsUpper(str[i])) k++;</div>
+<div class="code-line" id="line-8">        return k;</div>
+<div class="code-line" id="line-9">    }</div>
+<div class="code-line" id="line-10">    int CountLetters() { /* Аналогично с IsLetter */ return 9; }</div>
+<div class="code-line" id="line-11">    int CountSymbols() { /* Аналогично с IsSymbol */ return 2; }</div>
+<div class="code-line" id="line-12">    int CountSpaces()  { /* Аналогично с IsWhiteSpace */ return 5; }</div>
+<div class="code-line" id="line-13">    </div>
+<div class="code-line" id="line-14">    public void PrintCounter() {</div>
+<div class="code-line" id="line-15">        Console.WriteLine("Лексикографска справка:\n");</div>
+<div class="code-line" id="line-16">        Console.WriteLine($"{"Главни букви"}{"Букви", 10}{"Символи", 12}{"Интервали", 14}");</div>
+<div class="code-line" id="line-17">        Console.WriteLine(new String('-', 48));</div>
+<div class="code-line" id="line-18">        Console.WriteLine($"{CountUppers(),6}{CountLetters(), 14}{CountSymbols(), 11}{CountSpaces(), 13}");</div>
+<div class="code-line" id="line-19">        Console.WriteLine(new String('-', 48));</div>
+<div class="code-line" id="line-20">    }</div>
+<div class="code-line" id="line-21">}</div>
+<div class="code-line" id="line-22">class Program {</div>
+<div class="code-line" id="line-23">    static void Main() {</div>
+<div class="code-line" id="line-24">        Console.Write("Въведете символен низ: ");</div>
+<div class="code-line" id="line-25">        string s = Console.ReadLine();</div>
+<div class="code-line" id="line-26">        CharCounter cc = new CharCounter(s);</div>
+<div class="code-line" id="line-27">        cc.PrintCounter();</div>
+<div class="code-line" id="line-28">    }</div>
+<div class="code-line" id="line-29">}</div>
+            </div>
+
+            <!-- Конзола (Свита) -->
+            <div class="console-box">
+                <div class="console-output" id="consoleOutput"></div>
+            </div>
+        </div>
+
+        <!-- Котвата на дъното -->
+        <div class="controls">
+            <button id="prevBtn" onclick="prevStep()" disabled>⏪ Назад</button>
+            <div class="step-indicator" id="stepIndicator">Стъпка: 0 / 0</div>
+            <button id="nextBtn" onclick="nextStep()">Напред ⏩</button>
+        </div>
+
+    </div>
+
+    <script>
+        // Логика за Плъзгача (Разделителя)
+        const resizer = document.getElementById('dragMe');
+        const leftPanel = document.getElementById('leftPanel');
+        let isHandlerDragging = false;
+
+        resizer.addEventListener('mousedown', function(e) {
+            isHandlerDragging = true;
+            resizer.classList.add('dragging');
+            document.body.style.cursor = 'col-resize';
+            e.preventDefault(); 
+        });
+
+        document.addEventListener('mousemove', function(e) {
+            if (!isHandlerDragging) return;
+            let newWidth = (e.clientX / window.innerWidth) * 100;
+            if(newWidth < 20) newWidth = 20;
+            if(newWidth > 80) newWidth = 80;
+            leftPanel.style.flex = `0 0 ${newWidth}%`;
+        });
+
+        document.addEventListener('mouseup', function(e) {
+            if (isHandlerDragging) {
+                isHandlerDragging = false;
+                resizer.classList.remove('dragging');
+                document.body.style.cursor = '';
+            }
+        });
+
+        const steps = [
+            { lines: [23], dVis: false, dStr: "---", dUp: "---", dLet: "---", dSym: "---", dSpc: "---", toast: "Старт на програмата", con: "" },
+            
+            { lines: [24, 25], dVis: false, dStr: "---", dUp: "---", dLet: "---", dSym: "---", dSpc: "---", toast: "Четене на входния низ", con: "Въведете символен низ: c3h + (3Hl8 Zv = lWU)\n" },
+            
+            { lines: [26, 2], dVis: true, dStr: '"c3h +..."', dUp: "---", dLet: "---", dSym: "---", dSpc: "---", toast: "Обектът CharCounter е създаден", con: "Въведете символен низ: c3h + (3Hl8 Zv = lWU)\n" },
+
+            { lines: [27, 14], dVis: true, dStr: '"c3h +..."', dUp: "---", dLet: "---", dSym: "---", dSpc: "---", toast: "Извикване на PrintCounter()", con: "Въведете символен низ: c3h + (3Hl8 Zv = lWU)\n\n" },
+            
+            { lines: [15, 16], dVis: true, dStr: '"c3h +..."', dUp: "---", dLet: "---", dSym: "---", dSpc: "---", toast: "Отпечатване на заглавния ред", con: "Въведете символен низ: c3h + (3Hl8 Zv = lWU)\n\nЛексикографска справка:\n\nГлавни букви     Букви     Символи     Интервали\n" },
+
+            { lines: [17], dVis: true, dStr: '"c3h +..."', dUp: "---", dLet: "---", dSym: "---", dSpc: "---", toast: "Отпечатване на тиретата (48 бр.)", con: "Въведете символен низ: c3h + (3Hl8 Zv = lWU)\n\nЛексикографска справка:\n\nГлавни букви     Букви     Символи     Интервали\n------------------------------------------------\n" },
+
+            { lines: [18, 4], dVis: true, dStr: '"c3h +..."', dUp: "---", dLet: "---", dSym: "---", dSpc: "---", toast: "Извикване на CountUppers()", con: "Въведете символен низ: c3h + (3Hl8 Zv = lWU)\n\nЛексикографска справка:\n\nГлавни букви     Букви     Символи     Интервали\n------------------------------------------------\n" },
+            
+            { lines: [6, 7, 8], dVis: true, dStr: '"c3h +..."', dUp: "5", dLet: "---", dSym: "---", dSpc: "---", toast: "Преброени са 5 главни букви", con: "Въведете символен низ: c3h + (3Hl8 Zv = lWU)\n\nЛексикографска справка:\n\nГлавни букви     Букви     Символи     Интервали\n------------------------------------------------\n" },
+
+            { lines: [18, 10], dVis: true, dStr: '"c3h +..."', dUp: "5", dLet: "9", dSym: "---", dSpc: "---", toast: "Преброени са 9 букви общо", con: "Въведете символен низ: c3h + (3Hl8 Zv = lWU)\n\nЛексикографска справка:\n\nГлавни букви     Букви     Символи     Интервали\n------------------------------------------------\n" },
+
+            { lines: [18, 11], dVis: true, dStr: '"c3h +..."', dUp: "5", dLet: "9", dSym: "2", dSpc: "---", toast: "Преброени са 2 символа", con: "Въведете символен низ: c3h + (3Hl8 Zv = lWU)\n\nЛексикографска справка:\n\nГлавни букви     Букви     Символи     Интервали\n------------------------------------------------\n" },
+
+            { lines: [18, 12], dVis: true, dStr: '"c3h +..."', dUp: "5", dLet: "9", dSym: "2", dSpc: "5", toast: "Преброени са 5 интервала", con: "Въведете символен низ: c3h + (3Hl8 Zv = lWU)\n\nЛексикографска справка:\n\nГлавни букви     Букви     Символи     Интервали\n------------------------------------------------\n" },
+
+            { lines: [18], dVis: true, dStr: '"c3h +..."', dUp: "5", dLet: "9", dSym: "2", dSpc: "5", toast: "Всички данни са форматирани и отпечатани", con: "Въведете символен низ: c3h + (3Hl8 Zv = lWU)\n\nЛексикографска справка:\n\nГлавни букви     Букви     Символи     Интервали\n------------------------------------------------\n     5             9          2            5\n" },
+
+            { lines: [19, 28], dVis: true, dStr: '"c3h +..."', dUp: "5", dLet: "9", dSym: "2", dSpc: "5", toast: "КРАЙ: Задачата приключи успешно!", con: "Въведете символен низ: c3h + (3Hl8 Zv = lWU)\n\nЛексикографска справка:\n\nГлавни букви     Букви     Символи     Интервали\n------------------------------------------------\n     5             9          2            5\n------------------------------------------------\n" }
+        ];
+
+        let currentStep = -1;
+
+        function updateUI() {
+            document.querySelectorAll('.code-line').forEach(el => {
+                el.classList.remove('active-line');
+            });
+            
+            const dash = document.getElementById('dashUI');
+            const toast = document.getElementById('valToast');
+            const conOut = document.getElementById('consoleOutput');
+            
+            if (currentStep >= 0) {
+                const step = steps[currentStep];
+                
+                let firstLine = null;
+                
+                step.lines.forEach(lineNum => {
+                    let el = document.getElementById('line-' + lineNum);
+                    if (el) {
+                        el.classList.add('active-line');
+                        if (!firstLine) {
+                            firstLine = el;
+                        }
+                    }
+                });
+                
+                if (firstLine) {
+                    firstLine.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+
+                if (step.dVis) {
+                    dash.classList.add('show');
+                    document.getElementById('dStr').innerText = step.dStr;
+                    document.getElementById('dUppers').innerText = step.dUp;
+                    document.getElementById('dLetters').innerText = step.dLet;
+                    document.getElementById('dSymbols').innerText = step.dSym;
+                    document.getElementById('dSpaces').innerText = step.dSpc;
+                } else {
+                    dash.classList.remove('show');
+                }
+
+                if (step.toast !== "") {
+                    toast.innerText = step.toast;
+                    toast.classList.add('show');
+                    if (step.toast.includes("КРАЙ")) {
+                        toast.style.borderColor = "#00cec9";
+                        toast.style.color = "#00cec9";
+                    } else {
+                        toast.style.borderColor = "#fd79a8";
+                        toast.style.color = "#fd79a8";
+                    }
+                } else {
+                    toast.classList.remove('show');
+                }
+
+                conOut.innerHTML = step.con;
+                
+                // Автоматично скролиране на конзолата
+                conOut.parentElement.scrollTop = conOut.parentElement.scrollHeight;
+
+                document.getElementById('stepIndicator').innerText = `Стъпка: ${currentStep + 1} / ${steps.length}`;
+            } else {
+                dash.classList.remove('show');
+                toast.classList.remove('show');
+                conOut.innerHTML = "";
+                document.getElementById('stepIndicator').innerText = `Стъпка: 0 / ${steps.length}`;
+            }
+
+            if (currentStep <= 0) {
+                document.getElementById('prevBtn').disabled = true;
+            } else {
+                document.getElementById('prevBtn').disabled = false;
+            }
+
+            if (currentStep >= steps.length - 1) {
+                document.getElementById('nextBtn').disabled = true;
+            } else {
+                document.getElementById('nextBtn').disabled = false;
+            }
+        }
+
+        function nextStep() { 
+            if (currentStep < steps.length - 1) { 
+                currentStep++; 
+                updateUI(); 
+            } 
+        }
+        
+        function prevStep() { 
+            if (currentStep > 0) { 
+                currentStep--; 
+                updateUI(); 
+            } 
+        }
+
+        currentStep = 0;
+        window.onload = updateUI;
+    </script>
+</body>
+</html>
