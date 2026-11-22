@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Задача: Имена на домашен любимец - Algorithma</title>
+    <style>
+        body { margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; height: 100vh; background-color: #1e1e24; color: #e0e0e0; overflow: hidden; }
+        
+        /* Панели */
+        .panel { padding: 25px; overflow-y: auto; box-sizing: border-box; }
+        .left-panel { background-color: #2b2b36; flex: 0 0 50%; box-shadow: inset -5px 0 15px rgba(0,0,0,0.2); min-width: 22%; }
+        
+        /* Интерактивен плъзгач */
+        .resizer { flex: 0 0 6px; background-color: #333; cursor: col-resize; transition: background-color 0.2s ease; z-index: 100; box-shadow: 0 0 5px rgba(0,0,0,0.5); }
+        .resizer:hover, .resizer.dragging { background-color: #fd79a8; }
+        
+        /* ДЕСЕН ПАНЕЛ */
+        .right-panel { display: flex; flex-direction: column; background-color: #1e1e24; flex: 1; position: relative; overflow: hidden; padding: 0 0 76px 0; min-width: 28%; }
+        
+        /* Бутон Назад */
+        .back-to-home { display: inline-block; text-decoration: none; color: #fd79a8; font-weight: bold; font-size: 0.95rem; margin-bottom: 15px; padding: 8px 15px; border: 1px solid #fd79a8; border-radius: 8px; transition: all 0.3s ease; background: transparent; }
+        .back-to-home:hover { background-color: #fd79a8; color: #1e1e24; box-shadow: 0 0 10px rgba(253, 121, 168, 0.5); }
+
+        h1 { color: #ffffff; font-size: 1.7rem; margin-bottom: 5px; text-shadow: 0 2px 4px rgba(0,0,0,0.3); }
+        h2 { color: #fd79a8; font-size: 1.05rem; text-transform: uppercase; margin-top: 0; margin-bottom: 15px; letter-spacing: 1px; }
+        h3 { color: #00cec9; border-bottom: 1px solid #444; padding-bottom: 5px; margin-top: 24px; font-size: 1.15rem; }
+        p, ul, li { line-height: 1.55; color: #dcdde1; font-size: 0.95rem; margin-bottom: 8px; }
+        ol { margin-top: 5px; margin-bottom: 10px; padding-left: 20px; line-height: 1.6; }
+
+        /* Таблици */
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; margin-bottom: 15px; font-size: 0.88rem; background-color: #353b48; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
+        th, td { border: 1px solid #444; padding: 9px 12px; text-align: left; }
+        th { background-color: #2f3640; color: #fd79a8; font-weight: bold; }
+
+        /* Атрактивни карти за методите */
+        .method-cards { display: flex; flex-direction: column; gap: 10px; margin: 12px 0; }
+        .method-card { background: #353b48; border: 1px solid #485060; border-left: 4px solid #00cec9; border-radius: 8px; padding: 12px 15px; box-shadow: 0 3px 8px rgba(0,0,0,0.2); transition: transform 0.2s ease; }
+        .method-card:hover { transform: translateX(3px); border-left-color: #fd79a8; }
+        .method-sig { font-family: Consolas, monospace; font-size: 0.95rem; font-weight: bold; color: #fd79a8; margin-bottom: 5px; display: flex; align-items: center; justify-content: space-between; }
+        .method-badge { font-family: 'Segoe UI', sans-serif; font-size: 0.72rem; background: rgba(0, 206, 201, 0.18); color: #00cec9; border: 1px solid rgba(0, 206, 201, 0.4); padding: 2px 8px; border-radius: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .method-desc { font-size: 0.92rem; color: #dcdde1; margin: 0; line-height: 1.5; }
+
+        /* Информационни и акцентни кутии */
+        .info-box { background: linear-gradient(135deg, rgba(241, 196, 15, 0.12), rgba(53, 59, 72, 0.9)); border: 1px solid rgba(241, 196, 15, 0.35); border-left: 4px solid #f1c40f; padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 18px 0; }
+        .info-box strong { color: #f1c40f; }
+
+        /* Вмъкнат код в текста */
+        code { background: #1e1e24; padding: 2px 6px; border-radius: 4px; color: #fd79a8; font-family: Consolas, monospace; border: 1px solid #444; }
+        .block-code { display: block; background: #0c0c0c; padding: 12px 14px; margin: 10px 0; border-left: 4px solid #00cec9; color: #e0e0e0; font-family: Consolas, monospace; font-size: 0.85rem; white-space: pre-wrap; border-radius: 0 6px 6px 0; box-shadow: inset 0 0 8px rgba(0,0,0,0.6); }
+
+        /* Специален Раздел ВИЗУАЛИЗАЦИИ */
+        .viz-header { background: linear-gradient(90deg, #e84393, #fd79a8); color: #fff; padding: 7px 16px; border-radius: 8px; text-align: center; font-weight: bold; font-size: 1rem; text-transform: uppercase; letter-spacing: 2px; box-shadow: 0 4px 15px rgba(232, 67, 147, 0.4); flex-shrink: 0; margin: 14px 22px 0 22px; }
+
+        /* ТАБОВЕ ЗА ПРИМЕРИ */
+        .tabs { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 22px 4px 22px; flex-shrink: 0; justify-content: center; }
+        .tab-btn { background: #353b48; border: 1px solid #555; color: #b2bec3; padding: 5px 14px; border-radius: 6px; cursor: pointer; transition: 0.2s; font-size: 0.82rem; font-weight: bold; }
+        .tab-btn.active { background: #00cec9; color: #1e1e24; border-color: #00cec9; box-shadow: 0 0 8px rgba(0, 206, 201, 0.5); }
+        .tab-btn:hover:not(.active) { background: #4a5463; color: #fff; }
+
+        /* Фиксирана и компактна горна част за RAM */
+        .machine-panel { background: #2b2b36; border-bottom: 2px dashed #555; border-radius: 10px; padding: 22px 12px 8px 12px; display: flex; flex-direction: column; justify-content: center; align-items: center; position: relative; flex-shrink: 0; margin: 4px 22px 0 22px; }
+
+        /* Ред с променливи в RAM */
+        .vars-row { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 6px; background: #1e272e; padding: 4px 12px; border-radius: 6px; border-left: 3px solid #00cec9; width: 100%; box-sizing: border-box; justify-content: space-around; }
+        .var-item { font-family: Consolas, monospace; font-size: 0.8rem; color: #dcdde1; }
+        .var-val { color: #00cec9; font-weight: bold; }
+
+        /* List Container (Фиксирана минимална височина без трептене) */
+        .array-container { display: flex; gap: 8px; justify-content: center; align-items: center; flex-wrap: wrap; min-height: 48px; }
+        .empty-list-badge { color: #95a5a6; font-family: Consolas, monospace; font-size: 0.82rem; font-style: italic; border: 1px dashed #555; padding: 5px 14px; border-radius: 6px; background: rgba(0,0,0,0.2); }
+
+        .array-box { display: flex; flex-direction: column; align-items: center; animation: fadeIn 0.25s ease; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .array-cell { min-width: 44px; height: 30px; padding: 0 10px; background-color: #2d3436; border: 2px solid #00cec9; display: flex; justify-content: center; align-items: center; font-weight: bold; color: #fff; border-radius: 5px; font-family: Consolas, monospace; font-size: 0.88rem; transition: all 0.25s; }
+        .array-index { font-size: 0.68rem; color: #b2bec3; margin-top: 2px; font-family: Consolas, monospace; }
+        .active-cell { background-color: #e84393 !important; color: #ffffff !important; border-color: #e84393 !important; box-shadow: 0 0 10px #e84393; }
+
+        /* Validation Toast */
+        .validation-toast { position: absolute; top: -8px; left: 50%; transform: translateX(-50%); background: #2d3436; border: 2px solid #fd79a8; color: #fd79a8; padding: 2px 12px; border-radius: 20px; font-family: Consolas, monospace; font-size: 0.76rem; font-weight: bold; opacity: 0; transition: all 0.25s; box-shadow: 0 4px 12px rgba(0,0,0,0.4); z-index: 10; white-space: nowrap; }
+        .validation-toast.show { opacity: 1; top: 3px; }
+
+        /* Работна зона за код и конзола */
+        .viz-content-wrapper { display: flex; flex-direction: column; gap: 8px; flex: 1; overflow-y: auto; padding: 8px 22px; }
+
+        /* Зона за код - Максимално висока, за да показва почти целия код */
+        .code-container { background-color: #282c34; color: #abb2bf; padding: 8px 10px; border-radius: 8px; font-family: Consolas, monospace; font-size: 11.8px; line-height: 1.28; overflow-y: auto; box-shadow: inset 0 0 10px rgba(0,0,0,0.8); flex: 1; border: 1px solid #444; min-height: 260px; }
+        .code-line { padding: 1.5px 8px; margin: 0.5px 0; border-radius: 4px; transition: background-color 0.25s; white-space: pre; border-left: 3px solid transparent; }
+        .active-line { background-color: #3e4451; border-left: 3px solid #fd79a8; color: #ffffff; font-weight: bold; }
+
+        /* Конзола - Компактна */
+        .console-box { background-color: #000; border: 1px solid #333; border-top: 20px solid #2d3436; border-radius: 8px; padding: 6px 12px; font-family: Consolas, 'Courier New', monospace; font-size: 12px; position: relative; box-shadow: 0 6px 12px rgba(0,0,0,0.5); height: 70px; flex-shrink: 0; overflow-y: auto; overflow-x: auto; }
+        .console-box::before { content: "C:\\Windows\\System32\\cmd.exe"; position: absolute; top: -17px; left: 10px; color: #b2bec3; font-size: 10.5px; font-family: 'Segoe UI', sans-serif; }
+        .console-output { color: #ecf0f1; white-space: pre-wrap; line-height: 1.35; }
+
+        /* КОНТРОЛИ */
+        .controls { position: absolute; bottom: 14px; left: 22px; right: 22px; display: flex; gap: 15px; justify-content: center; align-items: center; background: #2b2b36; padding: 7px 10px; border-radius: 8px; border: 1px solid #444; z-index: 100; }
+        button.nav-btn { padding: 7px 15px; border: none; border-radius: 6px; background: linear-gradient(180deg, #fd79a8, #e84393); color: white; font-size: 12.5px; font-weight: bold; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.3); text-transform: uppercase; }
+        button.nav-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 10px rgba(253, 121, 168, 0.5); }
+        button.nav-btn:disabled { background: #555; color: #888; cursor: not-allowed; box-shadow: none; transform: none; }
+        .step-indicator { color: #fd79a8; font-weight: bold; font-family: Consolas, monospace; font-size: 0.9rem; width: 135px; text-align: center; }
+    </style>
+</head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-YYBQF66CTS"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-YYBQF66CTS');
+</script>
+<body>
+
+    <div class="panel left-panel" id="leftPanel">
+        <a href="../index.html" class="back-to-home">← Начало</a>
+        
+        <h1>🐾 Задача 1: Имена на домашен любимец</h1>
+        <h2>Колекция от данни: Списъци (List&lt;T&gt;)</h2>
+        
+        <p>Семейство избира име за новия си домашен любимец и всеки член предлага идеи. Да се декларира клас <code>PetNames</code>, който управлява списъка с предложения и съдържа следното <code>private</code> поле:</p>
+        
+        <table>
+            <tr><th>Поле</th><th>Тип</th><th>Описание</th></tr>
+            <tr><td><code>favNames</code></td><td><code>List&lt;string&gt;</code></td><td>Списък с всички предложени уникални имена</td></tr>
+        </table>
+
+        <h3>Конструктор</h3>
+        <p>Класът трябва да съдържа публичен конструктор по подразбиране <code>public PetNames()</code>, който инициализира списъка и автоматично извиква метода <code>GetNames()</code>.</p>
+
+        <h3>Методи на класа</h3>
+        <div class="method-cards">
+            <div class="method-card">
+                <div class="method-sig">
+                    <span>void GetNames()</span>
+                    <span class="method-badge">private</span>
+                </div>
+                <p class="method-desc">Запълва <code>favNames</code> чрез четене от клавиатурата до въвеждане на стоп-сигнал <code>***</code>. <strong>Повторения не се допускат</strong> – ако името вече съществува в списъка, то се игнорира.</p>
+            </div>
+
+            <div class="method-card">
+                <div class="method-sig">
+                    <span>void RemoveNames()</span>
+                    <span class="method-badge">public</span>
+                </div>
+                <p class="method-desc">Отпечатва текущия списък, прочита име за изтриване и го премахва от колекцията (ако присъства). Операцията се повтаря в цикъл до въвеждане на <code>***</code>.</p>
+            </div>
+
+            <div class="method-card">
+                <div class="method-sig">
+                    <span>void MoveToPosition()</span>
+                    <span class="method-badge">public</span>
+                </div>
+                <p class="method-desc">Премества избрано име на нова позиция. Извежда списъка, прочита името и желаната позиция (от <code>1</code> до <code>Count</code>), изтрива името от старото му място и го вмъква на новото. Повтаря се до въвеждане на <code>***</code>.</p>
+            </div>
+
+            <div class="method-card">
+                <div class="method-sig">
+                    <span>void PrintList()</span>
+                    <span class="method-badge">public</span>
+                </div>
+                <p class="method-desc">Извежда всички имена на един ред със стрингова интерполация и разделител <code>//</code> във вид: <code>$"Списък: {string.Join("//", favNames)}"</code>.</p>
+            </div>
+        </div>
+
+        <div class="info-box">
+            <strong>💡 Насоки за имплементация:</strong>
+            <ul>
+                <li><strong>Проверка за дубликати:</strong> Можете да използвате <code>!favNames.Contains(s)</code> или <code>favNames.IndexOf(s) == -1</code> преди извикване на <code>Add(s)</code>.</li>
+                <li><strong>Позиция срещу Индекс:</strong> Потребителят въвежда пореден номер, започващ от <code>1</code> (напр. 1-во място), докато индексите в <code>List&lt;string&gt;</code> започват от <code>0</code>. Затова при <code>Insert</code> преобразуваме: <code>int pos = int.Parse(Console.ReadLine()) - 1;</code>.</li>
+            </ul>
+        </div>
+
+        <h3>Главна програма (Main)</h3>
+        <p>Да се напише метод <code>Main()</code>, който последователно: създава обект от класа <code>PetNames</code>, стартира изтриването на нежелани имена, стартира пренареждането по позиции и накрая отпечатва финалния списък.</p>
+
+        <h3>Пример за вход и изход:</h3>
+        <div class="block-code">Запълване на списъка!
+Въведете име: Шаро
+Въведете име: Айра
+Въведете име: Макс
+Въведете име: Шаро
+Въведете име: ***
+Край на запълването!
+
+Редакция на списъка - възможност за изтриване!
+Списък: Шаро//Айра//Макс
+Изберете име за изтриване: Макс
+Списък: Шаро//Айра
+Изберете име за изтриване: ***
+Край на изтриването!
+
+Редакция на списъка - възможност за разместване!
+Списък: Шаро//Айра
+Изберете име за преместване: Айра
+Нова позиция: 1
+Списък: Айра//Шаро
+Изберете име за преместване: ***
+
+Финален избор -> Списък: Айра//Шаро</div>
+
+    </div>
+
+    <!-- Интерактивен разделител -->
+    <div class="resizer" id="dragMe"></div>
+
+    <div class="panel right-panel">
+        
+        <div class="viz-header">
+            ⚡ Симулатор: Имена на домашен любимец ⚡
+        </div>
+
+        <div class="tabs" id="taskTabs">
+            <!-- Бутоните се генерират динамично от JS -->
+        </div>
+
+        <!-- Фиксирана и компактна горна част за RAM -->
+        <div class="machine-panel">
+            <div class="validation-toast" id="valToast">Execution...</div>
+
+            <div class="vars-row" id="varsRow">
+                <!-- Променливите се генерират динамично -->
+            </div>
+
+            <div class="array-container" id="arrayView">
+                <!-- Клетките на списъка се генерират динамично -->
+            </div>
+        </div>
+
+        <!-- Работна зона за пълен код и компактна конзола -->
+        <div class="viz-content-wrapper">
+            <div class="code-container" id="codeContainer">
+                <!-- Кодът се генерира динамично -->
+            </div>
+
+            <div class="console-box">
+                <div class="console-output" id="consoleOutput"></div>
+            </div>
+        </div>
+
+        <!-- Котвата на дъното -->
+        <div class="controls">
+            <button class="nav-btn" id="prevBtn" onclick="prevStep()" disabled>⏪ Назад</button>
+            <div class="step-indicator" id="stepIndicator">Стъпка: 0 / 0</div>
+            <button class="nav-btn" id="nextBtn" onclick="nextStep()">Напред ⏩</button>
+        </div>
+
+    </div>
+
+    <script>
+        // Логика за Плъзгача (Разделителя)
+        const resizer = document.getElementById('dragMe');
+        const leftPanel = document.getElementById('leftPanel');
+        let isHandlerDragging = false;
+
+        resizer.addEventListener('mousedown', function(e) {
+            isHandlerDragging = true;
+            resizer.classList.add('dragging');
+            document.body.style.cursor = 'col-resize';
+            e.preventDefault(); 
+        });
+
+        document.addEventListener('mousemove', function(e) {
+            if (!isHandlerDragging) return;
+            let newWidth = (e.clientX / window.innerWidth) * 100;
+            if (newWidth < 22) newWidth = 22;
+            if (newWidth > 78) newWidth = 78;
+            leftPanel.style.flex = `0 0 ${newWidth}%`;
+        });
+
+        document.addEventListener('mouseup', function() {
+            if (isHandlerDragging) {
+                isHandlerDragging = false;
+                resizer.classList.remove('dragging');
+                document.body.style.cursor = '';
+            }
+        });
+
+        // База данни за двата варианта на решение (изцяло с интерполация $"...")
+        const tasksData = {
+            1: {
+                title: "Решение 1 (while + IndexOf)",
+                code: `class PetNames {
+    private List<string> favNames = new List<string>();
+    public PetNames() { GetNames(); }
+    void GetNames() {
+        string s = "";
+        while (s != "***") {
+            s = Console.ReadLine();
+            if (favNames.IndexOf(s) == -1 && s != "***") favNames.Add(s);
+        }
+    }
+    public void RemoveNames() {
+        string s = "";
+        do {
+            PrintList();
+            s = Console.ReadLine();
+            if (favNames.IndexOf(s) != -1) favNames.Remove(s);
+        } while (s != "***");
+    }
+    public void MoveToPosition() {
+        while (true) {
+            PrintList();
+            string s = Console.ReadLine();
+            if (s == "***") break;
+            int pos = int.Parse(Console.ReadLine()) - 1;
+            if (favNames.IndexOf(s) != -1) {
+                favNames.Remove(s);
+                favNames.Insert(pos, s);
+            }
+        }
+    }
+    public void PrintList() => Console.WriteLine($"Списък: {string.Join("//", favNames)}");
+}
+class Program {
+    static void Main() {
+        PetNames pets = new PetNames();
+        pets.RemoveNames();
+        pets.MoveToPosition();
+        pets.PrintList();
+    }
+}`,
+                initialList: [],
+                vars: [{id: 'dCount', name: 'Count'}, {id: 'dS', name: 's'}, {id: 'dPos', name: 'pos'}],
+                steps: [
+                    { lines: [34, 2], lst: [], active: [], state: {dCount: "0", dS: "---", dPos: "---"}, toast: "Създаване на обект PetNames -> стартира GetNames()", con: "" },
+                    
+                    // GetNames: Шаро, Айра, Макс, Шаро (дубликат), ***
+                    { lines: [5, 6], lst: [], active: [], state: {dCount: "0", dS: "\"Шаро\"", dPos: "---"}, toast: "Четене на първо име: \"Шаро\"", con: "Въведете име: Шаро\n" },
+                    { lines: [7], lst: ["Шаро"], active: [0], state: {dCount: "1", dS: "\"Шаро\"", dPos: "---"}, toast: "IndexOf(\"Шаро\") == -1 -> Добавяме в списъка", con: "Въведете име: Шаро\n" },
+                    
+                    { lines: [5, 6, 7], lst: ["Шаро", "Айра"], active: [1], state: {dCount: "2", dS: "\"Айра\"", dPos: "---"}, toast: "Нова уникална стойност -> Добавяме \"Айра\"", con: "Въведете име: Шаро\nВъведете име: Айра\n" },
+                    
+                    { lines: [5, 6, 7], lst: ["Шаро", "Айра", "Макс"], active: [2], state: {dCount: "3", dS: "\"Макс\"", dPos: "---"}, toast: "Нова уникална стойност -> Добавяме \"Макс\"", con: "Въведете име: Шаро\nВъведете име: Айра\nВъведете име: Макс\n" },
+                    
+                    { lines: [6, 7], lst: ["Шаро", "Айра", "Макс"], active: [0], state: {dCount: "3", dS: "\"Шаро\"", dPos: "---"}, toast: "Дубликат! IndexOf(\"Шаро\") е 0 (!= -1). Пропускаме!", con: "Въведете име: Шаро\nВъведете име: Айра\nВъведете име: Макс\nВъведете име: Шаро\n" },
+                    
+                    { lines: [6, 5], lst: ["Шаро", "Айра", "Макс"], active: [], state: {dCount: "3", dS: "\"***\"", dPos: "---"}, toast: "Въведено е \"***\" -> Край на GetNames()", con: "Въведете име: Шаро\nВъведете име: Айра\nВъведете име: Макс\nВъведете име: Шаро\nВъведете име: ***\n" },
+
+                    // RemoveNames: изтриваме Макс, след това ***
+                    { lines: [35, 13, 30], lst: ["Шаро", "Айра", "Макс"], active: [], state: {dCount: "3", dS: "\"\"", dPos: "---"}, toast: "RemoveNames() -> отпечатва с интерполация", con: "Списък: Шаро//Айра//Макс\n" },
+                    { lines: [14, 15], lst: ["Шаро", "Айра"], active: [], state: {dCount: "2", dS: "\"Макс\"", dPos: "---"}, toast: "Remove(\"Макс\") -> Успешно изтрито!", con: "Списък: Шаро//Айра//Макс\nИзтриване: Макс\n" },
+                    { lines: [13, 14, 16], lst: ["Шаро", "Айра"], active: [], state: {dCount: "2", dS: "\"***\"", dPos: "---"}, toast: "Въведено е \"***\" -> Край на RemoveNames()", con: "Списък: Шаро//Айра//Макс\nИзтриване: Макс\nСписък: Шаро//Айра\nИзтриване: ***\n" },
+
+                    // MoveToPosition: местим Айра на позиция 1 (индекс 0)
+                    { lines: [36, 20, 30], lst: ["Шаро", "Айра"], active: [], state: {dCount: "2", dS: "---", dPos: "---"}, toast: "MoveToPosition() -> текущо състояние", con: "Списък: Шаро//Айра\n" },
+                    { lines: [21, 23], lst: ["Шаро", "Айра"], active: [1], state: {dCount: "2", dS: "\"Айра\"", dPos: "0"}, toast: "Местим \"Айра\" на 1-во място (индекс pos = 1 - 1 = 0)", con: "Списък: Шаро//Айра\nПреместване: Айра -> Позиция: 1\n" },
+                    { lines: [25], lst: ["Шаро"], active: [], state: {dCount: "1", dS: "\"Айра\"", dPos: "0"}, toast: "Стъпка 1: Remove(\"Айра\") от старата позиция", con: "Списък: Шаро//Айра\nПреместване: Айра -> Позиция: 1\n" },
+                    { lines: [26], lst: ["Айра", "Шаро"], active: [0], state: {dCount: "2", dS: "\"Айра\"", dPos: "0"}, toast: "Стъпка 2: Insert(0, \"Айра\") на новата позиция!", con: "Списък: Шаро//Айра\nПреместване: Айра -> Позиция: 1\n" },
+                    { lines: [20, 21, 22], lst: ["Айра", "Шаро"], active: [], state: {dCount: "2", dS: "\"***\"", dPos: "0"}, toast: "Въведено е \"***\" -> break прекъсва цикъла", con: "Списък: Шаро//Айра\nПреместване: Айра -> Позиция: 1\nСписък: Айра//Шаро\nПреместване: ***\n" },
+
+                    // Финален печат
+                    { lines: [37, 30], lst: ["Айра", "Шаро"], active: [0, 1], state: {dCount: "2", dS: "\"***\"", dPos: "0"}, toast: "КРАЙ: Финален печат с интерполация!", con: "Финален резултат:\nСписък: Айра//Шаро\n" }
+                ]
+            },
+            2: {
+                title: "Решение 2 (do-while + Contains)",
+                code: `class PetNames {
+    private List<string> favNames = new List<string>();
+    public PetNames() { GetNames(); }
+    void GetNames() {
+        string s;
+        do {
+            s = Console.ReadLine();
+            if (!favNames.Contains(s)) favNames.Add(s);
+        } while (favNames[favNames.Count - 1] != "***");
+        favNames.Remove("***");
+    }
+    public void RemoveNames() {
+        string s;
+        do {
+            PrintList();
+            s = Console.ReadLine();
+            favNames.Remove(s);
+        } while (s != "***");
+    }
+    public void MoveToPosition() {
+        PrintList();
+        string s = Console.ReadLine();
+        while (s != "***") {
+            int pos = int.Parse(Console.ReadLine()) - 1;
+            if (favNames.Contains(s)) {
+                favNames.Remove(s);
+                favNames.Insert(pos, s);
+            }
+            PrintList();
+            s = Console.ReadLine();
+        }
+    }
+    public void PrintList() => Console.WriteLine($"Списък: {string.Join("//", favNames)}");
+}
+class Program {
+    static void Main() {
+        PetNames pets = new PetNames();
+        pets.RemoveNames();
+        pets.MoveToPosition();
+        pets.PrintList();
+    }
+}`,
+                initialList: [],
+                vars: [{id: 'dCount', name: 'Count'}, {id: 'dS', name: 's'}, {id: 'dPos', name: 'pos'}],
+                steps: [
+                    { lines: [36, 2], lst: [], active: [], state: {dCount: "0", dS: "---", dPos: "---"}, toast: "Старт на Решение 2 -> извиква се GetNames()", con: "" },
+                    
+                    // GetNames
+                    { lines: [6, 7], lst: ["Шаро"], active: [0], state: {dCount: "1", dS: "\"Шаро\"", dPos: "---"}, toast: "!Contains(\"Шаро\") -> Добавяме в списъка", con: "Въведете име: Шаро\n" },
+                    { lines: [6, 7], lst: ["Шаро", "Айра"], active: [1], state: {dCount: "2", dS: "\"Айра\"", dPos: "---"}, toast: "!Contains(\"Айра\") -> Добавяме в списъка", con: "Въведете име: Шаро\nВъведете име: Айра\n" },
+                    { lines: [6, 7], lst: ["Шаро", "Айра", "Макс"], active: [2], state: {dCount: "3", dS: "\"Макс\"", dPos: "---"}, toast: "!Contains(\"Макс\") -> Добавяме в списъка", con: "Въведете име: Шаро\nВъведете име: Айра\nВъведете име: Макс\n" },
+                    { lines: [6, 7, 8], lst: ["Шаро", "Айра", "Макс", "***"], active: [3], state: {dCount: "4", dS: "\"***\"", dPos: "---"}, toast: "\"***\" се добавя временно и прекратява do-while", con: "Въведете име: Шаро\nВъведете име: Айра\nВъведете име: Макс\nВъведете име: ***\n" },
+                    { lines: [9], lst: ["Шаро", "Айра", "Макс"], active: [], state: {dCount: "3", dS: "\"***\"", dPos: "---"}, toast: "Изчистваме служебния елемент с Remove(\"***\")", con: "Въведете име: Шаро\nВъведете име: Айра\nВъведете име: Макс\nВъведете име: ***\n" },
+
+                    // RemoveNames
+                    { lines: [37, 14, 15, 16], lst: ["Шаро", "Айра"], active: [], state: {dCount: "2", dS: "\"Макс\"", dPos: "---"}, toast: "Remove(\"Макс\") премахва елемента директно", con: "Списък: Шаро//Айра//Макс\nИзтриване: Макс\n" },
+                    { lines: [14, 15, 16, 17], lst: ["Шаро", "Айра"], active: [], state: {dCount: "2", dS: "\"***\"", dPos: "---"}, toast: "Remove(\"***\") връща false без грешка; край на цикъла", con: "Списък: Шаро//Айра//Макс\nИзтриване: Макс\nСписък: Шаро//Айра\nИзтриване: ***\n" },
+
+                    // MoveToPosition
+                    { lines: [38, 20, 21], lst: ["Шаро", "Айра"], active: [1], state: {dCount: "2", dS: "\"Айра\"", dPos: "---"}, toast: "MoveToPosition() -> избираме \"Айра\"", con: "Списък: Шаро//Айра\nПреместване: Айра\n" },
+                    { lines: [23, 24, 25, 26], lst: ["Айра", "Шаро"], active: [0], state: {dCount: "2", dS: "\"Айра\"", dPos: "0"}, toast: "Contains(\"Айра\") е True -> Remove + Insert(0, \"Айра\")!", con: "Списък: Шаро//Айра\nПреместване: Айра -> Позиция: 1\n" },
+                    { lines: [28, 29, 22], lst: ["Айра", "Шаро"], active: [], state: {dCount: "2", dS: "\"***\"", dPos: "0"}, toast: "Въведено е \"***\" -> излизаме от while цикъла", con: "Списък: Айра//Шаро\nПреместване: ***\n" },
+
+                    // Финал
+                    { lines: [39, 32], lst: ["Айра", "Шаро"], active: [0, 1], state: {dCount: "2", dS: "\"***\"", dPos: "0"}, toast: "КРАЙ: Отпечатване на финалния списък!", con: "Финален резултат:\nСписък: Айра//Шаро\n" }
+                ]
+            }
+        };
+
+        let currentTaskId = 1;
+        let currentStep = -1;
+
+        function initTabs() {
+            const tabsContainer = document.getElementById('taskTabs');
+            for (let i = 1; i <= 2; i++) {
+                const btn = document.createElement('button');
+                btn.className = `tab-btn ${i === 1 ? 'active' : ''}`;
+                btn.innerText = tasksData[i].title;
+                btn.onclick = () => loadTask(i, btn);
+                tabsContainer.appendChild(btn);
+            }
+        }
+
+        function renderArray(arrData, activeIndices) {
+            const cont = document.getElementById('arrayView');
+            cont.innerHTML = '';
+            if (arrData.length === 0) {
+                const emptyBadge = document.createElement('div');
+                emptyBadge.className = 'empty-list-badge';
+                emptyBadge.innerText = 'Празен списък favNames (Count = 0)';
+                cont.appendChild(emptyBadge);
+                return;
+            }
+            arrData.forEach((val, idx) => {
+                const box = document.createElement('div');
+                box.className = 'array-box';
+                
+                const cell = document.createElement('div');
+                cell.className = `array-cell ${activeIndices.includes(idx) ? 'active-cell' : ''}`;
+                cell.innerText = val;
+                
+                const index = document.createElement('div');
+                index.className = 'array-index';
+                index.innerText = `[${idx}]`;
+
+                box.appendChild(cell);
+                box.appendChild(index);
+                cont.appendChild(box);
+            });
+        }
+
+        function loadTask(id, btnElement = null) {
+            currentTaskId = id;
+            currentStep = -1;
+            const task = tasksData[id];
+
+            if (btnElement) {
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                btnElement.classList.add('active');
+            }
+
+            const varsRow = document.getElementById('varsRow');
+            varsRow.innerHTML = '';
+            task.vars.forEach(v => {
+                const div = document.createElement('div');
+                div.className = 'var-item';
+                div.innerHTML = `${v.name} = <span class="var-val" id="${v.id}">---</span>`;
+                varsRow.appendChild(div);
+            });
+
+            renderArray(task.initialList, []);
+
+            // Render code
+            const codeCont = document.getElementById('codeContainer');
+            codeCont.innerHTML = '';
+            const lines = task.code.split('\n');
+            lines.forEach((line, idx) => {
+                const div = document.createElement('div');
+                div.className = 'code-line';
+                div.id = `line-${idx}`;
+                div.textContent = line;
+                codeCont.appendChild(div);
+            });
+
+            updateUI();
+        }
+
+        function updateUI() {
+            const task = tasksData[currentTaskId];
+            const steps = task.steps;
+
+            document.querySelectorAll('.code-line').forEach(el => {
+                el.classList.remove('active-line');
+            });
+            
+            const toast = document.getElementById('valToast');
+            const conOut = document.getElementById('consoleOutput');
+            
+            if (currentStep >= 0) {
+                const step = steps[currentStep];
+                
+                let firstLine = null;
+                step.lines.forEach(lineNum => {
+                    let el = document.getElementById('line-' + lineNum);
+                    if (el) {
+                        el.classList.add('active-line');
+                        if (!firstLine) firstLine = el;
+                    }
+                });
+                
+                if (firstLine) {
+                    firstLine.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }
+
+                for (let key in step.state) {
+                    let el = document.getElementById(key);
+                    if (el) el.innerText = step.state[key];
+                }
+
+                renderArray(step.lst, step.active);
+
+                if (step.toast !== "") {
+                    toast.innerText = step.toast;
+                    toast.classList.add('show');
+                    if (step.toast.includes("КРАЙ") || step.toast.includes("Успешно") || step.toast.includes("Добавяме")) {
+                        toast.style.borderColor = "#00cec9";
+                        toast.style.color = "#00cec9";
+                    } else if (step.toast.includes("Пропускаме") || step.toast.includes("временно") || step.toast.includes("Дубликат")) {
+                        toast.style.borderColor = "#f1c40f";
+                        toast.style.color = "#f1c40f";
+                    } else {
+                        toast.style.borderColor = "#fd79a8";
+                        toast.style.color = "#fd79a8";
+                    }
+                } else {
+                    toast.classList.remove('show');
+                }
+
+                conOut.innerHTML = step.con;
+                conOut.parentElement.scrollTop = conOut.parentElement.scrollHeight;
+                document.getElementById('stepIndicator').innerText = `Стъпка: ${currentStep + 1} / ${steps.length}`;
+            } else {
+                toast.classList.remove('show');
+                conOut.innerHTML = "";
+                document.getElementById('stepIndicator').innerText = `Стъпка: 0 / ${steps.length}`;
+                renderArray(task.initialList, []);
+
+                task.vars.forEach(v => {
+                    let el = document.getElementById(v.id);
+                    if (el) el.innerText = v.id === "dCount" ? "0" : "---";
+                });
+            }
+
+            document.getElementById('prevBtn').disabled = currentStep <= -1;
+            document.getElementById('nextBtn').disabled = currentStep >= steps.length - 1;
+        }
+
+        function nextStep() { 
+            const steps = tasksData[currentTaskId].steps;
+            if (currentStep < steps.length - 1) { 
+                currentStep++; 
+                updateUI(); 
+            } 
+        }
+        
+        function prevStep() { 
+            if (currentStep > -1) { 
+                currentStep--; 
+                updateUI(); 
+            } 
+        }
+
+        window.onload = () => {
+            initTabs();
+            loadTask(1);
+        };
+    </script>
+</body>
+</html>
