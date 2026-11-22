@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Задача: Наказание с регистрационни номера - Algorithma</title>
+    <style>
+        body { margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; height: 100vh; background-color: #1e1e24; color: #e0e0e0; overflow: hidden; }
+        
+        /* Панели */
+        .panel { padding: 25px; overflow-y: auto; box-sizing: border-box; }
+        .left-panel { background-color: #2b2b36; flex: 0 0 50%; box-shadow: inset -5px 0 15px rgba(0,0,0,0.2); min-width: 22%; }
+        
+        /* Интерактивен плъзгач */
+        .resizer { flex: 0 0 6px; background-color: #333; cursor: col-resize; transition: background-color 0.2s ease; z-index: 100; box-shadow: 0 0 5px rgba(0,0,0,0.5); }
+        .resizer:hover, .resizer.dragging { background-color: #fd79a8; }
+        
+        /* ДЕСЕН ПАНЕЛ */
+        .right-panel { display: flex; flex-direction: column; background-color: #1e1e24; flex: 1; position: relative; overflow: hidden; padding: 0 0 76px 0; min-width: 28%; }
+        
+        /* Бутон Назад */
+        .back-to-home { display: inline-block; text-decoration: none; color: #fd79a8; font-weight: bold; font-size: 0.95rem; margin-bottom: 15px; padding: 8px 15px; border: 1px solid #fd79a8; border-radius: 8px; transition: all 0.3s ease; background: transparent; }
+        .back-to-home:hover { background-color: #fd79a8; color: #1e1e24; box-shadow: 0 0 10px rgba(253, 121, 168, 0.5); }
+
+        h1 { color: #ffffff; font-size: 1.7rem; margin-bottom: 5px; text-shadow: 0 2px 4px rgba(0,0,0,0.3); }
+        h2 { color: #fd79a8; font-size: 1.05rem; text-transform: uppercase; margin-top: 0; margin-bottom: 15px; letter-spacing: 1px; }
+        h3 { color: #00cec9; border-bottom: 1px solid #444; padding-bottom: 5px; margin-top: 24px; font-size: 1.15rem; }
+        p, ul, li { line-height: 1.55; color: #dcdde1; font-size: 0.95rem; margin-bottom: 8px; }
+        ol { margin-top: 5px; margin-bottom: 10px; padding-left: 20px; line-height: 1.6; }
+
+        /* Таблици */
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; margin-bottom: 15px; font-size: 0.88rem; background-color: #353b48; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
+        th, td { border: 1px solid #444; padding: 9px 12px; text-align: left; }
+        th { background-color: #2f3640; color: #fd79a8; font-weight: bold; }
+
+        /* Атрактивни карти за методите */
+        .method-cards { display: flex; flex-direction: column; gap: 10px; margin: 12px 0; }
+        .method-card { background: #353b48; border: 1px solid #485060; border-left: 4px solid #00cec9; border-radius: 8px; padding: 12px 15px; box-shadow: 0 3px 8px rgba(0,0,0,0.2); transition: transform 0.2s ease; }
+        .method-card:hover { transform: translateX(3px); border-left-color: #fd79a8; }
+        .method-sig { font-family: Consolas, monospace; font-size: 0.95rem; font-weight: bold; color: #fd79a8; margin-bottom: 5px; display: flex; align-items: center; justify-content: space-between; }
+        .method-badge { font-family: 'Segoe UI', sans-serif; font-size: 0.72rem; background: rgba(0, 206, 201, 0.18); color: #00cec9; border: 1px solid rgba(0, 206, 201, 0.4); padding: 2px 8px; border-radius: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .method-badge.private { background: rgba(241, 196, 15, 0.15); color: #f1c40f; border-color: rgba(241, 196, 15, 0.4); }
+        .method-desc { font-size: 0.92rem; color: #dcdde1; margin: 0; line-height: 1.5; }
+
+        /* Информационни и акцентни кутии */
+        .info-box { background: linear-gradient(135deg, rgba(241, 196, 15, 0.12), rgba(53, 59, 72, 0.9)); border: 1px solid rgba(241, 196, 15, 0.35); border-left: 4px solid #f1c40f; padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 18px 0; }
+        .info-box strong { color: #f1c40f; }
+
+        /* Вмъкнат код в текста */
+        code { background: #1e1e24; padding: 2px 6px; border-radius: 4px; color: #fd79a8; font-family: Consolas, monospace; border: 1px solid #444; }
+        .block-code { display: block; background: #0c0c0c; padding: 12px 14px; margin: 10px 0; border-left: 4px solid #00cec9; color: #e0e0e0; font-family: Consolas, monospace; font-size: 0.85rem; white-space: pre-wrap; border-radius: 0 6px 6px 0; box-shadow: inset 0 0 8px rgba(0,0,0,0.6); }
+
+        /* Специален Раздел ВИЗУАЛИЗАЦИИ */
+        .viz-header { background: linear-gradient(90deg, #e84393, #fd79a8); color: #fff; padding: 7px 16px; border-radius: 8px; text-align: center; font-weight: bold; font-size: 1rem; text-transform: uppercase; letter-spacing: 2px; box-shadow: 0 4px 15px rgba(232, 67, 147, 0.4); flex-shrink: 0; margin: 14px 22px 0 22px; }
+
+        /* ТАБОВЕ ЗА ПРИМЕРИ */
+        .tabs { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 22px 4px 22px; flex-shrink: 0; justify-content: center; }
+        .tab-btn { background: #353b48; border: 1px solid #555; color: #b2bec3; padding: 5px 14px; border-radius: 6px; cursor: pointer; transition: 0.2s; font-size: 0.82rem; font-weight: bold; }
+        .tab-btn.active { background: #00cec9; color: #1e1e24; border-color: #00cec9; box-shadow: 0 0 8px rgba(0, 206, 201, 0.5); }
+        .tab-btn:hover:not(.active) { background: #4a5463; color: #fff; }
+
+        /* Фиксирана и компактна горна част за RAM */
+        .machine-panel { background: #2b2b36; border-bottom: 2px dashed #555; border-radius: 10px; padding: 22px 14px 10px 14px; display: flex; flex-direction: column; gap: 8px; justify-content: center; position: relative; flex-shrink: 0; margin: 4px 22px 0 22px; }
+
+        /* Редове за двата списъка в RAM */
+        .list-track { display: flex; align-items: center; gap: 10px; background: #1e272e; padding: 6px 10px; border-radius: 8px; border-left: 3px solid #00cec9; min-height: 48px; }
+        .list-track.edited { border-left-color: #fd79a8; }
+        .list-meta { display: flex; flex-direction: column; min-width: 112px; flex-shrink: 0; border-right: 1px solid #353b48; padding-right: 8px; }
+        .list-name { font-family: Consolas, monospace; font-size: 0.82rem; font-weight: bold; color: #00cec9; }
+        .list-track.edited .list-name { color: #fd79a8; }
+        .list-count { font-family: Consolas, monospace; font-size: 0.74rem; color: #b2bec3; margin-top: 2px; }
+        .list-count span { color: #f1c40f; font-weight: bold; }
+
+        /* List Container */
+        .array-container { display: flex; gap: 7px; align-items: center; flex-wrap: wrap; flex: 1; min-height: 44px; }
+        .empty-list-badge { color: #95a5a6; font-family: Consolas, monospace; font-size: 0.78rem; font-style: italic; border: 1px dashed #4b5262; padding: 4px 12px; border-radius: 5px; background: rgba(0,0,0,0.2); }
+
+        .array-box { display: flex; flex-direction: column; align-items: center; animation: fadeIn 0.25s ease; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .array-cell { min-width: 46px; height: 28px; padding: 0 8px; background-color: #2d3436; border: 2px solid #00cec9; display: flex; justify-content: center; align-items: center; font-weight: bold; color: #fff; border-radius: 5px; font-family: Consolas, monospace; font-size: 0.84rem; transition: all 0.25s; }
+        .list-track.edited .array-cell { border-color: #fd79a8; }
+        .array-index { font-size: 0.66rem; color: #b2bec3; margin-top: 2px; font-family: Consolas, monospace; }
+
+        .active-cell { background-color: #00cec9 !important; color: #1e1e24 !important; border-color: #00cec9 !important; box-shadow: 0 0 10px rgba(0, 206, 201, 0.7); }
+        .removed-cell { background-color: #ff7675 !important; color: #ffffff !important; border-color: #ff7675 !important; text-decoration: line-through; box-shadow: 0 0 10px rgba(255, 118, 117, 0.6); }
+
+        /* Validation Toast */
+        .validation-toast { position: absolute; top: -8px; left: 50%; transform: translateX(-50%); background: #2d3436; border: 2px solid #fd79a8; color: #fd79a8; padding: 2px 12px; border-radius: 20px; font-family: Consolas, monospace; font-size: 0.76rem; font-weight: bold; opacity: 0; transition: all 0.25s; box-shadow: 0 4px 12px rgba(0,0,0,0.4); z-index: 10; white-space: nowrap; }
+        .validation-toast.show { opacity: 1; top: 3px; }
+
+        /* Работна зона за обяснения и конзола */
+        .viz-content-wrapper { display: flex; flex-direction: column; gap: 12px; flex: 1; overflow-y: auto; padding: 10px 22px; }
+
+        /* Малък красив панел за подробни обяснения */
+        .explanation-box { background: linear-gradient(135deg, #282c34, #22262e); border: 1px solid #444; border-left: 4px solid #00cec9; padding: 12px 16px; border-radius: 8px; color: #e0e0e0; font-size: 0.92rem; line-height: 1.5; box-shadow: 0 4px 10px rgba(0,0,0,0.35); flex-shrink: 0; }
+        .exp-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; padding-bottom: 4px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+        .exp-title { color: #00cec9; font-weight: bold; text-transform: uppercase; font-size: 0.78rem; letter-spacing: 1px; }
+        .exp-method-tag { font-family: Consolas, monospace; font-size: 0.76rem; background: rgba(253, 121, 168, 0.15); color: #fd79a8; border: 1px solid rgba(253, 121, 168, 0.4); padding: 1px 8px; border-radius: 10px; }
+        #expText { color: #dcdde1; min-height: 42px; }
+
+        /* Конзола - Просторна и ясна */
+        .console-box { background-color: #000; border: 1px solid #333; border-top: 22px solid #2d3436; border-radius: 8px; padding: 12px 15px; font-family: Consolas, 'Courier New', monospace; font-size: 13.5px; position: relative; box-shadow: 0 8px 15px rgba(0,0,0,0.5); flex: 1; min-height: 190px; overflow-y: auto; overflow-x: auto; }
+        .console-box::before { content: "C:\\Windows\\System32\\cmd.exe"; position: absolute; top: -18px; left: 10px; color: #b2bec3; font-size: 10.5px; font-family: 'Segoe UI', sans-serif; }
+        .console-output { color: #ecf0f1; white-space: pre-wrap; line-height: 1.5; }
+
+        /* КОНТРОЛИ */
+        .controls { position: absolute; bottom: 14px; left: 22px; right: 22px; display: flex; gap: 15px; justify-content: center; align-items: center; background: #2b2b36; padding: 7px 10px; border-radius: 8px; border: 1px solid #444; z-index: 100; }
+        button.nav-btn { padding: 7px 15px; border: none; border-radius: 6px; background: linear-gradient(180deg, #fd79a8, #e84393); color: white; font-size: 12.5px; font-weight: bold; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.3); text-transform: uppercase; }
+        button.nav-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 10px rgba(253, 121, 168, 0.5); }
+        button.nav-btn:disabled { background: #555; color: #888; cursor: not-allowed; box-shadow: none; transform: none; }
+        .step-indicator { color: #fd79a8; font-weight: bold; font-family: Consolas, monospace; font-size: 0.9rem; width: 135px; text-align: center; }
+    </style>
+</head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-YYBQF66CTS"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-YYBQF66CTS');
+</script>
+<body>
+
+    <div class="panel left-panel" id="leftPanel">
+        <a href="../index.html" class="back-to-home">← Начало</a>
+        
+        <h1>🚗 Задача 2: Наказание с номера</h1>
+        <h2>Колекция от данни: Списъци (List&lt;T&gt;)</h2>
+        
+        <p>По време на дълго пътуване ученик записва четирицифрените части от регистрационните номера на преминаващите автомобили. Задачата ви е да създадете клас <code>Nums</code>, който съхранява първоначалния списък и генерира пречистен и подреден списък по зададени правила.</p>
+        
+        <table>
+            <tr><th>Поле (private)</th><th>Тип</th><th>Описание</th></tr>
+            <tr><td><code>regPlates</code></td><td><code>List&lt;string&gt;</code></td><td>Всички регистрационни номера в реда на записването им</td></tr>
+            <tr><td><code>numList</code></td><td><code>List&lt;string&gt;</code></td><td>Финалният редактиран списък (без нули, без дубликати, сортиран)</td></tr>
+        </table>
+
+        <h3>Конструктор</h3>
+        <p>Класът трябва да съдържа публичен конструктор по подразбиране <code>public Nums()</code>, който инициализира двата празни списъка и автоматично извиква в точен ред методите: <code>GetData()</code>, <code>RemoveZeroes()</code> и <code>RemoveDuplicates()</code>.</p>
+
+        <h3>Методи на класа</h3>
+        <div class="method-cards">
+            <div class="method-card">
+                <div class="method-sig">
+                    <span>void GetData()</span>
+                    <span class="method-badge private">private</span>
+                </div>
+                <p class="method-desc">Запълва <code>regPlates</code> със стойности, въведени от клавиатурата. Въвеждането продължава до подаване на стоп-сигнал <code>---</code> (който не се записва в списъка).</p>
+            </div>
+
+            <div class="method-card">
+                <div class="method-sig">
+                    <span>void RemoveZeroes()</span>
+                    <span class="method-badge private">private</span>
+                </div>
+                <p class="method-desc">Копира всички елементи от <code>regPlates</code> в <code>numList</code> и изтрива от <code>numList</code> всеки номер, който съдържа цифрата <code>'0'</code>. Накрая извежда съобщението: <em>„Премахване на номерата с 0 от списъка“</em>.</p>
+            </div>
+
+            <div class="method-card">
+                <div class="method-sig">
+                    <span>void RemoveDuplicates()</span>
+                    <span class="method-badge private">private</span>
+                </div>
+                <p class="method-desc">Премахва всички повторения от <code>numList</code> (всеки номер трябва да остане само по веднъж), след което сортира списъка във възходящ ред. Извежда: <em>„Премахване на дублиранията на номера в списъка“</em>.</p>
+            </div>
+
+            <div class="method-card">
+                <div class="method-sig">
+                    <span>void PrintLists()</span>
+                    <span class="method-badge">public</span>
+                </div>
+                <p class="method-desc">Отпечатва <em>„Начален списък“</em> и елементите на <code>regPlates</code> (разделени с по 2 интервала), а след това <em>„Редактиран списък“</em> и елементите на <code>numList</code>. Ако <code>numList</code> е останал празен, извежда <code>Списъкът е празен :(</code>.</p>
+            </div>
+        </div>
+
+        <div class="info-box">
+            <strong>💡 Алгоритмични насоки за самостоятелна работа:</strong>
+            <ul>
+                <li><strong>Копиране на списък:</strong> Използвайте <code>numList.AddRange(regPlates);</code>, за да прехвърлите елементите, без да променяте оригиналния списък <code>regPlates</code>!</li>
+                <li><strong>Безопасно изтриване в цикъл:</strong> Когато проверявате за цифрата <code>'0'</code> чрез <code>Contains("0")</code> и триете с <code>RemoveAt(i)</code>, обхождайте списъка <strong>отзад напред</strong> (<code>for (int i = numList.Count - 1; i &gt;= 0; i--)</code>), за да не прескочите съседен елемент след сгъстяването!</li>
+            </ul>
+        </div>
+
+        <h3>Главна програма (Main)</h3>
+        <p>Да се напише метод <code>Main()</code>, който създава обект от класа <code>Nums</code> и извиква единствено публичния метод <code>PrintLists()</code> за отпечатване на справката.</p>
+
+        <h3>Пример 1 (Успешна редакция):</h3>
+        <div class="block-code">Запълване на списъка
+Въведете номер (--- за край): 4512
+Въведете номер (--- за край): 1234
+Въведете номер (--- за край): 1023
+Въведете номер (--- за край): 1234
+Въведете номер (--- за край): ---
+Премахване на номерата с 0 от списъка
+Премахване на дублиранията на номера в списъка
+Начален списък
+4512  1234  1023  1234
+Редактиран списък
+1234  4512</div>
+
+        <h3>Пример 2 (Празен редактиран списък):</h3>
+        <div class="block-code">Запълване на списъка
+Въведете номер (--- за край): 1002
+Въведете номер (--- за край): 3040
+Въведете номер (--- за край): ---
+Премахване на номерата с 0 от списъка
+Премахване на дублиранията на номера в списъка
+Начален списък
+1002  3040
+Редактиран списък
+Списъкът е празен :(</div>
+
+    </div>
+
+    <!-- Интерактивен разделител -->
+    <div class="resizer" id="dragMe"></div>
+
+    <div class="panel right-panel">
+        
+        <div class="viz-header">
+            ⚡ Симулатор: Наказание с номера ⚡
+        </div>
+
+        <div class="tabs" id="taskTabs">
+            <!-- Бутоните за сценариите се генерират динамично -->
+        </div>
+
+        <!-- Фиксиран и компактен RAM панел за двата списъка -->
+        <div class="machine-panel">
+            <div class="validation-toast" id="valToast">Execution...</div>
+            
+            <div class="list-track">
+                <div class="list-meta">
+                    <span class="list-name">regPlates</span>
+                    <span class="list-count">Count: <span id="count1">0</span></span>
+                </div>
+                <div class="array-container" id="arrayView1">
+                    <!-- Клетките на regPlates -->
+                </div>
+            </div>
+
+            <div class="list-track edited">
+                <div class="list-meta">
+                    <span class="list-name">numList</span>
+                    <span class="list-count">Count: <span id="count2">0</span></span>
+                </div>
+                <div class="array-container" id="arrayView2">
+                    <!-- Клетките на numList -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Работна зона за подробни обяснения и конзола -->
+        <div class="viz-content-wrapper">
+            <div class="explanation-box">
+                <div class="exp-header">
+                    <span class="exp-title">🔍 Обяснение на стъпката</span>
+                    <span class="exp-method-tag" id="expMethod">Готовност</span>
+                </div>
+                <div id="expText">Изберете сценарий от табовете горе и натиснете „Напред“, за да проследите как данните преминават през методите на класа Nums.</div>
+            </div>
+
+            <div class="console-box">
+                <div class="console-output" id="consoleOutput"></div>
+            </div>
+        </div>
+
+        <!-- Контроли на дъното -->
+        <div class="controls">
+            <button class="nav-btn" id="prevBtn" onclick="prevStep()" disabled>⏪ Назад</button>
+            <div class="step-indicator" id="stepIndicator">Стъпка: 0 / 0</div>
+            <button class="nav-btn" id="nextBtn" onclick="nextStep()">Напред ⏩</button>
+        </div>
+
+    </div>
+
+    <script>
+        // Логика за Плъзгача (Разделителя)
+        const resizer = document.getElementById('dragMe');
+        const leftPanel = document.getElementById('leftPanel');
+        let isHandlerDragging = false;
+
+        resizer.addEventListener('mousedown', function(e) {
+            isHandlerDragging = true;
+            resizer.classList.add('dragging');
+            document.body.style.cursor = 'col-resize';
+            e.preventDefault(); 
+        });
+
+        document.addEventListener('mousemove', function(e) {
+            if (!isHandlerDragging) return;
+            let newWidth = (e.clientX / window.innerWidth) * 100;
+            if (newWidth < 22) newWidth = 22;
+            if (newWidth > 78) newWidth = 78;
+            leftPanel.style.flex = `0 0 ${newWidth}%`;
+        });
+
+        document.addEventListener('mouseup', function() {
+            if (isHandlerDragging) {
+                isHandlerDragging = false;
+                resizer.classList.remove('dragging');
+                document.body.style.cursor = '';
+            }
+        });
+
+        // Сценарии с подробни методически обяснения (без код)
+        const tasksData = {
+            1: {
+                title: "Сценарий 1: Успешна редакция",
+                initList1: [],
+                initList2: [],
+                steps: [
+                    {
+                        method: "Nums()",
+                        lst1: [], lst2: [], active1: [], active2: [], rem2: [],
+                        toast: "Създаване на обект Nums",
+                        exp: "В Main() създаваме обект от класа Nums. Конструкторът инициализира двата празни списъка (regPlates и numList) и веднага извиква GetData().",
+                        con: ""
+                    },
+                    {
+                        method: "GetData()",
+                        lst1: ["4512"], lst2: [], active1: [0], active2: [], rem2: [],
+                        toast: "Добавяне на \"4512\" в regPlates",
+                        exp: "Потребителят въвежда първия номер \"4512\". Тъй като входът е различен от стоп-сигнала \"---\", добавяме елемента в края на regPlates чрез Add().",
+                        con: "Запълване на списъка\nВъведете номер (--- за край): 4512\n"
+                    },
+                    {
+                        method: "GetData()",
+                        lst1: ["4512", "1234"], lst2: [], active1: [1], active2: [], rem2: [],
+                        toast: "Добавяне на \"1234\" в regPlates",
+                        exp: "Въведен е втори номер \"1234\" и е добавен на индекс [1] в началния списък regPlates.",
+                        con: "Запълване на списъка\nВъведете номер (--- за край): 4512\nВъведете номер (--- за край): 1234\n"
+                    },
+                    {
+                        method: "GetData()",
+                        lst1: ["4512", "1234", "1023"], lst2: [], active1: [2], active2: [], rem2: [],
+                        toast: "Добавяне на \"1023\" в regPlates",
+                        exp: "Въведен е трети номер \"1023\" (съдържащ цифрата 0). В началния списък записваме абсолютно всички подадени номера без филтриране.",
+                        con: "Запълване на списъка\nВъведете номер (--- за край): 4512\nВъведете номер (--- за край): 1234\nВъведете номер (--- за край): 1023\n"
+                    },
+                    {
+                        method: "GetData()",
+                        lst1: ["4512", "1234", "1023", "1234"], lst2: [], active1: [3], active2: [], rem2: [],
+                        toast: "Добавяне на \"1234\" и стоп-сигнал \"---\"",
+                        exp: "Добавяме четвърти номер \"1234\" (повтарящ се), след което потребителят въвежда \"---\". Цикълът while в GetData() приключва.",
+                        con: "Запълване на списъка\nВъведете номер (--- за край): 4512\nВъведете номер (--- за край): 1234\nВъведете номер (--- за край): 1023\nВъведете номер (--- за край): 1234\nВъведете номер (--- за край): ---\n"
+                    },
+                    {
+                        method: "RemoveZeroes()",
+                        lst1: ["4512", "1234", "1023", "1234"], lst2: ["4512", "1234", "1023", "1234"], active1: [], active2: [0, 1, 2, 3], rem2: [],
+                        toast: "Копиране на regPlates в numList",
+                        exp: "Конструкторът преминава към RemoveZeroes(). Първо копираме всички елементи от regPlates в numList (напр. с AddRange), за да запазим оригинала непокътнат.",
+                        con: "Запълване на списъка\nВъведете номер (--- за край): 4512\nВъведете номер (--- за край): 1234\nВъведете номер (--- за край): 1023\nВъведете номер (--- за край): 1234\nВъведете номер (--- за край): ---\n"
+                    },
+                    {
+                        method: "RemoveZeroes()",
+                        lst1: ["4512", "1234", "1023", "1234"], lst2: ["4512", "1234", "1023", "1234"], active1: [], active2: [], rem2: [2],
+                        toast: "Открита '0' в \"1023\" -> маркиране за изтриване!",
+                        exp: "Обхождаме numList отзад напред. Елементът на индекс [3] (\"1234\") няма '0', но на индекс [2] (\"1023\") проверката Contains(\"0\") връща True – премахваме го с RemoveAt(2)!",
+                        con: "Запълване на списъка\nВъведете номер (--- за край): 4512\nВъведете номер (--- за край): 1234\nВъведете номер (--- за край): 1023\nВъведете номер (--- за край): 1234\nВъведете номер (--- за край): ---\n"
+                    },
+                    {
+                        method: "RemoveZeroes()",
+                        lst1: ["4512", "1234", "1023", "1234"], lst2: ["4512", "1234", "1234"], active1: [], active2: [0, 1], rem2: [],
+                        toast: "Списъкът се сгъстява (Count = 3)",
+                        exp: "След изтриването списъкът автоматично се сгъстява. Проверяваме останалите елементи на [1] и [0] – те не съдържат '0'. Отпечатваме информационното съобщение.",
+                        con: "Запълване на списъка\nВъведете номер (--- за край): 4512\nВъведете номер (--- за край): 1234\nВъведете номер (--- за край): 1023\nВъведете номер (--- за край): 1234\nВъведете номер (--- за край): ---\nПремахване на номерата с 0 от списъка\n"
+                    },
+                    {
+                        method: "RemoveDuplicates()",
+                        lst1: ["4512", "1234", "1023", "1234"], lst2: ["4512", "1234", "1234"], active1: [], active2: [1], rem2: [2],
+                        toast: "Открит дубликат: \"1234\" се среща повторно!",
+                        exp: "Стартира RemoveDuplicates(). Сравняваме всеки елемент със следващите след него: елементът на [1] (\"1234\") съвпада с елемента на [2] (\"1234\"), затова премахваме повторението.",
+                        con: "Запълване на списъка\nВъведете номер (--- за край): 4512\nВъведете номер (--- за край): 1234\nВъведете номер (--- за край): 1023\nВъведете номер (--- за край): 1234\nВъведете номер (--- за край): ---\nПремахване на номерата с 0 от списъка\n"
+                    },
+                    {
+                        method: "RemoveDuplicates()",
+                        lst1: ["4512", "1234", "1023", "1234"], lst2: ["1234", "4512"], active1: [], active2: [0, 1], rem2: [],
+                        toast: "Сортиране на уникалните номера с Sort()",
+                        exp: "В numList остават само уникалните номера {\"4512\", \"1234\"}. Извикваме numList.Sort(), който ги подрежда във възходящ ред: {\"1234\", \"4512\"}, и извеждаме съобщението.",
+                        con: "Запълване на списъка\nВъведете номер (--- за край): 4512\nВъведете номер (--- за край): 1234\nВъведете номер (--- за край): 1023\nВъведете номер (--- за край): 1234\nВъведете номер (--- за край): ---\nПремахване на номерата с 0 от списъка\nПремахване на дублиранията на номера в списъка\n"
+                    },
+                    {
+                        method: "PrintLists()",
+                        lst1: ["4512", "1234", "1023", "1234"], lst2: ["1234", "4512"], active1: [0, 1, 2, 3], active2: [0, 1], rem2: [],
+                        toast: "КРАЙ: Отпечатване на двата списъка!",
+                        exp: "В Main() извикваме PrintLists(). Отпечатваме оригиналния regPlates и проверяваме numList.Count > 0 – тъй като има 2 елемента, ги извеждаме разделени с по 2 интервала.",
+                        con: "Запълване на списъка\nВъведете номер (--- за край): 4512\nВъведете номер (--- за край): 1234\nВъведете номер (--- за край): 1023\nВъведете номер (--- за край): 1234\nВъведете номер (--- за край): ---\nПремахване на номерата с 0 от списъка\nПремахване на дублиранията на номера в списъка\nНачален списък\n4512  1234  1023  1234\nРедактиран списък\n1234  4512\n"
+                    }
+                ]
+            },
+            2: {
+                title: "Сценарий 2: Празен списък",
+                initList1: [],
+                initList2: [],
+                steps: [
+                    {
+                        method: "Nums()",
+                        lst1: [], lst2: [], active1: [], active2: [], rem2: [],
+                        toast: "Нов тест: Създаване на обект Nums",
+                        exp: "Стартираме втори сценарий, в който всички въведени регистрационни номера ще съдържат цифрата '0'. Двата списъка се инициализират празни.",
+                        con: ""
+                    },
+                    {
+                        method: "GetData()",
+                        lst1: ["1002", "3040"], lst2: [], active1: [0, 1], active2: [], rem2: [],
+                        toast: "Въведени са \"1002\" и \"3040\", следвани от \"---\"",
+                        exp: "Потребителят въвежда \"1002\", \"3040\" и стоп-сигнал \"---\". И двата номера се записват успешно в началния списък regPlates.",
+                        con: "Запълване на списъка\nВъведете номер (--- за край): 1002\nВъведете номер (--- за край): 3040\nВъведете номер (--- за край): ---\n"
+                    },
+                    {
+                        method: "RemoveZeroes()",
+                        lst1: ["1002", "3040"], lst2: ["1002", "3040"], active1: [], active2: [0, 1], rem2: [],
+                        toast: "Копиране в numList преди филтриране",
+                        exp: "Методът RemoveZeroes() копира елементите от regPlates в numList. Започваме обхождане от последния индекс [1] към [0].",
+                        con: "Запълване на списъка\nВъведете номер (--- за край): 1002\nВъведете номер (--- за край): 3040\nВъведете номер (--- за край): ---\n"
+                    },
+                    {
+                        method: "RemoveZeroes()",
+                        lst1: ["1002", "3040"], lst2: ["1002", "3040"], active1: [], active2: [], rem2: [1],
+                        toast: "Изтриване на \"3040\" (съдържа '0')",
+                        exp: "Проверяваме индекс [1]: низът \"3040\" съдържа цифрата '0', затова го изтриваме с RemoveAt(1).",
+                        con: "Запълване на списъка\nВъведете номер (--- за край): 1002\nВъведете номер (--- за край): 3040\nВъведете номер (--- за край): ---\n"
+                    },
+                    {
+                        method: "RemoveZeroes()",
+                        lst1: ["1002", "3040"], lst2: ["1002"], active1: [], active2: [], rem2: [0],
+                        toast: "Изтриване на \"1002\" (съдържа '0')",
+                        exp: "Продължаваме към индекс [0]: низът \"1002\" също съдържа '0' и се премахва! Ето защо обхождането отзад напред е ключово – не пропускаме нито един съседен елемент.",
+                        con: "Запълване на списъка\nВъведете номер (--- за край): 1002\nВъведете номер (--- за край): 3040\nВъведете номер (--- за край): ---\n"
+                    },
+                    {
+                        method: "RemoveDuplicates()",
+                        lst1: ["1002", "3040"], lst2: [], active1: [], active2: [], rem2: [],
+                        toast: "numList вече е празен (Count = 0)",
+                        exp: "След RemoveZeroes() и RemoveDuplicates() списъкът numList има Count = 0. Циклите и Sort() при празен списък преминават безопасно без грешка.",
+                        con: "Запълване на списъка\nВъведете номер (--- за край): 1002\nВъведете номер (--- за край): 3040\nВъведете номер (--- за край): ---\nПремахване на номерата с 0 от списъка\nПремахване на дублиранията на номера в списъка\n"
+                    },
+                    {
+                        method: "PrintLists()",
+                        lst1: ["1002", "3040"], lst2: [], active1: [0, 1], active2: [], rem2: [],
+                        toast: "КРАЙ: Извеждане на \"Списъкът е празен :(\"",
+                        exp: "PrintLists() отпечатва запазения начален списък regPlates, след което проверява if (numList.Count > 0). Тъй като е 0, се изпълнява else блокът: \"Списъкът е празен :(\".",
+                        con: "Запълване на списъка\nВъведете номер (--- за край): 1002\nВъведете номер (--- за край): 3040\nВъведете номер (--- за край): ---\nПремахване на номерата с 0 от списъка\nПремахване на дублиранията на номера в списъка\nНачален списък\n1002  3040\nРедактиран списък\nСписъкът е празен :(\n"
+                    }
+                ]
+            }
+        };
+
+        let currentTaskId = 1;
+        let currentStep = -1;
+
+        function initTabs() {
+            const tabsContainer = document.getElementById('taskTabs');
+            for (let i = 1; i <= 2; i++) {
+                const btn = document.createElement('button');
+                btn.className = `tab-btn ${i === 1 ? 'active' : ''}`;
+                btn.innerText = tasksData[i].title;
+                btn.onclick = () => loadTask(i, btn);
+                tabsContainer.appendChild(btn);
+            }
+        }
+
+        function renderSingleList(containerId, countId, arr, activeIndices, removedIndices, emptyLabel) {
+            const cont = document.getElementById(containerId);
+            document.getElementById(countId).innerText = arr.length;
+            cont.innerHTML = '';
+
+            if (arr.length === 0) {
+                const badge = document.createElement('div');
+                badge.className = 'empty-list-badge';
+                badge.innerText = emptyLabel;
+                cont.appendChild(badge);
+                return;
+            }
+
+            arr.forEach((val, idx) => {
+                const box = document.createElement('div');
+                box.className = 'array-box';
+
+                const cell = document.createElement('div');
+                let cls = 'array-cell';
+                if (activeIndices.includes(idx)) cls += ' active-cell';
+                if (removedIndices.includes(idx)) cls += ' removed-cell';
+                cell.className = cls;
+                cell.innerText = val;
+
+                const index = document.createElement('div');
+                index.className = 'array-index';
+                index.innerText = `[${idx}]`;
+
+                box.appendChild(cell);
+                box.appendChild(index);
+                cont.appendChild(box);
+            });
+        }
+
+        function renderArrays(arr1, arr2, act1, act2, rem2) {
+            renderSingleList('arrayView1', 'count1', arr1, act1, [], 'Празен списък (очаква вход)');
+            renderSingleList('arrayView2', 'count2', arr2, act2, rem2, 'Празен списък');
+        }
+
+        function loadTask(id, btnElement = null) {
+            currentTaskId = id;
+            currentStep = -1;
+
+            if (btnElement) {
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                btnElement.classList.add('active');
+            }
+
+            updateUI();
+        }
+
+        function updateUI() {
+            const task = tasksData[currentTaskId];
+            const steps = task.steps;
+
+            const toast = document.getElementById('valToast');
+            const conOut = document.getElementById('consoleOutput');
+            const expText = document.getElementById('expText');
+            const expMethod = document.getElementById('expMethod');
+            
+            if (currentStep >= 0) {
+                const step = steps[currentStep];
+
+                expText.innerText = step.exp;
+                expMethod.innerText = step.method;
+
+                renderArrays(step.lst1, step.lst2, step.active1, step.active2, step.rem2);
+
+                if (step.toast !== "") {
+                    toast.innerText = step.toast;
+                    toast.classList.add('show');
+                    if (step.toast.includes("КРАЙ") || step.toast.includes("Сортиране") || step.toast.includes("Добавяне")) {
+                        toast.style.borderColor = "#00cec9";
+                        toast.style.color = "#00cec9";
+                    } else if (step.toast.includes("Изтриване") || step.toast.includes("маркиране") || step.toast.includes("дубликат") || step.toast.includes("празен")) {
+                        toast.style.borderColor = "#ff7675";
+                        toast.style.color = "#ff7675";
+                    } else {
+                        toast.style.borderColor = "#fd79a8";
+                        toast.style.color = "#fd79a8";
+                    }
+                } else {
+                    toast.classList.remove('show');
+                }
+
+                conOut.innerHTML = step.con;
+                conOut.parentElement.scrollTop = conOut.parentElement.scrollHeight;
+                document.getElementById('stepIndicator').innerText = `Стъпка: ${currentStep + 1} / ${steps.length}`;
+            } else {
+                toast.classList.remove('show');
+                conOut.innerHTML = "";
+                expMethod.innerText = "Готовност";
+                expText.innerText = "Изберете сценарий от табовете горе и натиснете „Напред“, за да проследите как данните преминават през методите на класа Nums.";
+                document.getElementById('stepIndicator').innerText = `Стъпка: 0 / ${steps.length}`;
+                renderArrays(task.initList1, task.initList2, [], [], []);
+            }
+
+            document.getElementById('prevBtn').disabled = currentStep <= -1;
+            document.getElementById('nextBtn').disabled = currentStep >= steps.length - 1;
+        }
+
+        function nextStep() { 
+            const steps = tasksData[currentTaskId].steps;
+            if (currentStep < steps.length - 1) { 
+                currentStep++; 
+                updateUI(); 
+            } 
+        }
+        
+        function prevStep() { 
+            if (currentStep > -1) { 
+                currentStep--; 
+                updateUI(); 
+            } 
+        }
+
+        window.onload = () => {
+            initTabs();
+            loadTask(1);
+        };
+    </script>
+</body>
+</html>
