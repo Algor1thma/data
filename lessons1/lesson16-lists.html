@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Колекция от данни списък (List&lt;T&gt;) - Algorithma</title>
+    <style>
+        body { margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; height: 100vh; background-color: #1e1e24; color: #e0e0e0; overflow: hidden; }
+        
+        /* Панели */
+        .panel { padding: 25px; overflow-y: auto; box-sizing: border-box; }
+        .left-panel { background-color: #2b2b36; flex: 0 0 50%; box-shadow: inset -5px 0 15px rgba(0,0,0,0.2); min-width: 22%; }
+        
+        /* Интерактивен плъзгач */
+        .resizer { flex: 0 0 6px; background-color: #333; cursor: col-resize; transition: background-color 0.2s ease; z-index: 100; box-shadow: 0 0 5px rgba(0,0,0,0.5); }
+        .resizer:hover, .resizer.dragging { background-color: #fd79a8; }
+        
+        /* ДЕСЕН ПАНЕЛ */
+        .right-panel { display: flex; flex-direction: column; background-color: #1e1e24; flex: 1; position: relative; overflow: hidden; padding: 0 0 78px 0; min-width: 28%; }
+        
+        /* Бутон Назад */
+        .back-to-home { display: inline-block; text-decoration: none; color: #fd79a8; font-weight: bold; font-size: 0.95rem; margin-bottom: 15px; padding: 8px 15px; border: 1px solid #fd79a8; border-radius: 8px; transition: all 0.3s ease; background: transparent; }
+        .back-to-home:hover { background-color: #fd79a8; color: #1e1e24; box-shadow: 0 0 10px rgba(253, 121, 168, 0.5); }
+
+        h1 { color: #ffffff; font-size: 1.7rem; margin-bottom: 5px; text-shadow: 0 2px 4px rgba(0,0,0,0.3); }
+        h2 { color: #fd79a8; font-size: 1.05rem; margin-top: 0; margin-bottom: 15px; letter-spacing: 0.5px; }
+        h3 { color: #00cec9; border-bottom: 1px solid #444; padding-bottom: 5px; margin-top: 25px; font-size: 1.15rem; }
+        h4 { color: #f1c40f; margin-top: 16px; margin-bottom: 6px; font-size: 0.98rem; }
+        p, ul, li { line-height: 1.55; color: #dcdde1; font-size: 0.95rem; margin-bottom: 8px; }
+        ol { margin-top: 5px; margin-bottom: 10px; padding-left: 20px; line-height: 1.6; }
+
+        /* Информационни и предупредителни кутии */
+        .info-box { background: #353b48; border-left: 4px solid #f1c40f; padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 15px 0; }
+        .info-box strong { color: #f1c40f; }
+
+        .warning-box { background: rgba(255, 118, 117, 0.1); border: 1px solid rgba(255, 118, 117, 0.4); border-left: 4px solid #ff7675; padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 18px 0; }
+        .warning-box strong { color: #ff7675; }
+
+        /* Таблици */
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; margin-bottom: 15px; font-size: 0.85rem; background-color: #353b48; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
+        th, td { border: 1px solid #444; padding: 8px 10px; text-align: left; }
+        th { background-color: #2f3640; color: #fd79a8; font-weight: bold; }
+
+        /* Вмъкнат код в текста */
+        code { background: #1e1e24; padding: 2px 6px; border-radius: 4px; color: #fd79a8; font-family: Consolas, monospace; border: 1px solid #444; }
+        .block-code { display: block; background: #0c0c0c; padding: 10px 12px; margin: 10px 0; border-left: 4px solid #00cec9; color: #e0e0e0; font-family: Consolas, monospace; font-size: 0.85rem; white-space: pre-wrap; border-radius: 0 6px 6px 0; }
+
+        /* Специален Раздел ВИЗУАЛИЗАЦИИ */
+        .viz-header { background: linear-gradient(90deg, #e84393, #fd79a8); color: #fff; padding: 7px 16px; border-radius: 8px; text-align: center; font-weight: bold; font-size: 1rem; text-transform: uppercase; letter-spacing: 2px; box-shadow: 0 4px 15px rgba(232, 67, 147, 0.4); flex-shrink: 0; margin: 16px 22px 0 22px; }
+
+        /* ТАБОВЕ ЗА МЕТОДИ */
+        .tabs { display: flex; flex-wrap: wrap; gap: 5px; margin: 10px 22px 4px 22px; flex-shrink: 0; justify-content: center; }
+        .tab-btn { background: #353b48; border: 1px solid #555; color: #b2bec3; padding: 4px 9px; border-radius: 5px; cursor: pointer; transition: 0.2s; font-size: 0.78rem; font-weight: bold; font-family: Consolas, 'Segoe UI', monospace; }
+        .tab-btn.active { background: #00cec9; color: #1e1e24; border-color: #00cec9; box-shadow: 0 0 8px rgba(0, 206, 201, 0.5); }
+        .tab-btn:hover:not(.active) { background: #4a5463; color: #fff; }
+
+        /* Фиксирана и компактна горна част за RAM */
+        .machine-panel { background: #2b2b36; border-bottom: 2px dashed #555; border-radius: 10px; padding: 24px 12px 8px 12px; display: flex; flex-direction: column; justify-content: center; align-items: center; position: relative; flex-shrink: 0; margin: 6px 22px 0 22px; }
+
+        /* Ред с променливи в RAM */
+        .vars-row { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 8px; background: #1e272e; padding: 5px 12px; border-radius: 6px; border-left: 3px solid #00cec9; width: 100%; box-sizing: border-box; justify-content: space-around; }
+        .var-item { font-family: Consolas, monospace; font-size: 0.82rem; color: #dcdde1; }
+        .var-val { color: #00cec9; font-weight: bold; }
+        
+        /* List Container (Фиксирана височина за стабилен панел) */
+        .array-container { display: flex; gap: 6px; justify-content: center; align-items: center; flex-wrap: wrap; min-height: 52px; }
+        .empty-list-badge { color: #95a5a6; font-family: Consolas, monospace; font-size: 0.85rem; font-style: italic; border: 1px dashed #555; padding: 6px 14px; border-radius: 6px; background: rgba(0,0,0,0.2); }
+
+        .array-box { display: flex; flex-direction: column; align-items: center; animation: fadeIn 0.25s ease; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .array-cell { min-width: 34px; height: 32px; padding: 0 8px; background-color: #2d3436; border: 2px solid #00cec9; display: flex; justify-content: center; align-items: center; font-weight: bold; color: #fff; border-radius: 5px; font-family: Consolas, monospace; font-size: 0.88rem; transition: all 0.25s; }
+        .array-index { font-size: 0.7rem; color: #b2bec3; margin-top: 3px; font-family: Consolas, monospace; }
+        .active-cell { background-color: #fd79a8; color: #1e1e24; border-color: #fd79a8; box-shadow: 0 0 10px #fd79a8; }
+
+        /* Validation Toast */
+        .validation-toast { position: absolute; top: -8px; left: 50%; transform: translateX(-50%); background: #2d3436; border: 2px solid #fd79a8; color: #fd79a8; padding: 2px 12px; border-radius: 20px; font-family: Consolas, monospace; font-size: 0.78rem; font-weight: bold; opacity: 0; transition: all 0.25s; box-shadow: 0 4px 12px rgba(0,0,0,0.4); z-index: 10; white-space: nowrap; }
+        .validation-toast.show { opacity: 1; top: 3px; }
+
+        /* Работна зона за код и конзола */
+        .viz-content-wrapper { display: flex; flex-direction: column; gap: 10px; flex: 1; overflow-y: auto; padding: 10px 22px; }
+
+        /* Зона за код - Максимално висока, показваща целия код */
+        .code-container { background-color: #282c34; color: #abb2bf; padding: 10px 12px; border-radius: 8px; font-family: Consolas, monospace; font-size: 12.5px; line-height: 1.35; overflow-y: auto; box-shadow: inset 0 0 10px rgba(0,0,0,0.8); flex: 1; border: 1px solid #444; min-height: 245px; }
+        .code-line { padding: 2px 8px; margin: 1px 0; border-radius: 4px; transition: background-color 0.25s; white-space: pre; border-left: 3px solid transparent; }
+        .active-line { background-color: #3e4451; border-left: 3px solid #fd79a8; color: #ffffff; font-weight: bold; }
+
+        /* Конзола - Компактна */
+        .console-box { background-color: #000; border: 1px solid #333; border-top: 20px solid #2d3436; border-radius: 8px; padding: 8px 12px; font-family: Consolas, 'Courier New', monospace; font-size: 12.5px; position: relative; box-shadow: 0 6px 12px rgba(0,0,0,0.5); height: 72px; flex-shrink: 0; overflow-y: auto; overflow-x: auto; }
+        .console-box::before { content: "C:\\Windows\\System32\\cmd.exe"; position: absolute; top: -17px; left: 10px; color: #b2bec3; font-size: 10.5px; font-family: 'Segoe UI', sans-serif; }
+        .console-output { color: #ecf0f1; white-space: pre-wrap; line-height: 1.4; }
+
+        /* КОНТРОЛИ */
+        .controls { position: absolute; bottom: 16px; left: 22px; right: 22px; display: flex; gap: 15px; justify-content: center; align-items: center; background: #2b2b36; padding: 8px 10px; border-radius: 8px; border: 1px solid #444; z-index: 100; }
+        button.nav-btn { padding: 7px 15px; border: none; border-radius: 6px; background: linear-gradient(180deg, #fd79a8, #e84393); color: white; font-size: 12.5px; font-weight: bold; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.3); text-transform: uppercase; }
+        button.nav-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 10px rgba(253, 121, 168, 0.5); }
+        button.nav-btn:disabled { background: #555; color: #888; cursor: not-allowed; box-shadow: none; transform: none; }
+        .step-indicator { color: #fd79a8; font-weight: bold; font-family: Consolas, monospace; font-size: 0.9rem; width: 135px; text-align: center; }
+    </style>
+</head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-YYBQF66CTS"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-YYBQF66CTS');
+</script>
+<body>
+
+    <div class="panel left-panel" id="leftPanel">
+        <a href="../index.html" class="back-to-home">← Начало</a>
+        
+        <h1>Колекция от данни: Списък</h1>
+        <h2>System.Collections.Generic.List&lt;T&gt;</h2>
+        
+        <h3>1. Защо да използваме списъци (List&lt;T&gt;)?</h3>
+        <p>Масивите са бързи и удобни, но имат едно сериозно ограничение – <strong>фиксиран размер</strong>, който не може да се променя след създаването им. Колекцията <code>List&lt;T&gt;</code> решава този проблем: тя представлява <strong>динамична редица от еднотипни елементи</strong>, която автоматично се разширява при добавяне и се свива при изтриване на данни.</p>
+        <p>За да използваме списъци в C#, включваме пространството от имена в началото на файла:</p>
+        <div class="block-code">using System.Collections.Generic;</div>
+
+        <h3>2. Масив срещу Списък – Сравнение</h3>
+        <table>
+            <tr><th>Характеристика</th><th>Масив (<code>T[]</code>)</th><th>Списък (<code>List&lt;T&gt;</code>)</th></tr>
+            <tr><td>Размер</td><td>Фиксиран при създаване</td><td>Динамичен (расте и намалява)</td></tr>
+            <tr><td>Брой елементи</td><td>Свойство <code>Length</code></td><td>Свойство <code>Count</code></td></tr>
+            <tr><td>Достъп по индекс</td><td><code>arr[i]</code> (от <code>0</code> до <code>Length - 1</code>)</td><td><code>list[i]</code> (от <code>0</code> до <code>Count - 1</code>)</td></tr>
+            <tr><td>Добавяне / Изтриване</td><td>Невъзможно директно</td><td>Вградени методи (<code>Add</code>, <code>Remove</code> и др.)</td></tr>
+            <tr><td>Сортиране / Обръщане</td><td><code>Array.Sort(arr)</code> / <code>Array.Reverse(arr)</code></td><td><code>list.Sort()</code> / <code>list.Reverse()</code></td></tr>
+        </table>
+
+        <h3>3. Деклариране и инициализация</h3>
+        <p>В ъгловите скоби <code>&lt;T&gt;</code> се посочва типът на елементите (<code>int</code>, <code>double</code>, <code>string</code>, <code>char</code> или собствен клас):</p>
+        <div class="block-code">// Празен списък от цели числа (Count = 0)
+List&lt;int&gt; primeNumbers = new List&lt;int&gt;();
+
+// Списък с начални стойности (Count = 2)
+List&lt;string&gt; students = new List&lt;string&gt;() { "Иван", "Петър" };
+
+// Създаване на списък с копиране на елементите от масив
+int[] arr = { 10, 20, 30 };
+List&lt;int&gt; copyList = new List&lt;int&gt;(arr);</div>
+
+        <div class="info-box">
+            <strong>Как работи паметта: <code>Count</code> срещу <code>Capacity</code></strong><br>
+            Вътрешно <code>List&lt;T&gt;</code> пази елементите си в скрит масив с определен капацитет (<code>Capacity</code>).
+            <ul>
+                <li><code>Count</code> е реалният брой добавени елементи в момента.</li>
+                <li><code>Capacity</code> е размерът на заделения буфер в паметта (при празен списък е <code>0</code>, при първо добавяне става <code>4</code>, а при запълване автоматично се удвоява: <code>8</code>, <code>16</code>, <code>32</code>...).</li>
+            </ul>
+        </div>
+
+        <h3>4. Свойства, индексиране и обхождане</h3>
+        <p>Индексите в списъка винаги са от <code>0</code> до <code>list.Count - 1</code>. Достъпът за четене и промяна на вече съществуващ елемент става с квадратни скоби <code>list[i]</code>.</p>
+        <div class="block-code">// Четене на N елемента от конзолата (всеки на нов ред)
+int n = int.Parse(Console.ReadLine());
+List&lt;int&gt; nums = new List&lt;int&gt;();
+for (int i = 0; i &lt; n; i++)
+{
+    nums.Add(int.Parse(Console.ReadLine()));
+}
+
+// Обхождане с for (имаме достъп до индекса и можем да променяме елементи)
+for (int i = 0; i &lt; nums.Count; i++)
+{
+    Console.Write(nums[i] + " ");
+}
+
+// Обхождане с foreach (само за четене на стойностите)
+foreach (int x in nums)
+{
+    Console.Write(x + " ");
+}
+
+// Бързо извеждане на един ред с разделител
+Console.WriteLine(string.Join(", ", nums));</div>
+
+        <h3>5. Добавяне и вмъкване на елементи</h3>
+        <ul>
+            <li><code>Add(стойност)</code> – добавя един елемент в <strong>края</strong> на списъка (най-бързата операция).</li>
+            <li><code>Insert(индекс, стойност)</code> – вмъква елемент на посочения <code>индекс</code> (между <code>0</code> и <code>Count</code> включително). Всички елементи от тази позиция надясно се изместват с +1 индекс.</li>
+            <li><code>AddRange(колекция)</code> – добавя цял масив или друг списък от елементи в <strong>края</strong>.</li>
+            <li><code>InsertRange(индекс, колекция)</code> – вмъква поредица от елементи, започвайки от посочения <code>индекс</code>.</li>
+        </ul>
+
+        <h3>6. Премахване на елементи</h3>
+        <p>При изтриване елементите след изтрития автоматично се изтеглят наляво, за да не остават „празни дупки“, а <code>Count</code> намалява:</p>
+        <ul>
+            <li><code>Remove(стойност)</code> – търси и изтрива <strong>само първото срещане</strong> на дадената стойност. Връща <code>true</code> при успех или <code>false</code>, ако елементът не съществува.</li>
+            <li><code>RemoveAt(индекс)</code> – изтрива елемента на конкретния <code>индекс</code>. За изтриване на последния елемент се пише: <code>list.RemoveAt(list.Count - 1);</code>.</li>
+            <li><code>RemoveRange(индекс, брой)</code> – изтрива определен <code>брой</code> последователни елементи, започвайки от посочения <code>индекс</code>.</li>
+            <li><code>Clear()</code> – изтрива всички елементи наведнъж и нулира <code>Count</code> на <code>0</code>.</li>
+        </ul>
+
+        <h3>7. Търсене, подреждане и преобразуване</h3>
+        <table>
+            <tr><th>Метод</th><th>Връщан тип</th><th>Действие</th></tr>
+            <tr><td><code>Contains(x)</code></td><td><code>bool</code></td><td>Връща <code>true</code>, ако <code>x</code> се съдържа в списъка, иначе <code>false</code>.</td></tr>
+            <tr><td><code>IndexOf(x)</code></td><td><code>int</code></td><td>Връща индекса на <strong>първото</strong> срещане на <code>x</code> (отляво надясно) или <code>-1</code>, ако липсва.</td></tr>
+            <tr><td><code>LastIndexOf(x)</code></td><td><code>int</code></td><td>Връща индекса на <strong>последното</strong> срещане на <code>x</code> (отдясно наляво) или <code>-1</code>, ако липсва.</td></tr>
+            <tr><td><code>Sort()</code></td><td><code>void</code></td><td>Подрежда елементите на списъка във възходящ ред (по големина или азбучен ред).</td></tr>
+            <tr><td><code>Reverse()</code></td><td><code>void</code></td><td>Обръща текущата подредба на елементите огледално (за низходящ ред: <code>Sort()</code> + <code>Reverse()</code>).</td></tr>
+            <tr><td><code>ToArray()</code></td><td><code>T[]</code></td><td>Създава и връща нов независим масив с копия на елементите от списъка.</td></tr>
+        </table>
+
+        <div class="warning-box">
+            <strong>⚠️ Чести грешки и важни уловки (Внимание!):</strong>
+            <ol>
+                <li><strong>Достъп до празен списък по индекс:</strong> Ако списъкът е празен (<code>Count == 0</code>), записът <code>list[0] = 5;</code> хвърля грешка <code>ArgumentOutOfRangeException</code>! Нови елементи се добавят с <code>Add(5)</code>.</li>
+                <li><strong>Разлика между <code>Remove(2)</code> и <code>RemoveAt(2)</code> при <code>List&lt;int&gt;</code>:</strong> <code>Remove(2)</code> търси и трие числото със <em>стойност</em> <code>2</code>, докато <code>RemoveAt(2)</code> трие елемента на <em>трета позиция</em> (индекс <code>2</code>)!</li>
+                <li><strong>Изтриване по време на цикъл:</strong> Никога не изтривайте елементи вътре в <code>foreach</code> цикъл (води до грешка <code>InvalidOperationException</code>). Ако триете няколко елемента по условие с <code>for</code>, обхождайте списъка <strong>отзад напред</strong> (<code>for (int i = list.Count - 1; i &gt;= 0; i--)</code>), за да не прескачате елементи след изместването на индексите!</li>
+            </ol>
+        </div>
+    </div>
+
+    <!-- Интерактивен разделител -->
+    <div class="resizer" id="dragMe"></div>
+
+    <div class="panel right-panel">
+        
+        <div class="viz-header">
+            ⚡ Симулатор: Всички методи на List&lt;T&gt; ⚡
+        </div>
+
+        <div class="tabs" id="taskTabs">
+            <!-- Табовете за всеки отделен метод се генерират от JS -->
+        </div>
+
+        <!-- Фиксиран и компактен RAM панел -->
+        <div class="machine-panel">
+            <div class="validation-toast" id="valToast">Execution...</div>
+
+            <div class="vars-row" id="varsRow">
+                <!-- Променливите се генерират динамично -->
+            </div>
+
+            <div class="array-container" id="arrayView">
+                <!-- Елементите на списъка се генерират динамично -->
+            </div>
+        </div>
+
+        <!-- Зона за пълен код и компактна конзола -->
+        <div class="viz-content-wrapper">
+            <div class="code-container" id="codeContainer">
+                <!-- Пълният код за избрания метод -->
+            </div>
+
+            <div class="console-box">
+                <div class="console-output" id="consoleOutput"></div>
+            </div>
+        </div>
+
+        <!-- Контроли на дъното -->
+        <div class="controls">
+            <button class="nav-btn" id="prevBtn" onclick="prevStep()" disabled>⏪ Назад</button>
+            <div class="step-indicator" id="stepIndicator">Стъпка: 0 / 0</div>
+            <button class="nav-btn" id="nextBtn" onclick="nextStep()">Напред ⏩</button>
+        </div>
+
+    </div>
+
+    <script>
+        // Логика за Плъзгача (Разделителя)
+        const resizer = document.getElementById('dragMe');
+        const leftPanel = document.getElementById('leftPanel');
+        let isHandlerDragging = false;
+
+        resizer.addEventListener('mousedown', function(e) {
+            isHandlerDragging = true;
+            resizer.classList.add('dragging');
+            document.body.style.cursor = 'col-resize';
+            e.preventDefault(); 
+        });
+
+        document.addEventListener('mousemove', function(e) {
+            if (!isHandlerDragging) return;
+            let newWidth = (e.clientX / window.innerWidth) * 100;
+            if (newWidth < 22) newWidth = 22;
+            if (newWidth > 78) newWidth = 78;
+            leftPanel.style.flex = `0 0 ${newWidth}%`;
+        });
+
+        document.addEventListener('mouseup', function() {
+            if (isHandlerDragging) {
+                isHandlerDragging = false;
+                resizer.classList.remove('dragging');
+                document.body.style.cursor = '';
+            }
+        });
+
+        // Пълни самостоятелни примери за всеки отделен метод на List<T>
+        const tasksData = {
+            1: {
+                title: "Add()",
+                code: `using System;
+using System.Collections.Generic;
+
+class Program {
+    static void Main() {
+        List<string> names = new List<string>();
+        names.Add("Иван");
+        names.Add("Петър");
+        names.Add("Мария");
+        Console.WriteLine("Брой: " + names.Count);
+        Console.WriteLine(string.Join(", ", names));
+    }
+}`,
+                initialList: [],
+                vars: [{id: 'dCount', name: 'Count'}, {id: 'dCap', name: 'Capacity'}],
+                steps: [
+                    { lines: [5], lst: [], active: [], state: {dCount: "0", dCap: "0"}, toast: "Създаване на празен списък", con: "" },
+                    { lines: [6], lst: ["Иван"], active: [0], state: {dCount: "1", dCap: "4"}, toast: "Add(\"Иван\") -> добавя в края на индекс [0]", con: "" },
+                    { lines: [7], lst: ["Иван", "Петър"], active: [1], state: {dCount: "2", dCap: "4"}, toast: "Add(\"Петър\") -> добавя в края на индекс [1]", con: "" },
+                    { lines: [8], lst: ["Иван", "Петър", "Мария"], active: [2], state: {dCount: "3", dCap: "4"}, toast: "Add(\"Мария\") -> добавя в края на индекс [2]", con: "" },
+                    { lines: [9, 10], lst: ["Иван", "Петър", "Мария"], active: [], state: {dCount: "3", dCap: "4"}, toast: "КРАЙ: Извеждане на списъка", con: "Брой: 3\nИван, Петър, Мария\n" }
+                ]
+            },
+            2: {
+                title: "Insert()",
+                code: `using System;
+using System.Collections.Generic;
+
+class Program {
+    static void Main() {
+        List<string> names = new List<string>() { "Иван", "Петър" };
+        names.Insert(0, "Киро");
+        names.Insert(2, "Анна");
+        Console.WriteLine(string.Join(", ", names));
+    }
+}`,
+                initialList: ["Иван", "Петър"],
+                vars: [{id: 'dCount', name: 'Count'}],
+                steps: [
+                    { lines: [5], lst: ["Иван", "Петър"], active: [], state: {dCount: "2"}, toast: "Начален списък с 2 елемента", con: "" },
+                    { lines: [6], lst: ["Киро", "Иван", "Петър"], active: [0], state: {dCount: "3"}, toast: "Insert(0, \"Киро\") -> останалите се изместват надясно", con: "" },
+                    { lines: [7], lst: ["Киро", "Иван", "Анна", "Петър"], active: [2], state: {dCount: "4"}, toast: "Insert(2, \"Анна\") -> \"Петър\" се измества на [3]", con: "" },
+                    { lines: [8], lst: ["Киро", "Иван", "Анна", "Петър"], active: [], state: {dCount: "4"}, toast: "КРАЙ: Извеждане на резултата", con: "Киро, Иван, Анна, Петър\n" }
+                ]
+            },
+            3: {
+                title: "AddRange()",
+                code: `using System;
+using System.Collections.Generic;
+
+class Program {
+    static void Main() {
+        List<int> nums = new List<int>() { 10, 20 };
+        int[] extra = { 30, 40, 50 };
+        nums.AddRange(extra);
+        Console.WriteLine(string.Join(" ", nums));
+    }
+}`,
+                initialList: ["10", "20"],
+                vars: [{id: 'dCount', name: 'Count'}, {id: 'dArr', name: 'extra'}],
+                steps: [
+                    { lines: [5], lst: ["10", "20"], active: [], state: {dCount: "2", dArr: "---"}, toast: "Начален списък { 10, 20 }", con: "" },
+                    { lines: [6], lst: ["10", "20"], active: [], state: {dCount: "2", dArr: "{30, 40, 50}"}, toast: "Подготвяме масив с нови елементи", con: "" },
+                    { lines: [7], lst: ["10", "20", "30", "40", "50"], active: [2, 3, 4], state: {dCount: "5", dArr: "{30, 40, 50}"}, toast: "AddRange() залепя всички елементи в края!", con: "" },
+                    { lines: [8], lst: ["10", "20", "30", "40", "50"], active: [], state: {dCount: "5", dArr: "{30, 40, 50}"}, toast: "КРАЙ", con: "10 20 30 40 50\n" }
+                ]
+            },
+            4: {
+                title: "InsertRange()",
+                code: `using System;
+using System.Collections.Generic;
+
+class Program {
+    static void Main() {
+        List<int> nums = new List<int>() { 1, 2, 9 };
+        int[] middle = { 5, 6 };
+        nums.InsertRange(2, middle);
+        Console.WriteLine(string.Join(" ", nums));
+    }
+}`,
+                initialList: ["1", "2", "9"],
+                vars: [{id: 'dCount', name: 'Count'}, {id: 'dArr', name: 'middle'}],
+                steps: [
+                    { lines: [5], lst: ["1", "2", "9"], active: [], state: {dCount: "3", dArr: "---"}, toast: "Начален списък { 1, 2, 9 }", con: "" },
+                    { lines: [6], lst: ["1", "2", "9"], active: [], state: {dCount: "3", dArr: "{5, 6}"}, toast: "Колекция за вмъкване { 5, 6 }", con: "" },
+                    { lines: [7], lst: ["1", "2", "5", "6", "9"], active: [2, 3], state: {dCount: "5", dArr: "{5, 6}"}, toast: "InsertRange(2, middle) -> вмъква от индекс [2]", con: "" },
+                    { lines: [8], lst: ["1", "2", "5", "6", "9"], active: [], state: {dCount: "5", dArr: "{5, 6}"}, toast: "КРАЙ", con: "1 2 5 6 9\n" }
+                ]
+            },
+            5: {
+                title: "Remove()",
+                code: `using System;
+using System.Collections.Generic;
+
+class Program {
+    static void Main() {
+        List<int> nums = new List<int>() { 5, 20, 30, 20 };
+        bool ok1 = nums.Remove(20);
+        bool ok2 = nums.Remove(99);
+        Console.WriteLine($"Изтрито 20: {ok1}, Изтрито 99: {ok2}");
+        Console.WriteLine(string.Join(" ", nums));
+    }
+}`,
+                initialList: ["5", "20", "30", "20"],
+                vars: [{id: 'dCount', name: 'Count'}, {id: 'dOk1', name: 'ok1'}, {id: 'dOk2', name: 'ok2'}],
+                steps: [
+                    { lines: [5], lst: ["5", "20", "30", "20"], active: [1, 3], state: {dCount: "4", dOk1: "---", dOk2: "---"}, toast: "Списък с две числа 20 (на [1] и [3])", con: "" },
+                    { lines: [6], lst: ["5", "30", "20"], active: [], state: {dCount: "3", dOk1: "True", dOk2: "---"}, toast: "Remove(20) изтрива САМО първото срещане и сгъстява!", con: "" },
+                    { lines: [7], lst: ["5", "30", "20"], active: [], state: {dCount: "3", dOk1: "True", dOk2: "False"}, toast: "Remove(99) връща False (няма 99 в списъка)", con: "" },
+                    { lines: [8, 9], lst: ["5", "30", "20"], active: [], state: {dCount: "3", dOk1: "True", dOk2: "False"}, toast: "КРАЙ", con: "Изтрито 20: True, Изтрито 99: False\n5 30 20\n" }
+                ]
+            },
+            6: {
+                title: "RemoveAt()",
+                code: `using System;
+using System.Collections.Generic;
+
+class Program {
+    static void Main() {
+        List<string> items = new List<string>() { "A", "B", "C", "D" };
+        items.RemoveAt(1);
+        items.RemoveAt(items.Count - 1);
+        Console.WriteLine(string.Join(", ", items));
+    }
+}`,
+                initialList: ["A", "B", "C", "D"],
+                vars: [{id: 'dCount', name: 'Count'}],
+                steps: [
+                    { lines: [5], lst: ["A", "B", "C", "D"], active: [], state: {dCount: "4"}, toast: "Начален списък с 4 елемента", con: "" },
+                    { lines: [6], lst: ["A", "C", "D"], active: [], state: {dCount: "3"}, toast: "RemoveAt(1) изтрива \"B\" и преномерира индексите", con: "" },
+                    { lines: [7], lst: ["A", "C"], active: [], state: {dCount: "2"}, toast: "RemoveAt(Count - 1) изтрива последния елемент \"D\"", con: "" },
+                    { lines: [8], lst: ["A", "C"], active: [], state: {dCount: "2"}, toast: "КРАЙ", con: "A, C\n" }
+                ]
+            },
+            7: {
+                title: "RemoveRange()",
+                code: `using System;
+using System.Collections.Generic;
+
+class Program {
+    static void Main() {
+        List<int> nums = new List<int>() { 10, 20, 30, 40, 50 };
+        // От индекс 1 премахваме 3 последователни елемента
+        nums.RemoveRange(1, 3);
+        Console.WriteLine(string.Join(" ", nums));
+    }
+}`,
+                initialList: ["10", "20", "30", "40", "50"],
+                vars: [{id: 'dCount', name: 'Count'}],
+                steps: [
+                    { lines: [5], lst: ["10", "20", "30", "40", "50"], active: [1, 2, 3], state: {dCount: "5"}, toast: "Маркираме 3 елемента от индекс [1]: 20, 30, 40", con: "" },
+                    { lines: [7], lst: ["10", "50"], active: [], state: {dCount: "2"}, toast: "RemoveRange(1, 3) ги премахва наведнъж!", con: "" },
+                    { lines: [8], lst: ["10", "50"], active: [], state: {dCount: "2"}, toast: "КРАЙ", con: "10 50\n" }
+                ]
+            },
+            8: {
+                title: "Clear()",
+                code: `using System;
+using System.Collections.Generic;
+
+class Program {
+    static void Main() {
+        List<int> nums = new List<int>() { 7, 14, 21 };
+        Console.WriteLine("Преди Clear: " + nums.Count);
+        nums.Clear();
+        Console.WriteLine("След Clear: " + nums.Count);
+    }
+}`,
+                initialList: ["7", "14", "21"],
+                vars: [{id: 'dCount', name: 'Count'}],
+                steps: [
+                    { lines: [5], lst: ["7", "14", "21"], active: [], state: {dCount: "3"}, toast: "Списъкът съдържа 3 числа", con: "" },
+                    { lines: [6], lst: ["7", "14", "21"], active: [], state: {dCount: "3"}, toast: "Отпечатваме текущия брой (3)", con: "Преди Clear: 3\n" },
+                    { lines: [7], lst: [], active: [], state: {dCount: "0"}, toast: "Clear() изтрива всички елементи (Count = 0)", con: "Преди Clear: 3\n" },
+                    { lines: [8], lst: [], active: [], state: {dCount: "0"}, toast: "КРАЙ", con: "Преди Clear: 3\nСлед Clear: 0\n" }
+                ]
+            },
+            9: {
+                title: "Contains()",
+                code: `using System;
+using System.Collections.Generic;
+
+class Program {
+    static void Main() {
+        List<int> nums = new List<int>() { 8, 2, 10, 5 };
+        bool hasTen = nums.Contains(10);
+        bool hasSix = nums.Contains(6);
+        Console.WriteLine($"Има 10: {hasTen}, Има 6: {hasSix}");
+    }
+}`,
+                initialList: ["8", "2", "10", "5"],
+                vars: [{id: 'dCount', name: 'Count'}, {id: 'dTen', name: 'hasTen'}, {id: 'dSix', name: 'hasSix'}],
+                steps: [
+                    { lines: [5], lst: ["8", "2", "10", "5"], active: [], state: {dCount: "4", dTen: "---", dSix: "---"}, toast: "Начален списък", con: "" },
+                    { lines: [6], lst: ["8", "2", "10", "5"], active: [2], state: {dCount: "4", dTen: "True", dSix: "---"}, toast: "Contains(10) открива 10 и връща True", con: "" },
+                    { lines: [7], lst: ["8", "2", "10", "5"], active: [], state: {dCount: "4", dTen: "True", dSix: "False"}, toast: "Contains(6) не открива 6 и връща False", con: "" },
+                    { lines: [8], lst: ["8", "2", "10", "5"], active: [], state: {dCount: "4", dTen: "True", dSix: "False"}, toast: "КРАЙ", con: "Има 10: True, Има 6: False\n" }
+                ]
+            },
+            10: {
+                title: "IndexOf()",
+                code: `using System;
+using System.Collections.Generic;
+
+class Program {
+    static void Main() {
+        List<int> nums = new List<int>() { 8, 2, 10, 2 };
+        int firstIdx = nums.IndexOf(2);
+        int missingIdx = nums.IndexOf(99);
+        Console.WriteLine($"Първо 2: [{firstIdx}], За 99: {missingIdx}");
+    }
+}`,
+                initialList: ["8", "2", "10", "2"],
+                vars: [{id: 'dCount', name: 'Count'}, {id: 'dFirst', name: 'firstIdx'}, {id: 'dMiss', name: 'missingIdx'}],
+                steps: [
+                    { lines: [5], lst: ["8", "2", "10", "2"], active: [], state: {dCount: "4", dFirst: "---", dMiss: "---"}, toast: "Начален списък с две двойки", con: "" },
+                    { lines: [6], lst: ["8", "2", "10", "2"], active: [1], state: {dCount: "4", dFirst: "1", dMiss: "---"}, toast: "IndexOf(2) търси отляво надясно -> индекс [1]", con: "" },
+                    { lines: [7], lst: ["8", "2", "10", "2"], active: [], state: {dCount: "4", dFirst: "1", dMiss: "-1"}, toast: "IndexOf(99) не открива числото -> връща -1", con: "" },
+                    { lines: [8], lst: ["8", "2", "10", "2"], active: [], state: {dCount: "4", dFirst: "1", dMiss: "-1"}, toast: "КРАЙ", con: "Първо 2: [1], За 99: -1\n" }
+                ]
+            },
+            11: {
+                title: "LastIndexOf()",
+                code: `using System;
+using System.Collections.Generic;
+
+class Program {
+    static void Main() {
+        List<int> nums = new List<int>() { 8, 2, 10, 2, 5 };
+        int lastIdx = nums.LastIndexOf(2);
+        Console.WriteLine("Последно 2 е на индекс: " + lastIdx);
+    }
+}`,
+                initialList: ["8", "2", "10", "2", "5"],
+                vars: [{id: 'dCount', name: 'Count'}, {id: 'dLast', name: 'lastIdx'}],
+                steps: [
+                    { lines: [5], lst: ["8", "2", "10", "2", "5"], active: [], state: {dCount: "5", dLast: "---"}, toast: "Начален списък", con: "" },
+                    { lines: [6], lst: ["8", "2", "10", "2", "5"], active: [3], state: {dCount: "5", dLast: "3"}, toast: "LastIndexOf(2) търси отдясно наляво -> индекс [3]", con: "" },
+                    { lines: [7], lst: ["8", "2", "10", "2", "5"], active: [3], state: {dCount: "5", dLast: "3"}, toast: "КРАЙ", con: "Последно 2 е на индекс: 3\n" }
+                ]
+            },
+            12: {
+                title: "Sort()",
+                code: `using System;
+using System.Collections.Generic;
+
+class Program {
+    static void Main() {
+        List<int> nums = new List<int>() { 42, 7, 19, 3, 25 };
+        nums.Sort();
+        Console.WriteLine(string.Join(" ", nums));
+    }
+}`,
+                initialList: ["42", "7", "19", "3", "25"],
+                vars: [{id: 'dCount', name: 'Count'}],
+                steps: [
+                    { lines: [5], lst: ["42", "7", "19", "3", "25"], active: [], state: {dCount: "5"}, toast: "Неподреден списък от числа", con: "" },
+                    { lines: [6], lst: ["3", "7", "19", "25", "42"], active: [0, 1, 2, 3, 4], state: {dCount: "5"}, toast: "Sort() подрежда елементите във възходящ ред!", con: "" },
+                    { lines: [7], lst: ["3", "7", "19", "25", "42"], active: [], state: {dCount: "5"}, toast: "КРАЙ", con: "3 7 19 25 42\n" }
+                ]
+            },
+            13: {
+                title: "Reverse()",
+                code: `using System;
+using System.Collections.Generic;
+
+class Program {
+    static void Main() {
+        List<int> nums = new List<int>() { 10, 20, 30, 40 };
+        nums.Reverse();
+        Console.WriteLine(string.Join(" ", nums));
+    }
+}`,
+                initialList: ["10", "20", "30", "40"],
+                vars: [{id: 'dCount', name: 'Count'}],
+                steps: [
+                    { lines: [5], lst: ["10", "20", "30", "40"], active: [], state: {dCount: "4"}, toast: "Начален списък { 10, 20, 30, 40 }", con: "" },
+                    { lines: [6], lst: ["40", "30", "20", "10"], active: [0, 1, 2, 3], state: {dCount: "4"}, toast: "Reverse() обръща реда на елементите огледално!", con: "" },
+                    { lines: [7], lst: ["40", "30", "20", "10"], active: [], state: {dCount: "4"}, toast: "КРАЙ", con: "40 30 20 10\n" }
+                ]
+            },
+            14: {
+                title: "ToArray()",
+                code: `using System;
+using System.Collections.Generic;
+
+class Program {
+    static void Main() {
+        List<int> nums = new List<int>() { 4, 8, 15 };
+        int[] copyArr = nums.ToArray();
+        nums.Add(16);
+        Console.WriteLine("Списък: " + string.Join(", ", nums));
+        Console.WriteLine("Масив: " + string.Join(", ", copyArr));
+    }
+}`,
+                initialList: ["4", "8", "15"],
+                vars: [{id: 'dCount', name: 'nums.Count'}, {id: 'dArr', name: 'copyArr'}],
+                steps: [
+                    { lines: [5], lst: ["4", "8", "15"], active: [], state: {dCount: "3", dArr: "---"}, toast: "Начален списък с 3 елемента", con: "" },
+                    { lines: [6], lst: ["4", "8", "15"], active: [], state: {dCount: "3", dArr: "[4, 8, 15]"}, toast: "ToArray() създава отделен масив-копие", con: "" },
+                    { lines: [7], lst: ["4", "8", "15", "16"], active: [3], state: {dCount: "4", dArr: "[4, 8, 15]"}, toast: "Добавяме 16 в списъка (масивът остава непроменен!)", con: "" },
+                    { lines: [8, 9], lst: ["4", "8", "15", "16"], active: [], state: {dCount: "4", dArr: "[4, 8, 15]"}, toast: "КРАЙ", con: "Списък: 4, 8, 15, 16\nМасив: 4, 8, 15\n" }
+                ]
+            },
+            15: {
+                title: "Обхождане",
+                code: `using System;
+using System.Collections.Generic;
+
+class Program {
+    static void Main() {
+        List<int> lst = new List<int>() { 3, 7, 11 };
+        lst[1] = 50;
+        for (int i = 0; i < lst.Count; i++) {
+            Console.Write(lst[i] + " ");
+        }
+    }
+}`,
+                initialList: ["3", "7", "11"],
+                vars: [{id: 'dCount', name: 'Count'}, {id: 'dI', name: 'i'}],
+                steps: [
+                    { lines: [5], lst: ["3", "7", "11"], active: [], state: {dCount: "3", dI: "---"}, toast: "Създаване на списък { 3, 7, 11 }", con: "" },
+                    { lines: [6], lst: ["3", "50", "11"], active: [1], state: {dCount: "3", dI: "---"}, toast: "Промяна по индекс: lst[1] = 50", con: "" },
+                    { lines: [7, 8], lst: ["3", "50", "11"], active: [0], state: {dCount: "3", dI: "0"}, toast: "Цикъл i = 0 -> отпечатва lst[0]", con: "3 " },
+                    { lines: [7, 8], lst: ["3", "50", "11"], active: [1], state: {dCount: "3", dI: "1"}, toast: "Цикъл i = 1 -> отпечатва lst[1]", con: "3 50 " },
+                    { lines: [7, 8], lst: ["3", "50", "11"], active: [2], state: {dCount: "3", dI: "2"}, toast: "Цикъл i = 2 -> отпечатва lst[2]", con: "3 50 11 " },
+                    { lines: [7, 10], lst: ["3", "50", "11"], active: [], state: {dCount: "3", dI: "3"}, toast: "КРАЙ: i == lst.Count (излизаме от цикъла)", con: "3 50 11 \n" }
+                ]
+            }
+        };
+
+        let currentTaskId = 1;
+        let currentStep = -1;
+        const totalTabs = Object.keys(tasksData).length;
+
+        function initTabs() {
+            const tabsContainer = document.getElementById('taskTabs');
+            for (let i = 1; i <= totalTabs; i++) {
+                const btn = document.createElement('button');
+                btn.className = `tab-btn ${i === 1 ? 'active' : ''}`;
+                btn.innerText = tasksData[i].title;
+                btn.onclick = () => loadTask(i, btn);
+                tabsContainer.appendChild(btn);
+            }
+        }
+
+        function renderArray(arrData, activeIndices) {
+            const cont = document.getElementById('arrayView');
+            cont.innerHTML = '';
+            if (arrData.length === 0) {
+                const emptyBadge = document.createElement('div');
+                emptyBadge.className = 'empty-list-badge';
+                emptyBadge.innerText = 'Празен списък (Count = 0)';
+                cont.appendChild(emptyBadge);
+                return;
+            }
+            arrData.forEach((val, idx) => {
+                const box = document.createElement('div');
+                box.className = 'array-box';
+                
+                const cell = document.createElement('div');
+                cell.className = `array-cell ${activeIndices.includes(idx) ? 'active-cell' : ''}`;
+                cell.innerText = val;
+                
+                const index = document.createElement('div');
+                index.className = 'array-index';
+                index.innerText = `[${idx}]`;
+
+                box.appendChild(cell);
+                box.appendChild(index);
+                cont.appendChild(box);
+            });
+        }
+
+        function loadTask(id, btnElement = null) {
+            currentTaskId = id;
+            currentStep = -1;
+            const task = tasksData[id];
+
+            if (btnElement) {
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                btnElement.classList.add('active');
+            }
+
+            const varsRow = document.getElementById('varsRow');
+            varsRow.innerHTML = '';
+            task.vars.forEach(v => {
+                const div = document.createElement('div');
+                div.className = 'var-item';
+                div.innerHTML = `${v.name} = <span class="var-val" id="${v.id}">---</span>`;
+                varsRow.appendChild(div);
+            });
+
+            renderArray(task.initialList, []);
+
+            const codeCont = document.getElementById('codeContainer');
+            codeCont.innerHTML = '';
+            const lines = task.code.split('\n');
+            lines.forEach((line, idx) => {
+                const div = document.createElement('div');
+                div.className = 'code-line';
+                div.id = `line-${idx}`;
+                div.textContent = line;
+                codeCont.appendChild(div);
+            });
+
+            updateUI();
+        }
+
+        function updateUI() {
+            const task = tasksData[currentTaskId];
+            const steps = task.steps;
+
+            document.querySelectorAll('.code-line').forEach(el => {
+                el.classList.remove('active-line');
+            });
+            
+            const toast = document.getElementById('valToast');
+            const conOut = document.getElementById('consoleOutput');
+            
+            if (currentStep >= 0) {
+                const step = steps[currentStep];
+                
+                let firstLine = null;
+                step.lines.forEach(lineNum => {
+                    let el = document.getElementById('line-' + lineNum);
+                    if (el) {
+                        el.classList.add('active-line');
+                        if (!firstLine) firstLine = el;
+                    }
+                });
+                
+                if (firstLine) {
+                    firstLine.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }
+
+                for (let key in step.state) {
+                    let el = document.getElementById(key);
+                    if (el) {
+                        el.innerText = step.state[key];
+                        if (step.state[key] === "False" || step.state[key] === "-1") {
+                            el.style.color = "#ff7675";
+                        } else {
+                            el.style.color = "#00cec9";
+                        }
+                    }
+                }
+
+                renderArray(step.lst, step.active);
+
+                if (step.toast !== "") {
+                    toast.innerText = step.toast;
+                    toast.classList.add('show');
+                    if (step.toast.includes("КРАЙ") || step.toast.includes("True")) {
+                        toast.style.borderColor = "#00cec9";
+                        toast.style.color = "#00cec9";
+                    } else if (step.toast.includes("False") || step.toast.includes("-1")) {
+                        toast.style.borderColor = "#f1c40f";
+                        toast.style.color = "#f1c40f";
+                    } else {
+                        toast.style.borderColor = "#fd79a8";
+                        toast.style.color = "#fd79a8";
+                    }
+                } else {
+                    toast.classList.remove('show');
+                }
+
+                conOut.innerHTML = step.con;
+                conOut.parentElement.scrollTop = conOut.parentElement.scrollHeight;
+                document.getElementById('stepIndicator').innerText = `Стъпка: ${currentStep + 1} / ${steps.length}`;
+            } else {
+                toast.classList.remove('show');
+                conOut.innerHTML = "";
+                document.getElementById('stepIndicator').innerText = `Стъпка: 0 / ${steps.length}`;
+                renderArray(task.initialList, []);
+                
+                task.vars.forEach(v => {
+                    let el = document.getElementById(v.id);
+                    if (el) {
+                        el.style.color = "#00cec9";
+                        if (v.id === "dCount") el.innerText = task.initialList.length;
+                        else if (v.id === "dCap") el.innerText = task.initialList.length === 0 ? "0" : "4";
+                        else el.innerText = "---";
+                    }
+                });
+            }
+
+            document.getElementById('prevBtn').disabled = currentStep <= -1;
+            document.getElementById('nextBtn').disabled = currentStep >= steps.length - 1;
+        }
+
+        function nextStep() { 
+            const steps = tasksData[currentTaskId].steps;
+            if (currentStep < steps.length - 1) { 
+                currentStep++; 
+                updateUI(); 
+            } 
+        }
+        
+        function prevStep() { 
+            if (currentStep > -1) { 
+                currentStep--; 
+                updateUI(); 
+            } 
+        }
+
+        window.onload = () => {
+            initTabs();
+            loadTask(1);
+        };
+    </script>
+</body>
+</html>
