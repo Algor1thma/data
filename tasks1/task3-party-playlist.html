@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Задача: Музикален плейлист за парти - Algorithma</title>
+    <style>
+        body { margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; height: 100vh; background-color: #1e1e24; color: #e0e0e0; overflow: hidden; }
+        
+        /* Панели */
+        .panel { padding: 25px; overflow-y: auto; box-sizing: border-box; }
+        .left-panel { background-color: #2b2b36; flex: 0 0 50%; box-shadow: inset -5px 0 15px rgba(0,0,0,0.2); min-width: 22%; }
+        
+        /* Интерактивен плъзгач */
+        .resizer { flex: 0 0 6px; background-color: #333; cursor: col-resize; transition: background-color 0.2s ease; z-index: 100; box-shadow: 0 0 5px rgba(0,0,0,0.5); }
+        .resizer:hover, .resizer.dragging { background-color: #fd79a8; }
+        
+        /* ДЕСЕН ПАНЕЛ */
+        .right-panel { display: flex; flex-direction: column; background-color: #1e1e24; flex: 1; position: relative; overflow: hidden; padding: 0 0 76px 0; min-width: 28%; }
+        
+        /* Бутон Назад */
+        .back-to-home { display: inline-block; text-decoration: none; color: #fd79a8; font-weight: bold; font-size: 0.95rem; margin-bottom: 15px; padding: 8px 15px; border: 1px solid #fd79a8; border-radius: 8px; transition: all 0.3s ease; background: transparent; }
+        .back-to-home:hover { background-color: #fd79a8; color: #1e1e24; box-shadow: 0 0 10px rgba(253, 121, 168, 0.5); }
+
+        h1 { color: #ffffff; font-size: 1.7rem; margin-bottom: 5px; text-shadow: 0 2px 4px rgba(0,0,0,0.3); }
+        h2 { color: #fd79a8; font-size: 1.05rem; text-transform: uppercase; margin-top: 0; margin-bottom: 15px; letter-spacing: 1px; }
+        h3 { color: #00cec9; border-bottom: 1px solid #444; padding-bottom: 5px; margin-top: 24px; font-size: 1.15rem; }
+        p, ul, li { line-height: 1.55; color: #dcdde1; font-size: 0.95rem; margin-bottom: 8px; }
+        ol { margin-top: 5px; margin-bottom: 10px; padding-left: 20px; line-height: 1.6; }
+
+        /* Таблици */
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; margin-bottom: 15px; font-size: 0.88rem; background-color: #353b48; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
+        th, td { border: 1px solid #444; padding: 9px 12px; text-align: left; }
+        th { background-color: #2f3640; color: #fd79a8; font-weight: bold; }
+
+        /* Атрактивни карти за методите */
+        .method-cards { display: flex; flex-direction: column; gap: 10px; margin: 12px 0; }
+        .method-card { background: #353b48; border: 1px solid #485060; border-left: 4px solid #00cec9; border-radius: 8px; padding: 12px 15px; box-shadow: 0 3px 8px rgba(0,0,0,0.2); transition: transform 0.2s ease; }
+        .method-card:hover { transform: translateX(3px); border-left-color: #fd79a8; }
+        .method-sig { font-family: Consolas, monospace; font-size: 0.95rem; font-weight: bold; color: #fd79a8; margin-bottom: 6px; display: flex; align-items: center; justify-content: space-between; }
+        .method-badge { font-family: 'Segoe UI', sans-serif; font-size: 0.72rem; background: rgba(0, 206, 201, 0.16); color: #00cec9; border: 1px solid rgba(0, 206, 201, 0.4); padding: 2px 8px; border-radius: 12px; letter-spacing: 0.5px; }
+        .method-desc { font-size: 0.92rem; color: #dcdde1; margin: 0; line-height: 1.5; }
+        .method-desc ul { margin: 6px 0 0 0; padding-left: 18px; }
+        .method-desc li { margin-bottom: 4px; font-size: 0.9rem; }
+
+        /* Информационни кутии */
+        .info-box { background: linear-gradient(135deg, rgba(241, 196, 15, 0.12), rgba(53, 59, 72, 0.9)); border: 1px solid rgba(241, 196, 15, 0.35); border-left: 4px solid #f1c40f; padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 18px 0; }
+        .info-box strong { color: #f1c40f; }
+
+        /* Вмъкнат код в текста */
+        code { background: #1e1e24; padding: 2px 6px; border-radius: 4px; color: #fd79a8; font-family: Consolas, monospace; border: 1px solid #444; }
+        .block-code { display: block; background: #0c0c0c; padding: 12px 14px; margin: 10px 0; border-left: 4px solid #00cec9; color: #e0e0e0; font-family: Consolas, monospace; font-size: 0.84rem; white-space: pre-wrap; border-radius: 0 6px 6px 0; box-shadow: inset 0 0 8px rgba(0,0,0,0.6); line-height: 1.45; }
+
+        /* Специален Раздел ВИЗУАЛИЗАЦИИ */
+        .viz-header { background: linear-gradient(90deg, #e84393, #fd79a8); color: #fff; padding: 8px 16px; border-radius: 8px; text-align: center; font-weight: bold; font-size: 1rem; text-transform: uppercase; letter-spacing: 2px; box-shadow: 0 4px 15px rgba(232, 67, 147, 0.4); flex-shrink: 0; margin: 16px 22px 0 22px; }
+
+        /* Фиксиран и компактен RAM панел */
+        .machine-panel { background: #2b2b36; border-bottom: 2px dashed #555; border-radius: 10px; padding: 24px 14px 10px 14px; display: flex; flex-direction: column; gap: 8px; justify-content: center; position: relative; flex-shrink: 0; margin: 8px 22px 0 22px; }
+
+        /* Мета променливи в RAM */
+        .vars-row { display: flex; flex-wrap: wrap; gap: 10px; background: #1e272e; padding: 5px 12px; border-radius: 6px; border-left: 3px solid #00cec9; width: 100%; box-sizing: border-box; justify-content: space-around; }
+        .var-item { font-family: Consolas, monospace; font-size: 0.8rem; color: #dcdde1; }
+        .var-val { color: #00cec9; font-weight: bold; }
+
+        /* Ред за списъка songs */
+        .list-track { display: flex; align-items: center; gap: 10px; background: #1e272e; padding: 7px 10px; border-radius: 8px; border-left: 3px solid #fd79a8; min-height: 50px; }
+        .list-meta { display: flex; flex-direction: column; min-width: 90px; flex-shrink: 0; border-right: 1px solid #353b48; padding-right: 8px; }
+        .list-name { font-family: Consolas, monospace; font-size: 0.84rem; font-weight: bold; color: #fd79a8; }
+        .list-sub { font-family: Consolas, monospace; font-size: 0.72rem; color: #b2bec3; margin-top: 2px; }
+
+        /* List Container */
+        .array-container { display: flex; gap: 7px; align-items: center; flex-wrap: wrap; flex: 1; min-height: 44px; }
+        .empty-list-badge { color: #95a5a6; font-family: Consolas, monospace; font-size: 0.8rem; font-style: italic; border: 1px dashed #4b5262; padding: 5px 12px; border-radius: 5px; background: rgba(0,0,0,0.2); }
+
+        .array-box { display: flex; flex-direction: column; align-items: center; animation: fadeIn 0.25s ease; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .array-cell { min-width: 48px; height: 28px; padding: 0 9px; background-color: #2d3436; border: 2px solid #00cec9; display: flex; justify-content: center; align-items: center; font-weight: bold; color: #fff; border-radius: 5px; font-family: Consolas, monospace; font-size: 0.82rem; transition: all 0.25s; white-space: nowrap; }
+        .array-index { font-size: 0.66rem; color: #b2bec3; margin-top: 2px; font-family: Consolas, monospace; }
+
+        .active-cell { background-color: #00cec9 !important; color: #1e1e24 !important; border-color: #00cec9 !important; box-shadow: 0 0 10px rgba(0, 206, 201, 0.7); }
+        .dup-cell { background-color: #f1c40f !important; color: #1e1e24 !important; border-color: #f1c40f !important; box-shadow: 0 0 10px rgba(241, 196, 15, 0.7); }
+        .removed-cell { background-color: #ff7675 !important; color: #ffffff !important; border-color: #ff7675 !important; text-decoration: line-through; box-shadow: 0 0 10px rgba(255, 118, 117, 0.6); }
+
+        /* Validation Toast */
+        .validation-toast { position: absolute; top: -8px; left: 50%; transform: translateX(-50%); background: #2d3436; border: 2px solid #fd79a8; color: #fd79a8; padding: 2px 12px; border-radius: 20px; font-family: Consolas, monospace; font-size: 0.76rem; font-weight: bold; opacity: 0; transition: all 0.25s; box-shadow: 0 4px 12px rgba(0,0,0,0.4); z-index: 10; white-space: nowrap; }
+        .validation-toast.show { opacity: 1; top: 3px; }
+
+        /* Работна зона за обяснения и конзола */
+        .viz-content-wrapper { display: flex; flex-direction: column; gap: 12px; flex: 1; overflow-y: auto; padding: 12px 22px; }
+
+        /* Панел за подробни обяснения */
+        .explanation-box { background: linear-gradient(135deg, #282c34, #22262e); border: 1px solid #444; border-left: 4px solid #00cec9; padding: 12px 16px; border-radius: 8px; color: #e0e0e0; font-size: 0.92rem; line-height: 1.5; box-shadow: 0 4px 10px rgba(0,0,0,0.35); flex-shrink: 0; }
+        .exp-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; padding-bottom: 4px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+        .exp-title { color: #00cec9; font-weight: bold; text-transform: uppercase; font-size: 0.78rem; letter-spacing: 1px; }
+        .exp-method-tag { font-family: Consolas, monospace; font-size: 0.76rem; background: rgba(253, 121, 168, 0.15); color: #fd79a8; border: 1px solid rgba(253, 121, 168, 0.4); padding: 1px 8px; border-radius: 10px; }
+        #expText { color: #dcdde1; min-height: 42px; }
+
+        /* Конзола - Просторна и ясна */
+        .console-box { background-color: #000; border: 1px solid #333; border-top: 22px solid #2d3436; border-radius: 8px; padding: 12px 15px; font-family: Consolas, 'Courier New', monospace; font-size: 13px; position: relative; box-shadow: 0 8px 15px rgba(0,0,0,0.5); flex: 1; min-height: 210px; overflow-y: auto; overflow-x: auto; }
+        .console-box::before { content: "C:\\Windows\\System32\\cmd.exe"; position: absolute; top: -18px; left: 10px; color: #b2bec3; font-size: 10.5px; font-family: 'Segoe UI', sans-serif; }
+        .console-output { color: #ecf0f1; white-space: pre-wrap; line-height: 1.48; }
+
+        /* КОНТРОЛИ */
+        .controls { position: absolute; bottom: 14px; left: 22px; right: 22px; display: flex; gap: 15px; justify-content: center; align-items: center; background: #2b2b36; padding: 7px 10px; border-radius: 8px; border: 1px solid #444; z-index: 100; }
+        button.nav-btn { padding: 7px 15px; border: none; border-radius: 6px; background: linear-gradient(180deg, #fd79a8, #e84393); color: white; font-size: 12.5px; font-weight: bold; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.3); text-transform: uppercase; }
+        button.nav-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 10px rgba(253, 121, 168, 0.5); }
+        button.nav-btn:disabled { background: #555; color: #888; cursor: not-allowed; box-shadow: none; transform: none; }
+        .step-indicator { color: #fd79a8; font-weight: bold; font-family: Consolas, monospace; font-size: 0.9rem; width: 135px; text-align: center; }
+    </style>
+</head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-YYBQF66CTS"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-YYBQF66CTS');
+</script>
+<body>
+
+    <div class="panel left-panel" id="leftPanel">
+        <a href="../index.html" class="back-to-home">← Начало</a>
+        
+        <h1>🎵 Задача 3: Музикален плейлист за парти</h1>
+        <h2>Колекция от данни: Списъци (List&lt;T&gt;)</h2>
+        
+        <p>Да се декларира клас <code>PartyPlaylist</code>, който помага за създаване и управляване на списък с песни за училищно парти и съдържа следното <code>private</code> поле:</p>
+        
+        <table>
+            <tr><th>Поле</th><th>Тип</th><th>Описание</th></tr>
+            <tr><td><code>songs</code></td><td><code>List&lt;string&gt;</code> (List от текстове)</td><td>Списък със заглавията на избраните песни</td></tr>
+        </table>
+
+        <h3>Конструктор</h3>
+        <p>Класът да съдържа публичен конструктор <code>PartyPlaylist()</code>, който създава списъка и извиква описания по-долу метод <code>AddSongs()</code>.</p>
+
+        <h3>Методи на класа</h3>
+        <p>В класа да се дефинират следните методи, като се прецени кои от тях трябва да бъдат публични и кои – скрити (<code>private</code>):</p>
+
+        <div class="method-cards">
+            <div class="method-card">
+                <div class="method-sig">
+                    <span>1. void AddSongs()</span>
+                    <span class="method-badge">Запълване</span>
+                </div>
+                <div class="method-desc">
+                    Извършва запълването на <code>songs</code> със стойности, като:
+                    <ul>
+                        <li>извежда надписа <code>"Създаване на плейлист!"</code>;</li>
+                        <li>организира въвеждане на заглавия от клавиатурата до въвеждане на <code>"END"</code>. <strong>Повторения не се допускат</strong> – ако се въведе песен, която вече присъства в списъка, тя не се добавя повторно;</li>
+                        <li>извежда надписа <code>"Край на добавянето!"</code>.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="method-card">
+                <div class="method-sig">
+                    <span>2. void DeleteSongs()</span>
+                    <span class="method-badge">Изтриване</span>
+                </div>
+                <div class="method-desc">
+                    Изтрива от списъка определени песни, като:
+                    <ul>
+                        <li>извежда надписа <code>"Възможност за изтриване на песни!"</code>;</li>
+                        <li>организира повторения: първо се извежда съдържанието на списъка (чрез метода <code>PrintPlaylist()</code>), след това се прочита заглавие за изтриване и тази песен се премахва (ако съществува в списъка). Повтаря се до въвеждане на <code>"END"</code>;</li>
+                        <li>извежда надписа <code>"Край на изтриването!"</code>.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="method-card">
+                <div class="method-sig">
+                    <span>3. void MoveSong()</span>
+                    <span class="method-badge">Пренареждане</span>
+                </div>
+                <div class="method-desc">
+                    Премества дадена песен от текущата ѝ позиция на друга посочена позиция:
+                    <ul>
+                        <li>извежда надписа <code>"Възможност за промяна на реда!"</code>;</li>
+                        <li>организира диалог: първо извежда списъка (чрез <code>PrintPlaylist()</code>), прочита заглавие на песен и новата ѝ позиция, и премества песента на новото място. Повтаря се до въвеждане на <code>"END"</code> вместо заглавие. <strong>Внимание:</strong> въвежданите числа показват позиции (от <code>1</code> до броя на песните), а не индекси;</li>
+                        <li>извежда надписа <code>"Край на разместването!"</code>.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="method-card">
+                <div class="method-sig">
+                    <span>4. void PrintPlaylist()</span>
+                    <span class="method-badge">Извеждане</span>
+                </div>
+                <div class="method-desc">
+                    Извежда на екрана текста <code>"Плейлист: "</code>, последван на същия ред от заглавията на песните, разделени с <code>" -&gt; "</code> (интервал, тире, знак за по-голямо, интервал).
+                </div>
+            </div>
+        </div>
+
+        <div class="info-box">
+            <strong>💡 Насоки за самостоятелна работа:</strong>
+            <ul>
+                <li><strong>Модификатори за достъп:</strong> Помислете кои методи се извикват външно от <code>Main()</code> (те трябва да са <code>public</code>) и кой метод се извиква единствено вътре в конструктора <code>PartyPlaylist()</code>.</li>
+                <li><strong>Преместване на елемент:</strong> Преместването на песен на нова позиция <code>pos</code> става в две стъпки – първо я премахвате с <code>Remove(song)</code>, а след това я вмъквате на индекс <code>pos - 1</code> чрез <code>Insert(pos - 1, song)</code> (само ако песента съществува в списъка!).</li>
+            </ul>
+        </div>
+
+        <h3>Главна програма (Main)</h3>
+        <p>Като се използва класът <code>PartyPlaylist</code>, да се напише програма, която:</p>
+        <ol>
+            <li>създава обект от класа <code>PartyPlaylist</code>;</li>
+            <li>извежда празен ред и предоставя възможност за изтриване на песни чрез извикване на съответния метод;</li>
+            <li>извежда празен ред и предоставя възможност за разместване на песни чрез извикване на съответния метод;</li>
+            <li>извежда празен ред и крайното състояние на плейлиста чрез извикване на съответния метод.</li>
+        </ol>
+
+        <h3>Примерен резултат:</h3>
+        <div class="block-code">Създаване на плейлист!
+Въведете песен: Believer
+Въведете песен: Numb
+Въведете песен: Believer
+Въведете песен: Starboy
+Въведете песен: Levitating
+Въведете песен: Blinding Lights
+Въведете песен: Starboy
+Въведете песен: Numb
+Въведете песен: END
+Край на добавянето!
+
+Възможност за изтриване на песни!
+Плейлист: Believer -&gt; Numb -&gt; Starboy -&gt; Levitating -&gt; Blinding Lights
+Изберете песен за изтриване: Starboy
+Плейлист: Believer -&gt; Numb -&gt; Levitating -&gt; Blinding Lights
+Изберете песен за изтриване: Thriller
+Плейлист: Believer -&gt; Numb -&gt; Levitating -&gt; Blinding Lights
+Изберете песен за изтриване: END
+Край на изтриването!
+
+Възможност за промяна на реда!
+Плейлист: Believer -&gt; Numb -&gt; Levitating -&gt; Blinding Lights
+Изберете песен за преместване: Blinding Lights
+Посочете номера на новата позиция: 1
+Плейлист: Blinding Lights -&gt; Believer -&gt; Numb -&gt; Levitating
+Изберете песен за преместване: Believer
+Посочете номера на новата позиция: 4
+Плейлист: Blinding Lights -&gt; Numb -&gt; Levitating -&gt; Believer
+Изберете песен за преместване: END
+Край на разместването!
+
+Плейлист: Blinding Lights -&gt; Numb -&gt; Levitating -&gt; Believer</div>
+
+    </div>
+
+    <!-- Интерактивен разделител -->
+    <div class="resizer" id="dragMe"></div>
+
+    <div class="panel right-panel">
+        
+        <div class="viz-header">
+            ⚡ Симулатор: Музикален плейлист ⚡
+        </div>
+
+        <!-- Фиксиран и компактен RAM панел -->
+        <div class="machine-panel">
+            <div class="validation-toast" id="valToast">Execution...</div>
+
+            <div class="vars-row">
+                <div class="var-item">songs.Count = <span class="var-val" id="dCount">0</span></div>
+                <div class="var-item">вход = <span class="var-val" id="dInput">---</span></div>
+                <div class="var-item">позиция (индекс) = <span class="var-val" id="dPos">---</span></div>
+            </div>
+
+            <div class="list-track">
+                <div class="list-meta">
+                    <span class="list-name">songs</span>
+                    <span class="list-sub">List&lt;string&gt;</span>
+                </div>
+                <div class="array-container" id="arrayView">
+                    <!-- Песните се рендерират динамично -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Работна зона за подробни обяснения и конзола -->
+        <div class="viz-content-wrapper">
+            <div class="explanation-box">
+                <div class="exp-header">
+                    <span class="exp-title">🔍 Обяснение на стъпката</span>
+                    <span class="exp-method-tag" id="expMethod">Готовност</span>
+                </div>
+                <div id="expText">Натиснете „Напред“, за да проследите стъпка по стъпка работата на класа PartyPlaylist върху примерните данни.</div>
+            </div>
+
+            <div class="console-box">
+                <div class="console-output" id="consoleOutput"></div>
+            </div>
+        </div>
+
+        <!-- Контроли на дъното -->
+        <div class="controls">
+            <button class="nav-btn" id="prevBtn" type="button" onclick="prevStep()" disabled>⏪ Назад</button>
+            <div class="step-indicator" id="stepIndicator">Стъпка: 0 / 0</div>
+            <button class="nav-btn" id="nextBtn" type="button" onclick="nextStep()">Напред ⏩</button>
+        </div>
+
+    </div>
+
+    <script>
+        // Логика за Плъзгача (Разделителя)
+        const resizer = document.getElementById('dragMe');
+        const leftPanel = document.getElementById('leftPanel');
+        let isHandlerDragging = false;
+
+        resizer.addEventListener('mousedown', function(e) {
+            isHandlerDragging = true;
+            resizer.classList.add('dragging');
+            document.body.style.cursor = 'col-resize';
+            e.preventDefault(); 
+        });
+
+        document.addEventListener('mousemove', function(e) {
+            if (!isHandlerDragging) return;
+            let newWidth = (e.clientX / window.innerWidth) * 100;
+            if (newWidth < 22) newWidth = 22;
+            if (newWidth > 78) newWidth = 78;
+            leftPanel.style.flex = `0 0 ${newWidth}%`;
+        });
+
+        document.addEventListener('mouseup', function() {
+            if (isHandlerDragging) {
+                isHandlerDragging = false;
+                resizer.classList.remove('dragging');
+                document.body.style.cursor = '';
+            }
+        });
+
+        // Постъпкова симулация по точния пример от условието
+        const cAdd1 = "Създаване на плейлист!\nВъведете песен: Believer\nВъведете песен: Numb\n";
+        const cAdd2 = cAdd1 + "Въведете песен: Believer\n";
+        const cAdd3 = cAdd2 + "Въведете песен: Starboy\nВъведете песен: Levitating\nВъведете песен: Blinding Lights\n";
+        const cAdd4 = cAdd3 + "Въведете песен: Starboy\nВъведете песен: Numb\n";
+        const cAddEnd = cAdd4 + "Въведете песен: END\nКрай на добавянето!\n";
+
+        const cDelStart = cAddEnd + "\nВъзможност за изтриване на песни!\nПлейлист: Believer -> Numb -> Starboy -> Levitating -> Blinding Lights\n";
+        const cDel1 = cDelStart + "Изберете песен за изтриване: Starboy\nПлейлист: Believer -> Numb -> Levitating -> Blinding Lights\n";
+        const cDel2 = cDel1 + "Изберете песен за изтриване: Thriller\nПлейлист: Believer -> Numb -> Levitating -> Blinding Lights\n";
+        const cDelEnd = cDel2 + "Изберете песен за изтриване: END\nКрай на изтриването!\n";
+
+        const cMovStart = cDelEnd + "\nВъзможност за промяна на реда!\nПлейлист: Believer -> Numb -> Levitating -> Blinding Lights\n";
+        const cMov1Ask = cMovStart + "Изберете песен за преместване: Blinding Lights\nПосочете номера на новата позиция: 1\n";
+        const cMov1Done = cMov1Ask + "Плейлист: Blinding Lights -> Believer -> Numb -> Levitating\n";
+        const cMov2Ask = cMov1Done + "Изберете песен за преместване: Believer\nПосочете номера на новата позиция: 4\n";
+        const cMov2Done = cMov2Ask + "Плейлист: Blinding Lights -> Numb -> Levitating -> Believer\n";
+        const cMovEnd = cMov2Done + "Изберете песен за преместване: END\nКрай на разместването!\n";
+        const cFinal = cMovEnd + "\nПлейлист: Blinding Lights -> Numb -> Levitating -> Believer\n";
+
+        const steps = [
+            {
+                method: 'PartyPlaylist()',
+                lst: [], active: [], dup: [], rem: [],
+                input: '---', pos: '---',
+                toast: 'Създаване на обект PartyPlaylist',
+                exp: 'В Main() се създава обект от класа PartyPlaylist. Конструкторът инициализира празния списък songs (Count = 0) и автоматично извиква метода AddSongs().',
+                con: 'Създаване на плейлист!\n'
+            },
+            {
+                method: 'AddSongs()',
+                lst: ['Believer', 'Numb'], active: [0, 1], dup: [], rem: [],
+                input: '"Numb"', pos: '---',
+                toast: 'Добавени са "Believer" и "Numb"',
+                exp: 'Четем заглавията от клавиатурата. Тъй като "Believer" и "Numb" още не се съдържат в списъка (!songs.Contains(s)), ги добавяме с Add() на индекси [0] и [1].',
+                con: cAdd1
+            },
+            {
+                method: 'AddSongs()',
+                lst: ['Believer', 'Numb'], active: [], dup: [0], rem: [],
+                input: '"Believer"', pos: '---',
+                toast: 'Дубликат! "Believer" вече присъства -> пропускаме',
+                exp: 'Потребителят въвежда отново "Believer". Проверката открива, че песента вече е на индекс [0], затова НЕ я добавяме повторно.',
+                con: cAdd2
+            },
+            {
+                method: 'AddSongs()',
+                lst: ['Believer', 'Numb', 'Starboy', 'Levitating', 'Blinding Lights'], active: [2, 3, 4], dup: [], rem: [],
+                input: '"Blinding Lights"', pos: '---',
+                toast: 'Добавени са още 3 уникални песни (Count = 5)',
+                exp: 'Последователно се въвеждат "Starboy", "Levitating" и "Blinding Lights". Всяка от тях е уникална и се добавя в края на списъка.',
+                con: cAdd3
+            },
+            {
+                method: 'AddSongs()',
+                lst: ['Believer', 'Numb', 'Starboy', 'Levitating', 'Blinding Lights'], active: [], dup: [1, 2], rem: [],
+                input: '"Numb"', pos: '---',
+                toast: 'Дубликати "Starboy" и "Numb" -> игнорирани!',
+                exp: 'Опитите за повторно въвеждане на "Starboy" и "Numb" се игнорират от проверката за уникалност. Списъкът запазва своите 5 елемента.',
+                con: cAdd4
+            },
+            {
+                method: 'AddSongs()',
+                lst: ['Believer', 'Numb', 'Starboy', 'Levitating', 'Blinding Lights'], active: [], dup: [], rem: [],
+                input: '"END"', pos: '---',
+                toast: 'Въведено е "END" -> Край на добавянето!',
+                exp: 'При въвеждане на стоп-командата "END" цикълът за добавяне приключва и методът извежда "Край на добавянето!".',
+                con: cAddEnd
+            },
+            {
+                method: 'DeleteSongs()',
+                lst: ['Believer', 'Numb', 'Starboy', 'Levitating', 'Blinding Lights'], active: [], dup: [], rem: [2],
+                input: '"Starboy"', pos: '---',
+                toast: 'Извикване на DeleteSongs() -> маркиране на "Starboy"',
+                exp: 'В Main() се отпечатва празен ред и се извиква DeleteSongs(). Първо се показва целият плейлист с PrintPlaylist(). Въведена е "Starboy" – тя съществува на индекс [2] и ще бъде изтрита.',
+                con: cDelStart + 'Изберете песен за изтриване: Starboy\n'
+            },
+            {
+                method: 'DeleteSongs()',
+                lst: ['Believer', 'Numb', 'Levitating', 'Blinding Lights'], active: [], dup: [], rem: [],
+                input: '"Starboy"', pos: '---',
+                toast: 'Remove("Starboy") -> списъкът се сгъстява (Count = 4)',
+                exp: 'Методът songs.Remove("Starboy") премахва елемента, а всички песни след него се изместват с 1 позиция наляво. Отново се извиква PrintPlaylist().',
+                con: cDel1
+            },
+            {
+                method: 'DeleteSongs()',
+                lst: ['Believer', 'Numb', 'Levitating', 'Blinding Lights'], active: [], dup: [], rem: [],
+                input: '"Thriller"', pos: '---',
+                toast: '"Thriller" не съществува -> списъкът не се променя',
+                exp: 'Потребителят въвежда "Thriller". Такава песен няма в списъка (Remove връща false без грешка), затова плейлистът остава непроменен.',
+                con: cDel2
+            },
+            {
+                method: 'DeleteSongs()',
+                lst: ['Believer', 'Numb', 'Levitating', 'Blinding Lights'], active: [], dup: [], rem: [],
+                input: '"END"', pos: '---',
+                toast: 'Въведено е "END" -> Край на изтриването!',
+                exp: 'Стоп-сигналът "END" прекратява цикъла в DeleteSongs() и се отпечатва "Край на изтриването!".',
+                con: cDelEnd
+            },
+            {
+                method: 'MoveSong()',
+                lst: ['Believer', 'Numb', 'Levitating', 'Blinding Lights'], active: [3], dup: [], rem: [],
+                input: '"Blinding Lights"', pos: '1 (индекс 0)',
+                toast: 'Преместване на "Blinding Lights" на позиция 1',
+                exp: 'Стартира MoveSong(). Потребителят избира "Blinding Lights" (сега на индекс [3]) и желана позиция 1. Преобразуваме позицията в индекс: 1 - 1 = 0.',
+                con: cMov1Ask
+            },
+            {
+                method: 'MoveSong()',
+                lst: ['Blinding Lights', 'Believer', 'Numb', 'Levitating'], active: [0], dup: [], rem: [],
+                input: '"Blinding Lights"', pos: '1 (индекс 0)',
+                toast: 'Remove() + Insert(0, "Blinding Lights")',
+                exp: 'Първо изтриваме "Blinding Lights" от старата ѝ позиция с Remove(), а после я вмъкваме най-отпред с Insert(0, song). Останалите песни се изместват надясно!',
+                con: cMov1Done
+            },
+            {
+                method: 'MoveSong()',
+                lst: ['Blinding Lights', 'Numb', 'Levitating', 'Believer'], active: [3], dup: [], rem: [],
+                input: '"Believer"', pos: '4 (индекс 3)',
+                toast: 'Преместване на "Believer" на позиция 4 (индекс 3)',
+                exp: 'Избираме "Believer" и нова позиция 4 (индекс 4 - 1 = 3). След Remove("Believer") и Insert(3, "Believer"), песента застава в края на плейлиста.',
+                con: cMov2Done
+            },
+            {
+                method: 'MoveSong()',
+                lst: ['Blinding Lights', 'Numb', 'Levitating', 'Believer'], active: [], dup: [], rem: [],
+                input: '"END"', pos: '---',
+                toast: 'Въведено е "END" -> Край на разместването!',
+                exp: 'Въвеждането на "END" вместо заглавие прекратява цикъла за разместване и извежда "Край на разместването!".',
+                con: cMovEnd
+            },
+            {
+                method: 'PrintPlaylist()',
+                lst: ['Blinding Lights', 'Numb', 'Levitating', 'Believer'], active: [0, 1, 2, 3], dup: [], rem: [],
+                input: '"END"', pos: '---',
+                toast: 'КРАЙ: Финално отпечатване със string.Join(" -> ", songs)',
+                exp: 'В Main() се отпечатва последен празен ред и се извиква PrintPlaylist(), който слепва заглавията с разделител " -> ". Задачата приключи успешно!',
+                con: cFinal
+            }
+        ];
+
+        let currentStep = -1;
+
+        function renderList(arr, activeIndices, dupIndices, removedIndices) {
+            const cont = document.getElementById('arrayView');
+            document.getElementById('dCount').innerText = arr.length;
+            cont.innerHTML = '';
+
+            if (arr.length === 0) {
+                const badge = document.createElement('div');
+                badge.className = 'empty-list-badge';
+                badge.innerText = 'Празен плейлист (Count = 0)';
+                cont.appendChild(badge);
+                return;
+            }
+
+            arr.forEach((val, idx) => {
+                const box = document.createElement('div');
+                box.className = 'array-box';
+
+                const cell = document.createElement('div');
+                let cls = 'array-cell';
+                if (activeIndices.includes(idx)) cls += ' active-cell';
+                if (dupIndices.includes(idx)) cls += ' dup-cell';
+                if (removedIndices.includes(idx)) cls += ' removed-cell';
+                cell.className = cls;
+                cell.innerText = val;
+
+                const index = document.createElement('div');
+                index.className = 'array-index';
+                index.innerText = `[${idx}] (поз. ${idx + 1})`;
+
+                box.appendChild(cell);
+                box.appendChild(index);
+                cont.appendChild(box);
+            });
+        }
+
+        function updateUI() {
+            const toast = document.getElementById('valToast');
+            const conOut = document.getElementById('consoleOutput');
+            const expText = document.getElementById('expText');
+            const expMethod = document.getElementById('expMethod');
+
+            if (currentStep >= 0) {
+                const step = steps[currentStep];
+
+                expText.innerText = step.exp;
+                expMethod.innerText = step.method;
+                document.getElementById('dInput').innerText = step.input;
+                document.getElementById('dPos').innerText = step.pos;
+
+                renderList(step.lst, step.active, step.dup, step.rem);
+
+                if (step.toast !== '') {
+                    toast.innerText = step.toast;
+                    toast.classList.add('show');
+                    if (step.toast.includes('КРАЙ') || step.toast.includes('Добавени') || step.toast.includes('Insert')) {
+                        toast.style.borderColor = '#00cec9';
+                        toast.style.color = '#00cec9';
+                    } else if (step.toast.includes('Дубликат') || step.toast.includes('не съществува')) {
+                        toast.style.borderColor = '#f1c40f';
+                        toast.style.color = '#f1c40f';
+                    } else if (step.toast.includes('маркиране') || step.toast.includes('Remove(')) {
+                        toast.style.borderColor = '#ff7675';
+                        toast.style.color = '#ff7675';
+                    } else {
+                        toast.style.borderColor = '#fd79a8';
+                        toast.style.color = '#fd79a8';
+                    }
+                } else {
+                    toast.classList.remove('show');
+                }
+
+                conOut.innerText = step.con;
+                conOut.parentElement.scrollTop = conOut.parentElement.scrollHeight;
+                document.getElementById('stepIndicator').innerText = `Стъпка: ${currentStep + 1} / ${steps.length}`;
+            } else {
+                toast.classList.remove('show');
+                conOut.innerText = '';
+                expMethod.innerText = 'Готовност';
+                expText.innerText = 'Натиснете „Напред“, за да проследите стъпка по стъпка работата на класа PartyPlaylist върху примерните данни.';
+                document.getElementById('dInput').innerText = '---';
+                document.getElementById('dPos').innerText = '---';
+                document.getElementById('stepIndicator').innerText = `Стъпка: 0 / ${steps.length}`;
+                renderList([], [], [], []);
+            }
+
+            document.getElementById('prevBtn').disabled = currentStep <= -1;
+            document.getElementById('nextBtn').disabled = currentStep >= steps.length - 1;
+        }
+
+        function nextStep() {
+            if (currentStep < steps.length - 1) {
+                currentStep++;
+                updateUI();
+            }
+        }
+
+        function prevStep() {
+            if (currentStep > -1) {
+                currentStep--;
+                updateUI();
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', updateUI);
+    </script>
+</body>
+</html>
